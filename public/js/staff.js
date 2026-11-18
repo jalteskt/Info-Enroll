@@ -23,8 +23,7 @@ function professorView(icon) {
   const current = sections[selectedSection];
   const roster = current.code === 'CIST_301' ? people.map((person, i) => i === 2 ? ['2024-10287', 'Dela Cruz, Andrea'] : person) : people;
   const pending = sections.filter(section => !section.submitted).length;
-  return `<div class="page-heading"><div><p class="eyebrow">FACULTY WORKSPACE</p><h1 class="page-title">Your classroom, in order.</h1><p class="page-description">Manage your sections and give every student a clear next step.</p></div>${badge('Faculty preview')}</div>
-    <div class="stats-grid">
+  return `<div class="stats-grid">
       ${stat('Assigned sections', '03', '1st semester · AY 2026–2027')}
       ${stat('Students enrolled', '15', 'Across your assigned sections')}
       ${stat('Awaiting submission', String(pending).padStart(2, '0'), pending ? 'Review grades before submitting' : 'All sections are complete')}
@@ -46,8 +45,7 @@ function professorView(icon) {
 }
 
 function adminView(icon) {
-  return `<div class="page-heading"><div><p class="eyebrow">ADMINISTRATION</p><h1 class="page-title">A clear view of enrollment.</h1><p class="page-description">Keep the academic term organized, from the first selection to the final class list.</p></div>${badge('Administrator preview')}</div>
-    <div class="stats-grid">${stat('Active offerings', '06', 'BS Information Technology')}${stat('Available seats', '243', 'Across this term’s sections')}${stat('Enrollment period', periodOpen ? 'Open' : 'Closed', '1st semester · AY 2026–2027')}</div>
+  return `<div class="stats-grid">${stat('Active offerings', '06', 'BS Information Technology')}${stat('Available seats', '243', 'Across this term’s sections')}${stat('Enrollment period', periodOpen ? 'Open' : 'Closed', '1st semester · AY 2026–2027')}</div>
     <section class="panel admin-period-panel"><div class="panel-header"><div><p class="eyebrow">ACADEMIC CALENDAR</p><h2 class="panel-title">1st semester, AY 2026–2027</h2><p class="muted">${periodOpen ? 'Students can choose and update their subjects.' : 'Student subject selections are finalized and read-only.'}</p></div>${badge(periodOpen ? 'Enrollment open' : 'Enrollment closed', periodOpen ? 'green' : 'neutral')}</div>
       <div class="panel-header"><p class="page-description">${periodOpen ? 'Closing enrollment makes student selections read-only. Review the term before proceeding.' : 'Reopen this preview period to continue exploring subject selection.'}</p><button type="button" class="button ${periodOpen ? '' : 'button-primary'}" data-action="staff-period-toggle">${icon(periodOpen ? 'lock' : 'calendar')} ${periodOpen ? 'Close enrollment' : 'Reopen preview period'}</button></div>
     </section>
