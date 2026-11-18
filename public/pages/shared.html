@@ -90,7 +90,7 @@
         class="account-button"
         data-action="account-menu"
         aria-expanded="{{menu}}"
-        aria-label="Account and preview roles"
+        aria-label="Account menu"
       >
         <span class="avatar">{{initials}}</span>
         <span class="account-name">
@@ -126,12 +126,7 @@
 
 <template id="topbar-2">
   <div class="account-menu">
-    <span class="section-label">Explore the design</span>
-    {{content}}
-    <button data-action="preview-login">View sign-in screen {{icon}}</button>
+    <span class="section-label">Signed in as {{content}}</span>
+    <button data-action="sign-out">Sign out {{icon}}</button>
   </div>
-</template>
-
-<template id="topbar-3">
-  <button class="{{content}}" data-role="{{r}}">{{content3}}</button>
 </template>

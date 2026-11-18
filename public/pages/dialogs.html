@@ -1,42 +1,5 @@
 <!-- Edit markup here. {{name}} placeholders receive values from JavaScript. -->
 
-<template id="dialogs">
-  <div class="modal-header">
-    <div>
-      <div class="eyebrow">Enrollment period</div>
-      <h2 id="modal-title">Close enrollment?</h2>
-    </div>
-    <button
-      class="icon-button"
-      data-action="close-modal"
-      aria-label="Cancel closing enrollment"
-    >
-      {{icon}}
-    </button>
-  </div>
-  <div class="modal-body">
-    <p class="modal-description">
-      Student selections will become read-only, and their summaries will show a
-      finalized plan.
-    </p>
-    <div class="pair-note">
-      {{icon2}}
-      <span>
-        This changes only the current design preview. You can reopen it from the
-        admin workspace.
-      </span>
-    </div>
-  </div>
-  <div class="modal-footer">
-    <button class="button" data-action="close-modal">
-      Keep enrollment open
-    </button>
-    <button class="button button-primary" data-action="staff-period-confirm">
-      Close preview enrollment {{icon3}}
-    </button>
-  </div>
-</template>
-
 <template id="help">
   <div class="modal-header">
     <div>
@@ -138,10 +101,7 @@
 <template id="open-sections-2">
   <div class="pair-note">
     {{icon}}
-    <span>
-      Lecture and laboratory are a pair. Both matching sections will be added
-      together for {{units}} units.
-    </span>
+    <span>{{note}}</span>
   </div>
 </template>
 

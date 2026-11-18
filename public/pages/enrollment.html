@@ -67,7 +67,7 @@
       <div class="course-tabs" aria-label="Subject filters">{{content8}}</div>
       <div id="course-results">{{courseRows}}</div>
       <div class="panel-footer">
-        {{icon10}}Lecture and laboratory pairs are selected together.
+        {{icon10}}Lecture and laboratory are separate subjects. Take the lecture first.
       </div>
     </section>
     <aside class="plan-sidebar" aria-label="Your enrollment plan">
@@ -88,7 +88,7 @@
     <div>
       <strong>
         {{totalUnits}}
-        <span>/ {{MAX_UNITS}} units</span>
+        <span>{{MAX_UNITS}}</span>
       </strong>
       <small>{{length}} subjects selected · {{content}}</small>
     </div>
@@ -105,10 +105,10 @@
       <span class="count-badge">{{length}}</span>
     </div>
     <div class="plan-top">
-      <div class="plan-term">{{icon3}}First semester · 2026–2027</div>
+      <div class="plan-term">{{icon3}}{{term}}</div>
       <div class="unit-total">
         <strong>{{total}}</strong>
-        <span>/ {{MAX_UNITS}}</span>
+        <span>{{MAX_UNITS}}</span>
         <span class="unit-label">TOTAL UNITS</span>
       </div>
       <div
@@ -117,12 +117,12 @@
         aria-label="Selected units"
         aria-valuenow="{{total6}}"
         aria-valuemin="0"
-        aria-valuemax="18"
+        aria-valuemax="{{max}}"
       >
         {{content}}
       </div>
       <div class="unit-note">
-        {{icon8}}{{content9}} units available in your load
+        {{icon8}}{{content9}}
       </div>
     </div>
     <div class="selected-list">{{content10}}</div>

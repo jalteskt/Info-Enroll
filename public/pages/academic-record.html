@@ -3,55 +3,63 @@
 <template id="academic-record">
   <div class="stats-grid">
     <div class="stat-card">
-      <div class="stat-label">Units in this record {{icon}}</div>
+      <div class="stat-label">Units passed {{icon}}</div>
       <div class="stat-value">
-        18
+        {{unitsPassed}}
         <small>units passed</small>
       </div>
-      <p>All six subjects completed</p>
+      <p>{{coursesPassed}}</p>
     </div>
     <div class="stat-card">
       <div class="stat-label">Term average {{icon2}}</div>
       <div class="stat-value">
-        1.63
+        {{average}}
         <small>weighted average</small>
       </div>
-      <p>For the term shown below</p>
+      <p>For your most recent term</p>
     </div>
     <div class="stat-card">
       <div class="stat-label">Current standing {{icon3}}</div>
       <div class="stat-value">
-        3rd
+        {{yearLevel}}
         <small>year level</small>
       </div>
-      <p>BS Information Technology</p>
+      <p>{{standingNote}}</p>
     </div>
   </div>
   <section class="panel">
     <div class="panel-header">
-      <h2 class="panel-title">Completed subjects</h2>
-      <span class="badge badge-green">6 passed</span>
+      <h2 class="panel-title">Subjects taken</h2>
+      <span class="badge badge-green">{{passedBadge}}</span>
     </div>
-    <div class="record-year">2nd semester · A.Y. 2025–2026</div>
-    <div class="table-wrap">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th scope="col">COURSE CODE</th>
-            <th scope="col">SUBJECT</th>
-            <th scope="col">UNITS</th>
-            <th scope="col">GRADE</th>
-            <th scope="col">STATUS</th>
-          </tr>
-        </thead>
-        <tbody>{{content}}</tbody>
-      </table>
-    </div>
+    {{content}}
     <div class="academic-note">
-      This preview shows one sample term. For official academic records, contact
-      the University Registrar.
+      Grades appear once your professor submits them. For official academic
+      records, contact the University Registrar.
     </div>
   </section>
+</template>
+
+<template id="academic-record-term">
+  <div class="record-year">{{term}}</div>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th scope="col">COURSE CODE</th>
+          <th scope="col">SUBJECT</th>
+          <th scope="col">UNITS</th>
+          <th scope="col">GRADE</th>
+          <th scope="col">STATUS</th>
+        </tr>
+      </thead>
+      <tbody>{{content}}</tbody>
+    </table>
+  </div>
+</template>
+
+<template id="academic-record-empty">
+  <div class="schedule-empty">No completed terms yet.</div>
 </template>
 
 <template id="academic-record-2">
@@ -60,6 +68,6 @@
     <td><strong>{{title}}</strong></td>
     <td>{{u}}</td>
     <td class="grade">{{grade}}</td>
-    <td><span class="badge badge-green">Passed</span></td>
+    <td><span class="badge badge-{{color}}">{{status}}</span></td>
   </tr>
 </template>

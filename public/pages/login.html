@@ -35,8 +35,9 @@
           <input
             class="login-input"
             id="login-username"
-            value="{{content5}}"
-            autocomplete="off"
+            placeholder="{{content5}}"
+            autocomplete="username"
+            required
           />
           <label class="login-label" for="login-password">Password</label>
           <div class="password-wrap">
@@ -44,8 +45,8 @@
               class="login-input"
               id="login-password"
               type="password"
-              value="preview-only"
-              autocomplete="off"
+              autocomplete="current-password"
+              required
             />
             <button
               class="icon-button"
@@ -56,17 +57,11 @@
               {{icon}}
             </button>
           </div>
+          <p class="modal-error" id="login-error" role="alert"></p>
           <button class="button button-primary" type="submit">
             Open {{content7}} {{icon8}}
           </button>
         </form>
-        <div class="login-preview-note">
-          You're exploring a student project design. The sample account is ready
-          to use—no real credentials are needed.
-        </div>
-        <button class="button button-quiet login-back" data-role="student">
-          Explore the student portal {{icon9}}
-        </button>
       </div>
     </section>
   </main>

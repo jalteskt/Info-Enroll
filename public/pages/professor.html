@@ -2,7 +2,13 @@
 
 <template id="professor-view">
   <div class="stats-grid">{{stat}} {{stat2}} {{stat3}}</div>
-  <div class="section-label">YOUR TEACHING LOAD</div>
+  <div class="panel-header">
+    <div class="section-label">YOUR TEACHING LOAD</div>
+    <label class="toolbar">
+      <span class="muted">Term</span>
+      <select class="input" id="staff-term" aria-label="Term">{{terms}}</select>
+    </label>
+  </div>
   <div class="stats-grid teaching-load-grid">{{content}}</div>
   <section class="panel">
     <div class="panel-header">
@@ -100,7 +106,26 @@
   </button>
 </template>
 
+<template id="professor-view-10">
+  <tr>
+    <td colspan="4" class="muted">{{message}}</td>
+  </tr>
+</template>
+
+<template id="professor-empty">
+  <section class="panel">
+    <div class="empty-state">
+      {{icon}}
+      <h3>No sections yet.</h3>
+      <p>Sections assigned to you by the administrator will appear here.</p>
+    </div>
+  </section>
+</template>
+
 <template id="professor-view-9">
+  <button type="button" class="button" data-action="staff-save">
+    Save draft
+  </button>
   <button
     type="button"
     class="button button-primary"

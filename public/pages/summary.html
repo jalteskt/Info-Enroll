@@ -16,15 +16,15 @@
     <div class="summary-meta">
       <div>
         <small>Student name</small>
-        <strong>Andrea Dela Cruz</strong>
+        <strong>{{studentName}}</strong>
       </div>
       <div>
         <small>Student number</small>
-        <strong>2024–10287</strong>
+        <strong>{{studentNo}}</strong>
       </div>
       <div>
         <small>Program / year level</small>
-        <strong>BS Information Technology / 3rd year</strong>
+        <strong>BS Information Technology / {{yearLevel}} year</strong>
       </div>
       <div>
         <small>Academic term</small>
@@ -47,6 +47,10 @@
     <div class="summary-total">
       <span>Total enrolled units</span>
       <strong>{{totalUnits}}</strong>
+    </div>
+    <div class="summary-total">
+      <span>Load status</span>
+      <strong>{{loadStatus}}</strong>
     </div>
     <div class="summary-footnote">
       {{icon7}}

@@ -1261,7 +1261,7 @@ dialog::backdrop {
 }
 .day-column {
   position: relative;
-  height: 560px;
+  height: 672px; /* 12 rows of 56px: 7 AM to 7 PM */
   border-left: 1px solid var(--line);
   background: repeating-linear-gradient(
     to bottom,
@@ -2607,5 +2607,55 @@ dialog::backdrop {
   .schedule-toolbar :focus-visible,
   .welcome-art :focus-visible {
     outline-color: var(--yellow);
+  }
+}
+
+/* ---- Admin forms and dialogs ---- */
+.admin-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 16px;
+}
+.admin-field {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+}
+.admin-field > span {
+  color: var(--muted, inherit);
+  font-weight: 600;
+}
+.admin-field .input {
+  width: 100%;
+}
+.admin-field-wide,
+.admin-fieldset {
+  grid-column: 1 / -1;
+}
+.admin-fieldset {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px 14px 14px;
+  margin: 0;
+}
+.admin-fieldset legend {
+  padding: 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+#staff-form-error:empty {
+  display: none;
+}
+dialog:has(.admin-form),
+dialog:has(.data-table) {
+  width: min(760px, calc(100vw - 32px));
+}
+@media (max-width: 640px) {
+  .admin-form,
+  .admin-fieldset {
+    grid-template-columns: 1fr;
   }
 }
