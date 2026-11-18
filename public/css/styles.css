@@ -2544,3 +2544,6 @@ dialog::backdrop {
   }
 }
 
+
+.nav-item, .nav-item span { font-family: 'Merriweather' !important; }
+
