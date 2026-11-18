@@ -792,17 +792,7 @@ function academicRecord() {
     >`;
 }
 function summary() {
-  return /* HTML */ `<div class="page-heading"
-      ><div
-        ><div class="eyebrow">Everything, in one place</div
-        ><h1 class="page-title">Your enrollment summary.</h1
-        ><p class="page-description"
-          >Review the details. Keep a copy for your next chapter.</p
-        ></div
-      ><button class="button" data-action="print"
-        >${icon('print')}Print summary</button
-      ></div
-    ><section class="panel summary-sheet"
+  return /* HTML */ `<section class="panel summary-sheet"
       ><div class="summary-letterhead"
         ><div class="brand-mark">${icon('book')}</div
         ><div
