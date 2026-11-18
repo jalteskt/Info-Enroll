@@ -2531,12 +2531,14 @@ dialog::backdrop {
   font-weight: 700;
   color: var(--wine);
   letter-spacing: 0.2px;
+  margin-left: -12px;
   white-space: nowrap;
 }
 @media (max-width: 700px) {
   .institution-name {
     max-width: 145px;
     font-size: 14px;
+    margin-left: 0;
     white-space: normal;
     line-height: 1.15;
   }
