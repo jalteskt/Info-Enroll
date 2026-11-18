@@ -1,0 +1,81 @@
+<!-- Edit markup here. {{name}} placeholders receive values from JavaScript. -->
+
+<template id="summary">
+  <section class="panel summary-sheet">
+    <div class="summary-letterhead">
+      <div class="brand-mark">{{icon}}</div>
+      <div>
+        <h2>Pamantasan ng Lungsod ng Maynila</h2>
+        <p>BS Information Technology · Student Enrollment</p>
+      </div>
+    </div>
+    <div class="summary-heading">
+      <h3>Enrollment summary</h3>
+      <span class="badge {{content}}">{{content3}}</span>
+    </div>
+    <div class="summary-meta">
+      <div>
+        <small>Student name</small>
+        <strong>Andrea Dela Cruz</strong>
+      </div>
+      <div>
+        <small>Student number</small>
+        <strong>2024–10287</strong>
+      </div>
+      <div>
+        <small>Program / year level</small>
+        <strong>BS Information Technology / 3rd year</strong>
+      </div>
+      <div>
+        <small>Academic term</small>
+        <strong>{{TERM}}</strong>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th scope="col">SUBJECT</th>
+            <th scope="col">SECTION</th>
+            <th scope="col">SCHEDULE</th>
+            <th scope="col">UNITS</th>
+          </tr>
+        </thead>
+        <tbody>{{content5}}</tbody>
+      </table>
+    </div>
+    <div class="summary-total">
+      <span>Total enrolled units</span>
+      <strong>{{totalUnits}}</strong>
+    </div>
+    <div class="summary-footnote">
+      {{icon7}}
+      <span>
+        {{content8}}
+        <br />
+        Design prototype · Sample records only. This is not an official
+        enrollment document.
+      </span>
+    </div>
+  </section>
+</template>
+
+<template id="summary-2">
+  <tr>
+    <td>
+      <div class="course-code">{{code}}</div>
+      <strong>{{title}}</strong>
+    </td>
+    <td>{{name}}</td>
+    <td>{{content}}</td>
+    <td>{{units}}</td>
+  </tr>
+</template>
+
+<template id="summary-3">
+  <div>{{meetingLabel}}{{content}}</div>
+</template>
+
+<template id="summary-4">
+  <tr><td colspan="4">No subjects selected.</td></tr>
+</template>

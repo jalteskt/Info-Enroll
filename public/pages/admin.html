@@ -1,0 +1,68 @@
+<!-- Edit markup here. {{name}} placeholders receive values from JavaScript. -->
+
+<template id="admin-view">
+  <div class="stats-grid">{{stat}}{{stat2}}{{stat3}}</div>
+  <section class="panel admin-period-panel">
+    <div class="panel-header">
+      <div>
+        <p class="eyebrow">ACADEMIC CALENDAR</p>
+        <h2 class="panel-title">1st semester, AY 2026–2027</h2>
+        <p class="muted">{{content}}</p>
+      </div>
+      {{badge}}
+    </div>
+    <div class="panel-header">
+      <p class="page-description">{{content6}}</p>
+      <button
+        type="button"
+        class="button {{content7}}"
+        data-action="staff-period-toggle"
+      >
+        {{icon}} {{content9}}
+      </button>
+    </div>
+  </section>
+  <section class="panel">
+    <div class="panel-header">
+      <div>
+        <p class="eyebrow">COURSE OFFERINGS</p>
+        <h2 class="panel-title">Ready for the semester</h2>
+        <p class="muted">
+          Section schedules, teaching assignments, and available seats.
+        </p>
+      </div>
+      {{badge10}}
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th scope="col">Course</th>
+            <th scope="col">Section</th>
+            <th scope="col">Schedule</th>
+            <th scope="col">Professor</th>
+            <th scope="col">Seats available</th>
+          </tr>
+        </thead>
+        <tbody>{{content11}}</tbody>
+      </table>
+    </div>
+  </section>
+  <p class="muted">
+    Design preview · The students, grades, and academic records shown here are
+    sample data.
+  </p>
+</template>
+
+<template id="admin-view-2">
+  <tr>
+    <td>
+      <strong>{{content}}</strong>
+      <div class="muted">{{content2}}</div>
+    </td>
+    <td>{{content3}}</td>
+    <td>{{content4}}</td>
+    <td>{{content5}}</td>
+    <td>{{badge}}</td>
+  </tr>
+</template>

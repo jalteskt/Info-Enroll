@@ -1,0 +1,137 @@
+<!-- Edit markup here. {{name}} placeholders receive values from JavaScript. -->
+
+<template id="badge">
+  <span class="badge badge-{{color}}">{{text}}</span>
+</template>
+
+<template id="brand">
+  <div class="brand">
+    <div class="brand-mark">{{icon}}</div>
+    <div>
+      <div class="brand-name">PLM</div>
+      <span class="brand-label">Enrollment portal</span>
+    </div>
+  </div>
+</template>
+
+<template id="campus-art">
+  <div class="hero-art" aria-hidden="true">
+    <svg viewBox="0 0 320 200">
+      <path
+        d="M7 192h306M20 184h280M37 179V87h246v92M29 87h262M42 78h236l-23-18H65zM75 59V44h170v15M84 44h152l-76-29zM160 15V4m0 1h19l-4 7h-15M55 96v75m21-75v75m168-75v75m21-75v75M100 174v-67m120 67v-67M112 174v-53c0-33 48-33 48 0v53M160 174v-53c0-33 48-33 48 0v53M112 143h96m-72-39v70m48-70v70M100 174h120M51 104h28m-28 14h28m162-14h28m-28 14h28M90 56h140M37 178h246M32 183h256"
+      />
+      <circle cx="160" cy="33" r="5" />
+      <path d="M13 178v-17m-8 8 8-13 8 13m278 9v-17m-8 8 8-13 8 13" />
+    </svg>
+  </div>
+</template>
+
+<template id="footer">
+  <footer class="content-footer"><span>PLM BSIT / ENROLLMENT</span></footer>
+</template>
+
+<template id="render">
+  {{sidebar}}
+  <div class="shell">
+    {{topbar}}
+    <main class="content" id="main-content" tabindex="-1">
+      {{content}}{{footer}}
+    </main>
+    {{content5}}
+  </div>
+</template>
+
+<template id="sidebar">
+  {{content}}
+  <aside class="sidebar {{content2}}" aria-label="Main navigation">
+    {{brand}}
+    <div class="portal-label">{{content4}} WORKSPACE</div>
+    <nav class="side-nav">{{content5}}</nav>
+  </aside>
+</template>
+
+<template id="stat">
+  <div class="stat-card">
+    <div class="stat-label">{{label}}</div>
+    <div class="stat-value">{{value}}</div>
+    <div class="muted">{{note}}</div>
+  </div>
+</template>
+
+<template id="topbar">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button
+        class="icon-button mobile-menu"
+        data-action="mobile-menu"
+        aria-label="Open navigation"
+        aria-expanded="{{mobile}}"
+      >
+        {{icon}}
+      </button>
+      <div class="breadcrumb">
+        <span class="institution-name">PAMANTASAN NG LUNGSOD NG MAYNILA</span>
+        {{icon3}}
+        <span>{{content}}</span>
+        {{icon5}}
+        <span>{{content6}}</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="prototype-label">Design preview · Sample records</span>
+      <button
+        class="icon-button"
+        data-action="notifications"
+        aria-label="View notifications"
+      >
+        {{icon7}}
+      </button>
+      <button
+        class="account-button"
+        data-action="account-menu"
+        aria-expanded="{{menu}}"
+        aria-label="Account and preview roles"
+      >
+        <span class="avatar">{{initials}}</span>
+        <span class="account-name">
+          {{name}}
+          <small>{{role}}</small>
+        </span>
+        {{icon12}}
+      </button>
+    </div>
+    {{content13}}
+  </header>
+</template>
+
+<template id="sidebar-2">
+  <button
+    class="sidebar-scrim"
+    data-action="mobile-menu"
+    aria-label="Close navigation"
+  ></button>
+</template>
+
+<template id="sidebar-3">
+  <button class="nav-item {{content}}" data-view="{{key}}" {{content3}}>
+    {{icon}}
+    <span>{{label}}</span>
+    {{content6}}
+  </button>
+</template>
+
+<template id="sidebar-4">
+  <i class="nav-dot"></i>
+</template>
+
+<template id="topbar-2">
+  <div class="account-menu">
+    <span class="section-label">Explore the design</span>
+    {{content}}
+    <button data-action="preview-login">View sign-in screen {{icon}}</button>
+  </div>
+</template>
+
+<template id="topbar-3">
+  <button class="{{content}}" data-role="{{r}}">{{content3}}</button>
+</template>

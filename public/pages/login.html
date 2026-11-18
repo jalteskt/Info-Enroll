@@ -1,0 +1,83 @@
+<!-- Edit markup here. {{name}} placeholders receive values from JavaScript. -->
+
+<template id="login">
+  <main class="welcome-page">
+    <section class="welcome-art">
+      {{brand}}
+      <div class="welcome-copy">
+        <div class="eyebrow">Pamantasan ng Lungsod ng Maynila</div>
+        <h1>
+          A place to learn.
+          <br />
+          A future to
+          <br />
+          <em>make your own.</em>
+        </h1>
+        <p>
+          One thoughtful semester at a time. Welcome to your enrollment portal.
+        </p>
+      </div>
+      {{campusArt}}
+      <div class="welcome-footer">Karunungan. Kaunlaran. Kadakilaan.</div>
+    </section>
+    <section class="welcome-form">
+      <div class="login-card">
+        <div class="eyebrow">Your next chapter awaits</div>
+        <h2>Welcome back.</h2>
+        <p>
+          A new semester starts with a clear plan.
+          <br />
+          Sign in to your workspace.
+        </p>
+        <div class="login-roles" aria-label="Account type">{{content}}</div>
+        <form id="login-form">
+          <label class="login-label" for="login-username">{{content4}}</label>
+          <input
+            class="login-input"
+            id="login-username"
+            value="{{content5}}"
+            autocomplete="off"
+          />
+          <label class="login-label" for="login-password">Password</label>
+          <div class="password-wrap">
+            <input
+              class="login-input"
+              id="login-password"
+              type="password"
+              value="preview-only"
+              autocomplete="off"
+            />
+            <button
+              class="icon-button"
+              type="button"
+              data-action="show-password"
+              aria-label="Show password"
+            >
+              {{icon}}
+            </button>
+          </div>
+          <button class="button button-primary" type="submit">
+            Open {{content7}} {{icon8}}
+          </button>
+        </form>
+        <div class="login-preview-note">
+          You're exploring a student project design. The sample account is ready
+          to use—no real credentials are needed.
+        </div>
+        <button class="button button-quiet login-back" data-role="student">
+          Explore the student portal {{icon9}}
+        </button>
+      </div>
+    </section>
+  </main>
+</template>
+
+<template id="login-2">
+  <button
+    class="{{content}}"
+    data-login-role="{{r}}"
+    aria-pressed="{{content3}}"
+  >
+    {{content4}}
+  </button>
+</template>

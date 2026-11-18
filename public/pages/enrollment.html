@@ -1,0 +1,253 @@
+<!-- Edit markup here. {{name}} placeholders receive values from JavaScript. -->
+
+<template id="course-rows">
+  <div class="empty-state">
+    {{icon}}
+    <h3>No subjects found</h3>
+    <p>Try another search or change your filters.</p>
+    <button class="button button-quiet" data-action="reset-filters">
+      Clear filters
+    </button>
+  </div>
+</template>
+
+<template id="enrollment">
+  <div class="student-strip">
+    <div class="student-detail">
+      <small>Student</small>
+      <strong>Andrea Dela Cruz</strong>
+    </div>
+    <div class="student-detail">
+      <small>Student number</small>
+      <strong class="student-number">2024–10287</strong>
+    </div>
+    <div class="student-detail">
+      <small>Program & standing</small>
+      <strong>BS Information Technology · 3rd year</strong>
+    </div>
+    <span class="badge {{content}}">
+      <i class="status-dot"></i>
+      Enrollment {{content2}}
+    </span>
+  </div>
+  <div class="workspace">
+    <section class="panel" aria-labelledby="subjects-title">
+      <div class="panel-header">
+        <div>
+          <h2 class="panel-title" id="subjects-title">
+            Choose your subjects
+            <span class="count-badge">{{length}}</span>
+          </h2>
+          <div class="panel-subtitle">
+            Find the right subjects and a schedule that fits.
+          </div>
+        </div>
+        <span class="badge badge-neutral">1st semester</span>
+      </div>
+      <div class="toolbar">
+        <label class="search-field">
+          {{icon}}
+          <input
+            id="subject-search"
+            type="search"
+            placeholder="Search a subject or course code"
+            value="{{escapeHTML}}"
+            aria-label="Search subjects"
+          />
+        </label>
+        <select
+          class="filter-select"
+          id="year-filter"
+          aria-label="Filter by year level"
+        >
+          <option value="all" {{content6}}>All year levels</option>
+          {{content7}}
+        </select>
+      </div>
+      <div class="course-tabs" aria-label="Subject filters">{{content8}}</div>
+      <div id="course-results">{{courseRows}}</div>
+      <div class="panel-footer">
+        {{icon10}}Lecture and laboratory pairs are selected together.
+      </div>
+    </section>
+    <aside class="plan-sidebar" aria-label="Your enrollment plan">
+      {{planPanel}}
+      <div class="plan-tip">
+        {{icon12}}
+        <span>
+          Your plan stays editable while enrollment is open. Review your
+          schedule before the period closes.
+        </span>
+      </div>
+    </aside>
+  </div>
+</template>
+
+<template id="mobile-plan-bar">
+  <div class="mobile-plan-bar">
+    <div>
+      <strong>
+        {{totalUnits}}
+        <span>/ {{MAX_UNITS}} units</span>
+      </strong>
+      <small>{{length}} subjects selected · {{content}}</small>
+    </div>
+    <button class="button button-primary" data-action="mobile-plan">
+      Your plan {{icon}}
+    </button>
+  </div>
+</template>
+
+<template id="plan-panel">
+  <section class="panel plan-panel">
+    <div class="panel-header">
+      <h2 class="panel-title">{{icon}}Your enrollment plan</h2>
+      <span class="count-badge">{{length}}</span>
+    </div>
+    <div class="plan-top">
+      <div class="plan-term">{{icon3}}First semester · 2026–2027</div>
+      <div class="unit-total">
+        <strong>{{total}}</strong>
+        <span>/ {{MAX_UNITS}}</span>
+        <span class="unit-label">TOTAL UNITS</span>
+      </div>
+      <div
+        class="unit-meter"
+        role="meter"
+        aria-label="Selected units"
+        aria-valuenow="{{total6}}"
+        aria-valuemin="0"
+        aria-valuemax="18"
+      >
+        {{content}}
+      </div>
+      <div class="unit-note">
+        {{icon8}}{{content9}} units available in your load
+      </div>
+    </div>
+    <div class="selected-list">{{content10}}</div>
+    <div class="plan-actions">
+      <button
+        class="button button-primary"
+        data-action="save-plan"
+        {{content11}}
+      >
+        {{icon12}}{{content13}} {{content14}}
+      </button>
+      <button class="button button-quiet" data-view="schedule">
+        {{icon15}}Preview weekly schedule
+      </button>
+      <p class="save-state">{{icon16}}{{content17}}</p>
+    </div>
+  </section>
+</template>
+
+<template id="course-rows-2">
+  <div class="table-wrap">
+    <table class="course-table">
+      <thead>
+        <tr>
+          <th scope="col">SUBJECT</th>
+          <th scope="col">UNITS</th>
+          <th scope="col">ELIGIBILITY</th>
+          <th scope="col"><span class="sr-only">Select subject</span></th>
+        </tr>
+      </thead>
+      <tbody>{{content}}</tbody>
+    </table>
+  </div>
+</template>
+
+<template id="course-rows-3">
+  <tr class="{{content}}">
+    <td>
+      <div class="course-code">{{code}}</div>
+      <div class="course-name">{{title}}</div>
+      <div class="course-type">
+        {{content4}}{{type}}
+        <span>·</span>
+        {{content6}} year
+      </div>
+    </td>
+    <td class="units-cell">
+      {{units}}
+      <span>{{content8}}</span>
+    </td>
+    <td class="status-column">
+      <span class="course-status {{content9}}">{{icon}}{{content11}}</span>
+      {{content12}}
+    </td>
+    <td>
+      <button
+        class="add-button {{content13}}"
+        data-course="{{id}}"
+        {{content15}}
+        aria-label="{{content16}} {{title17}}"
+        title="{{content18}}"
+      >
+        {{icon19}}
+      </button>
+    </td>
+  </tr>
+</template>
+
+<template id="course-rows-4">
+  <div class="course-reason">{{reason}}</div>
+</template>
+
+<template id="enrollment-2">
+  <option value="{{y}}" {{content}}>{{content3}} year</option>
+</template>
+
+<template id="enrollment-3">
+  <button class="{{content}}" data-tab="{{key}}" aria-pressed="{{content3}}">
+    {{label}}
+  </button>
+</template>
+
+<template id="plan-panel-2">
+  <i class="{{content}}"></i>
+</template>
+
+<template id="plan-panel-3">
+  <div class="selected-item">
+    <i class="course-swatch" style="background:{{color}}"></i>
+    <div class="selected-info">
+      <div class="course-code">
+        {{code}}
+        <span>· {{units}} units</span>
+      </div>
+      <h4>{{title}}</h4>
+      <p>{{icon}}{{name}}</p>
+      {{content}}
+    </div>
+    {{content8}}
+  </div>
+</template>
+
+<template id="plan-panel-4">
+  <p>{{icon}}{{meetingLabel}}{{content}}</p>
+</template>
+
+<template id="plan-panel-5">
+  <span>· {{label}}</span>
+</template>
+
+<template id="plan-panel-6">
+  <button
+    class="icon-button"
+    data-remove="{{id}}"
+    aria-label="Remove {{title}}{{content}}"
+    title="Remove subject"
+  >
+    {{icon}}
+  </button>
+</template>
+
+<template id="plan-panel-7">
+  <div class="empty-state">
+    {{icon}}
+    <h3>A fresh page.</h3>
+    <p>Add your first subject to start planning.</p>
+  </div>
+</template>

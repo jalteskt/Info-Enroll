@@ -1,0 +1,172 @@
+<!-- Edit markup here. {{name}} placeholders receive values from JavaScript. -->
+
+<template id="dialogs">
+  <div class="modal-header">
+    <div>
+      <div class="eyebrow">Enrollment period</div>
+      <h2 id="modal-title">Close enrollment?</h2>
+    </div>
+    <button
+      class="icon-button"
+      data-action="close-modal"
+      aria-label="Cancel closing enrollment"
+    >
+      {{icon}}
+    </button>
+  </div>
+  <div class="modal-body">
+    <p class="modal-description">
+      Student selections will become read-only, and their summaries will show a
+      finalized plan.
+    </p>
+    <div class="pair-note">
+      {{icon2}}
+      <span>
+        This changes only the current design preview. You can reopen it from the
+        admin workspace.
+      </span>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="button" data-action="close-modal">
+      Keep enrollment open
+    </button>
+    <button class="button button-primary" data-action="staff-period-confirm">
+      Close preview enrollment {{icon3}}
+    </button>
+  </div>
+</template>
+
+<template id="help">
+  <div class="modal-header">
+    <div>
+      <div class="eyebrow">A little guidance</div>
+      <h2 id="modal-title">Plan with confidence.</h2>
+    </div>
+    <button
+      class="icon-button"
+      data-action="close-modal"
+      aria-label="Close guide"
+    >
+      {{icon}}
+    </button>
+  </div>
+  <div class="modal-body">{{content}}</div>
+  <div class="modal-footer">
+    <button class="button button-primary" data-action="close-modal">
+      Got it {{icon3}}
+    </button>
+  </div>
+</template>
+
+<template id="open-sections">
+  <div class="modal-header">
+    <div>
+      <div class="eyebrow">{{code}}</div>
+      <h2 id="modal-title">Choose your section.</h2>
+    </div>
+    <button
+      class="icon-button"
+      data-action="close-modal"
+      aria-label="Close section chooser"
+    >
+      {{icon}}
+    </button>
+  </div>
+  <form id="section-form" data-course-id="{{id}}">
+    <div class="modal-body">
+      <p class="modal-description">
+        {{title}} · {{units}} units
+        <br />
+        Choose a section that works with the rest of your plan.
+      </p>
+      {{content}}{{content7}}
+      <p class="modal-error" id="section-error" role="alert"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="button" type="button" data-action="close-modal">
+        Cancel
+      </button>
+      <button class="button button-primary" type="submit">
+        {{content8}} {{icon9}}
+      </button>
+    </div>
+  </form>
+</template>
+
+<template id="dialogs-2">
+  <div class="modal-header">
+    <div>
+      <div class="eyebrow">Your updates</div>
+      <h2 id="modal-title">A new semester awaits.</h2>
+    </div>
+    <button
+      class="icon-button"
+      data-action="close-modal"
+      aria-label="Close notifications"
+    >
+      {{icon}}
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="help-item">
+      <span class="badge badge-green">Enrollment {{content}}</span>
+      <h3 style="margin-top: 12px">First semester · A.Y. 2026–2027</h3>
+      <p>{{content3}}</p>
+    </div>
+    <div class="help-item">
+      <h3>You're viewing sample records.</h3>
+      <p>
+        Dates, subjects, student details, and notifications are illustrative for
+        this design prototype.
+      </p>
+    </div>
+  </div>
+</template>
+
+<template id="dialogs-3">
+  <span class="badge badge-{{color}}">{{label}}</span>
+</template>
+
+<template id="help-2">
+  <div class="help-item">
+    <h3>{{h}}</h3>
+    <p>{{p}}</p>
+  </div>
+</template>
+
+<template id="open-sections-2">
+  <div class="pair-note">
+    {{icon}}
+    <span>
+      Lecture and laboratory are a pair. Both matching sections will be added
+      together for {{units}} units.
+    </span>
+  </div>
+</template>
+
+<template id="open-sections-3">
+  <label class="section-option">
+    <input
+      type="radio"
+      name="section"
+      value="{{id}}"
+      {{content}}
+      {{content3}}
+    />
+    <span class="section-option-title">
+      {{name}}
+      <span class="badge {{content5}}">{{content6}}</span>
+    </span>
+    <p>{{prof}}</p>
+    {{content8}}{{content9}}
+  </label>
+</template>
+
+<template id="open-sections-4">
+  <p>{{content}}{{meetingLabel}}</p>
+</template>
+
+<template id="open-sections-5">
+  <p class="conflict">Schedule conflicts with {{conflict}}.</p>
+</template>

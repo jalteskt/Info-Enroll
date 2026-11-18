@@ -1,43 +1,37 @@
+import { renderTemplate } from './templates.js';
 import { renderStaffView, handleStaffAction } from './staff.js';
 
 const paths = {
-  book: '<path d="M3 4c4-1 7 0 9 2 2-2 5-3 9-2v15c-4-1-7 0-9 2-2-2-5-3-9-2z"/><path d="M12 6v15M6 8l3 1m-3 3 3 1m6-4 3-1m-3 5 3-1"/>',
-  grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
-  calendar:
-    '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 11h18m-13 4h1m6 0h1m-8 3h1"/>',
-  file: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 12h8m-8 4h6"/>',
-  graduation: '<path d="m2 9 10-5 10 5-10 5zM6 11v6c4 3 8 3 12 0v-6M22 9v8"/>',
-  arrow: '<path d="M4 12h16m-6-6 6 6-6 6"/>',
-  'arrow-right': '<path d="M4 12h16m-6-6 6 6-6 6"/>',
-  'chevron-right': '<path d="m9 5 7 7-7 7"/>',
-  'chevron-down': '<path d="m6 9 6 6 6-6"/>',
-  bell: '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>',
-  search: '<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/>',
-  plus: '<path d="M12 5v14M5 12h14"/>',
-  check: '<path d="m5 12 4 4L19 6"/>',
-  x: '<path d="m6 6 12 12M6 18 18 6"/>',
-  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
-  shield:
-    '<path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6z"/><path d="m8 11 3 3 5-5"/>',
-  info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10h.01"/>',
-  link: '<path d="m10 13 4-4M9 15l-2 2a3.5 3.5 0 0 1-5-5l4-4a3.5 3.5 0 0 1 5 0m2 1 2-2a3.5 3.5 0 0 1 5 5l-4 4a3.5 3.5 0 0 1-5 0"/>',
-  lock: '<rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v2"/>',
-  users:
-    '<circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3m1-16a3 3 0 0 1 0 6m3 10v-3a6 6 0 0 0-3-5"/>',
-  download: '<path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/>',
-  print:
-    '<path d="M6 8V3h12v5M6 17H3V9h18v8h-3"/><path d="M6 14h12v7H6zM17 11h1"/>',
-  menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
-  mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 6 9 7 9-7"/>',
-  eye: '<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>',
-  edit: '<path d="m15 4 5 5M4 20l5-1L21 7l-5-5L4 14z"/>',
-  settings:
-    '<path d="M12 3v3m0 12v3M3 12h3m12 0h3M6 6l2 2m8 8 2 2M6 18l2-2m8-8 2-2"/><circle cx="12" cy="12" r="5"/>',
+  book: renderTemplate('icon-book'),
+  grid: renderTemplate('icon-grid'),
+  calendar: renderTemplate('icon-calendar'),
+  file: renderTemplate('icon-file'),
+  graduation: renderTemplate('icon-graduation'),
+  arrow: renderTemplate('icon-arrow'),
+  'arrow-right': renderTemplate('icon-arrow-right'),
+  'chevron-right': renderTemplate('icon-chevron-right'),
+  'chevron-down': renderTemplate('icon-chevron-down'),
+  bell: renderTemplate('icon-bell'),
+  search: renderTemplate('icon-search'),
+  plus: renderTemplate('icon-plus'),
+  check: renderTemplate('icon-check'),
+  x: renderTemplate('icon-x'),
+  clock: renderTemplate('icon-clock'),
+  shield: renderTemplate('icon-shield'),
+  info: renderTemplate('icon-info'),
+  link: renderTemplate('icon-link'),
+  lock: renderTemplate('icon-lock'),
+  users: renderTemplate('icon-users'),
+  download: renderTemplate('icon-download'),
+  print: renderTemplate('icon-print'),
+  menu: renderTemplate('icon-menu'),
+  mail: renderTemplate('icon-mail'),
+  eye: renderTemplate('icon-eye'),
+  edit: renderTemplate('icon-edit'),
+  settings: renderTemplate('icon-settings'),
 };
 export function icon(name) {
-  return /* HTML */ `<svg viewBox="0 0 24 24" aria-hidden="true">
-    ${paths[name] || paths.book}
-  </svg>`;
+  return renderTemplate('icon', { content: paths[name] || paths.book });
 }
 const escapeHTML = (s) =>
   String(s).replace(
@@ -322,23 +316,10 @@ function conflictFor(section, exclude) {
   return null;
 }
 function campusArt() {
-  return /* HTML */ `<div class="hero-art" aria-hidden="true"
-    ><svg viewBox="0 0 320 200">
-      <path
-        d="M7 192h306M20 184h280M37 179V87h246v92M29 87h262M42 78h236l-23-18H65zM75 59V44h170v15M84 44h152l-76-29zM160 15V4m0 1h19l-4 7h-15M55 96v75m21-75v75m168-75v75m21-75v75M100 174v-67m120 67v-67M112 174v-53c0-33 48-33 48 0v53M160 174v-53c0-33 48-33 48 0v53M112 143h96m-72-39v70m48-70v70M100 174h120M51 104h28m-28 14h28m162-14h28m-28 14h28M90 56h140M37 178h246M32 183h256"
-      />
-      <circle cx="160" cy="33" r="5" />
-      <path d="M13 178v-17m-8 8 8-13 8 13m278 9v-17m-8 8 8-13 8 13" /></svg
-  ></div>`;
+  return renderTemplate('campus-art');
 }
 function brand() {
-  return /* HTML */ `<div class="brand"
-    ><div class="brand-mark">${icon('book')}</div
-    ><div
-      ><div class="brand-name">PLM</div
-      ><span class="brand-label">Enrollment portal</span></div
-    ></div
-  >`;
+  return renderTemplate('brand', { icon: icon('book') });
 }
 function sidebar() {
   const staff = state.role !== 'student';
@@ -356,24 +337,24 @@ function sidebar() {
         ['record', 'Academic record', 'graduation'],
         ['summary', 'Enrollment summary', 'file'],
       ];
-  return /* HTML */ `${state.mobile ? '<button class="sidebar-scrim" data-action="mobile-menu" aria-label="Close navigation"></button>' : ''}<aside
-      class="sidebar ${state.mobile ? 'is-open' : ''}"
-      aria-label="Main navigation"
-      >${brand()}<div class="portal-label"
-        >${state.role.toUpperCase()} WORKSPACE</div
-      ><nav class="side-nav"
-        >${nav
-          .map(
-            ([key, label, i]) => /* HTML */ `<button
-                class="nav-item ${state.view === key ? 'active' : ''}"
-                data-view="${key}"
-                ${state.view === key ? 'aria-current="page"' : ''}
-                >${icon(i)}<span>${label}</span>${state.view === key ? '<i class="nav-dot"></i>' : ''}</button
-              >`,
-          )
-          .join('')}</nav
-      ></aside
-    >`;
+  return renderTemplate('sidebar', {
+    content: state.mobile ? renderTemplate('sidebar-2') : '',
+    content2: state.mobile ? 'is-open' : '',
+    brand: brand(),
+    content4: state.role.toUpperCase(),
+    content5: nav
+      .map(([key, label, i]) =>
+        renderTemplate('sidebar-3', {
+          content: state.view === key ? 'active' : '',
+          key: key,
+          content3: state.view === key ? 'aria-current="page"' : '',
+          icon: icon(i),
+          label: label,
+          content6: state.view === key ? renderTemplate('sidebar-4') : '',
+        }),
+      )
+      .join(''),
+  });
 }
 function topbar() {
   const names = {
@@ -389,108 +370,84 @@ function topbar() {
     summary: 'Enrollment summary',
     workspace: state.role === 'professor' ? 'My classes' : 'Overview',
   };
-  return /* HTML */ `<header class="topbar"
-    ><div class="topbar-left"
-      ><button
-        class="icon-button mobile-menu"
-        data-action="mobile-menu"
-        aria-label="Open navigation"
-        aria-expanded="${state.mobile}"
-        >${icon('menu')}</button
-      ><div class="breadcrumb"><span class="institution-name">PAMANTASAN NG LUNGSOD NG MAYNILA</span>${icon('chevron-right')}<span
-          >${state.role === 'student' ? 'Student portal' : state.role === 'professor' ? 'Faculty portal' : 'Administration'}</span
-        >${icon('chevron-right')}<span>${labels[state.view]}</span></div
-      ></div
-    ><div class="topbar-right"
-      ><span class="prototype-label">Design preview · Sample records</span
-      ><button
-        class="icon-button"
-        data-action="notifications"
-        aria-label="View notifications"
-        >${icon('bell')}</button
-      ><button
-        class="account-button"
-        data-action="account-menu"
-        aria-expanded="${state.menu}"
-        aria-label="Account and preview roles"
-        ><span class="avatar">${initials}</span
-        ><span class="account-name">${name}<small>${role}</small></span
-        >${icon('chevron-down')}</button
-      ></div
-    >${state.menu ? /* HTML */ `<div class="account-menu"><span class="section-label">Explore the design</span>${['student', 'professor', 'admin'].map((r) => `<button class="${state.role === r ? 'active' : ''}" data-role="${r}">${r === 'student' ? 'Student portal' : r === 'professor' ? 'Professor workspace' : 'Admin workspace'}</button>`).join('')}<button data-action="preview-login">View sign-in screen ${icon('arrow')}</button></div>` : ''}</header
-  >`;
+  return renderTemplate('topbar', {
+    mobile: state.mobile,
+    icon: icon('menu'),
+    icon3: icon('chevron-right'),
+    content:
+      state.role === 'student'
+        ? 'Student portal'
+        : state.role === 'professor'
+          ? 'Faculty portal'
+          : 'Administration',
+    icon5: icon('chevron-right'),
+    content6: labels[state.view],
+    icon7: icon('bell'),
+    menu: state.menu,
+    initials: initials,
+    name: name,
+    role: role,
+    icon12: icon('chevron-down'),
+    content13: state.menu
+      ? renderTemplate('topbar-2', {
+          content: ['student', 'professor', 'admin']
+            .map((r) =>
+              renderTemplate('topbar-3', {
+                content: state.role === r ? 'active' : '',
+                r: r,
+                content3:
+                  r === 'student'
+                    ? 'Student portal'
+                    : r === 'professor'
+                      ? 'Professor workspace'
+                      : 'Admin workspace',
+              }),
+            )
+            .join(''),
+          icon: icon('arrow'),
+        })
+      : '',
+  });
 }
 function footer() {
-  return /* HTML */ `<footer class="content-footer"
-    ><span>PLM BSIT / ENROLLMENT</span></footer
-  >`;
+  return renderTemplate('footer');
 }
 function enrollment() {
-  return /* HTML */ `<div class="student-strip"
-      ><div class="student-detail"
-        ><small>Student</small><strong>Andrea Dela Cruz</strong></div
-      ><div class="student-detail"
-        ><small>Student number</small
-        ><strong class="student-number">2024–10287</strong></div
-      ><div class="student-detail"
-        ><small>Program & standing</small
-        ><strong>BS Information Technology · 3rd year</strong></div
-      ><span class="badge ${state.open ? 'badge-green' : 'badge-neutral'}"
-        ><i class="status-dot"></i>Enrollment
-        ${state.open ? 'open' : 'closed'}</span
-      ></div
-    ><div class="workspace"
-      ><section class="panel" aria-labelledby="subjects-title"
-        ><div class="panel-header"
-          ><div
-            ><h2 class="panel-title" id="subjects-title"
-              >Choose your subjects
-              <span class="count-badge">${offers.length}</span></h2
-            ><div class="panel-subtitle"
-              >Find the right subjects and a schedule that fits.</div
-            ></div
-          ><span class="badge badge-neutral">1st semester</span></div
-        ><div class="toolbar"
-          ><label class="search-field"
-            >${icon('search')}<input
-              id="subject-search"
-              type="search"
-              placeholder="Search a subject or course code"
-              value="${escapeHTML(state.search)}"
-              aria-label="Search subjects" /></label
-          ><select
-            class="filter-select"
-            id="year-filter"
-            aria-label="Filter by year level"
-            ><option value="all" ${state.filter === 'all' ? 'selected' : ''}
-              >All year levels</option
-            >${[2, 3, 4].map((y) => `<option value="${y}" ${state.filter === String(y) ? 'selected' : ''}>${y === 2 ? '2nd' : y === 3 ? '3rd' : '4th'} year</option>`).join('')}</select
-          ></div
-        ><div class="course-tabs" aria-label="Subject filters"
-          >${[
-            ['all', 'All subjects'],
-            ['eligible', 'Eligible for you'],
-            ['selected', 'Selected'],
-          ]
-            .map(
-              ([key, label]) =>
-                `<button class="${state.tab === key ? 'active' : ''}" data-tab="${key}" aria-pressed="${state.tab === key}">${label}</button>`,
-            )
-            .join('')}</div
-        ><div id="course-results">${courseRows()}</div
-        ><div class="panel-footer"
-          >${icon('info')}Lecture and laboratory pairs are selected
-          together.</div
-        ></section
-      ><aside class="plan-sidebar" aria-label="Your enrollment plan"
-        >${planPanel()}<div class="plan-tip"
-          >${icon('shield')}<span
-            >Your plan stays editable while enrollment is open. Review your
-            schedule before the period closes.</span
-          ></div
-        ></aside
-      ></div
-    >`;
+  return renderTemplate('enrollment', {
+    content: state.open ? 'badge-green' : 'badge-neutral',
+    content2: state.open ? 'open' : 'closed',
+    length: offers.length,
+    icon: icon('search'),
+    escapeHTML: escapeHTML(state.search),
+    content6: state.filter === 'all' ? 'selected' : '',
+    content7: [2, 3, 4]
+      .map((y) =>
+        renderTemplate('enrollment-2', {
+          y: y,
+          content: state.filter === String(y) ? 'selected' : '',
+          content3: y === 2 ? '2nd' : y === 3 ? '3rd' : '4th',
+        }),
+      )
+      .join(''),
+    content8: [
+      ['all', 'All subjects'],
+      ['eligible', 'Eligible for you'],
+      ['selected', 'Selected'],
+    ]
+      .map(([key, label]) =>
+        renderTemplate('enrollment-3', {
+          content: state.tab === key ? 'active' : '',
+          key: key,
+          content3: state.tab === key,
+          label: label,
+        }),
+      )
+      .join(''),
+    courseRows: courseRows(),
+    icon10: icon('info'),
+    planPanel: planPanel(),
+    icon12: icon('shield'),
+  });
 }
 function courseRows() {
   let rows = offers.filter(
@@ -503,124 +460,115 @@ function courseRows() {
       (state.tab !== 'selected' || state.plan.some((p) => p.course === c.id)),
   );
   if (!rows.length)
-    return /* HTML */ `<div class="empty-state"
-      >${icon('search')}<h3>No subjects found</h3
-      ><p>Try another search or change your filters.</p
-      ><button class="button button-quiet" data-action="reset-filters"
-        >Clear filters</button
-      ></div
-    >`;
-  return /* HTML */ `<div class="table-wrap"
-    ><table class="course-table"
-      ><thead
-        ><tr
-          ><th scope="col">SUBJECT</th><th scope="col">UNITS</th
-          ><th scope="col">ELIGIBILITY</th
-          ><th scope="col"><span class="sr-only">Select subject</span></th></tr
-        ></thead
-      ><tbody
-        >${rows
-          .map((c) => {
-            const selected = state.plan.some((p) => p.course === c.id);
-            return /* HTML */ `<tr class="${selected ? 'selected-row' : ''}"
-              ><td
-                ><div class="course-code">${c.code}</div
-                ><div class="course-name">${c.title}</div
-                ><div class="course-type"
-                  >${c.pair ? icon('link') : ''}${c.type}
-                  <span>·</span>
-                  ${c.year === 2 ? '2nd' : c.year === 3 ? '3rd' : '4th'}
-                  year</div
-                ></td
-              ><td class="units-cell"
-                >${c.units}<span
-                  >${c.pair ? '3 lec + 1 lab' : 'units'}</span
-                ></td
-              ><td class="status-column"
-                ><span
-                  class="course-status ${c.locked || c.passed ? 'locked' : ''}"
-                  >${icon(c.locked ? 'lock' : 'check')}${c.locked ? 'Not yet eligible' : c.passed ? 'Completed' : selected ? 'Selected' : 'Eligible'}</span
-                >${c.reason ? /* HTML */ `<div class="course-reason">${c.reason}</div>` : ''}</td
-              ><td
-                ><button
-                  class="add-button ${selected ? 'added' : ''}"
-                  data-course="${c.id}"
-                  ${c.locked || c.passed || !state.open ? 'disabled' : ''}
-                  aria-label="${selected ? 'Change section for' : 'Choose a section for'} ${c.title}"
-                  title="${selected ? 'Change section' : c.locked || c.passed ? c.reason : !state.open ? 'Enrollment is closed' : 'Choose section'}"
-                  >${icon(selected ? 'check' : c.locked ? 'lock' : 'plus')}</button
-                ></td
-              ></tr
-            >`;
-          })
-          .join('')}</tbody
-      ></table
-    ></div
-  >`;
+    return renderTemplate('course-rows', { icon: icon('search') });
+  return renderTemplate('course-rows-2', {
+    content: rows
+      .map((c) => {
+        const selected = state.plan.some((p) => p.course === c.id);
+        return renderTemplate('course-rows-3', {
+          content: selected ? 'selected-row' : '',
+          code: c.code,
+          title: c.title,
+          content4: c.pair ? icon('link') : '',
+          type: c.type,
+          content6: c.year === 2 ? '2nd' : c.year === 3 ? '3rd' : '4th',
+          units: c.units,
+          content8: c.pair ? '3 lec + 1 lab' : 'units',
+          content9: c.locked || c.passed ? 'locked' : '',
+          icon: icon(c.locked ? 'lock' : 'check'),
+          content11: c.locked
+            ? 'Not yet eligible'
+            : c.passed
+              ? 'Completed'
+              : selected
+                ? 'Selected'
+                : 'Eligible',
+          content12: c.reason
+            ? renderTemplate('course-rows-4', { reason: c.reason })
+            : '',
+          content13: selected ? 'added' : '',
+          id: c.id,
+          content15: c.locked || c.passed || !state.open ? 'disabled' : '',
+          content16: selected ? 'Change section for' : 'Choose a section for',
+          title17: c.title,
+          content18: selected
+            ? 'Change section'
+            : c.locked || c.passed
+              ? c.reason
+              : !state.open
+                ? 'Enrollment is closed'
+                : 'Choose section',
+          icon19: icon(selected ? 'check' : c.locked ? 'lock' : 'plus'),
+        });
+      })
+      .join(''),
+  });
 }
 function planPanel() {
   const total = totalUnits();
-  return /* HTML */ `<section class="panel plan-panel"
-    ><div class="panel-header"
-      ><h2 class="panel-title">${icon('file')}Your enrollment plan</h2
-      ><span class="count-badge">${state.plan.length}</span></div
-    ><div class="plan-top"
-      ><div class="plan-term">${icon('calendar')}First semester · 2026–2027</div
-      ><div class="unit-total"
-        ><strong>${total}</strong><span>/ ${MAX_UNITS}</span
-        ><span class="unit-label">TOTAL UNITS</span></div
-      ><div
-        class="unit-meter"
-        role="meter"
-        aria-label="Selected units"
-        aria-valuenow="${total}"
-        aria-valuemin="0"
-        aria-valuemax="18"
-        >${Array.from(
-          { length: 18 },
-          (_, i) => `<i class="${i < total ? 'filled' : ''}"></i>`,
-        ).join('')}</div
-      ><div class="unit-note"
-        >${icon('check')}${MAX_UNITS - total} units available in your load</div
-      ></div
-    ><div class="selected-list"
-      >${
-        state.plan.length
-          ? state.plan
-              .map((p) => {
-                const c = getCourse(p.course),
-                  s = getSection(p);
-                return /* HTML */ `<div class="selected-item"
-                  ><i class="course-swatch" style="background:${c.color}"></i
-                  ><div class="selected-info"
-                    ><div class="course-code"
-                      >${c.code} <span>· ${c.units} units</span></div
-                    ><h4>${c.title}</h4
-                    ><p>${icon('users')}${s.name}</p
-                    >${s.meetings.map((m) => /* HTML */ `<p>${icon('clock')}${meetingLabel(m)}${m.label ? /* HTML */ ` <span>· ${m.label}</span>` : ''}</p>`).join('')}</div
-                  >${state.open ? `<button class="icon-button" data-remove="${c.id}" aria-label="Remove ${c.title}${c.pair ? ' and its laboratory' : ''}" title="Remove subject">${icon('x')}</button>` : icon('lock')}</div
-                >`;
-              })
-              .join('')
-          : /* HTML */ `<div class="empty-state"
-              >${icon('book')}<h3>A fresh page.</h3
-              ><p>Add your first subject to start planning.</p></div
-            >`
-      }</div
-    ><div class="plan-actions"
-      ><button
-        class="button button-primary"
-        data-action="save-plan"
-        ${!state.open || !state.plan.length ? 'disabled' : ''}
-        >${icon(state.saved ? 'check' : 'shield')}${!state.open ? 'Enrollment closed' : state.saved ? 'Plan saved' : 'Save my plan'}
-        ${state.saved ? '' : icon('arrow')}</button
-      ><button class="button button-quiet" data-view="schedule"
-        >${icon('calendar')}Preview weekly schedule</button
-      ><p class="save-state"
-        >${icon(state.saved ? 'check' : 'clock')}${state.saved ? 'Saved on this device' : !state.open ? 'Your plan is read-only' : 'Changes are not saved yet'}</p
-      ></div
-    ></section
-  >`;
+  return renderTemplate('plan-panel', {
+    icon: icon('file'),
+    length: state.plan.length,
+    icon3: icon('calendar'),
+    total: total,
+    MAX_UNITS: MAX_UNITS,
+    total6: total,
+    content: Array.from({ length: 18 }, (_, i) =>
+      renderTemplate('plan-panel-2', { content: i < total ? 'filled' : '' }),
+    ).join(''),
+    icon8: icon('check'),
+    content9: MAX_UNITS - total,
+    content10: state.plan.length
+      ? state.plan
+          .map((p) => {
+            const c = getCourse(p.course),
+              s = getSection(p);
+            return renderTemplate('plan-panel-3', {
+              color: c.color,
+              code: c.code,
+              units: c.units,
+              title: c.title,
+              icon: icon('users'),
+              name: s.name,
+              content: s.meetings
+                .map((m) =>
+                  renderTemplate('plan-panel-4', {
+                    icon: icon('clock'),
+                    meetingLabel: meetingLabel(m),
+                    content: m.label
+                      ? renderTemplate('plan-panel-5', { label: m.label })
+                      : '',
+                  }),
+                )
+                .join(''),
+              content8: state.open
+                ? renderTemplate('plan-panel-6', {
+                    id: c.id,
+                    title: c.title,
+                    content: c.pair ? ' and its laboratory' : '',
+                    icon: icon('x'),
+                  })
+                : icon('lock'),
+            });
+          })
+          .join('')
+      : renderTemplate('plan-panel-7', { icon: icon('book') }),
+    content11: !state.open || !state.plan.length ? 'disabled' : '',
+    icon12: icon(state.saved ? 'check' : 'shield'),
+    content13: !state.open
+      ? 'Enrollment closed'
+      : state.saved
+        ? 'Plan saved'
+        : 'Save my plan',
+    content14: state.saved ? '' : icon('arrow'),
+    icon15: icon('calendar'),
+    icon16: icon(state.saved ? 'check' : 'clock'),
+    content17: state.saved
+      ? 'Saved on this device'
+      : !state.open
+        ? 'Your plan is read-only'
+        : 'Changes are not saved yet',
+  });
 }
 function openSections(id) {
   const c = getCourse(id);
@@ -628,113 +576,96 @@ function openSections(id) {
     return notify('Enrollment is closed. Your plan is read-only.', true);
   if (!c || c.locked || c.passed) return;
   const current = state.plan.find((p) => p.course === id);
-  modal.innerHTML = /* HTML */ `<div class="modal-header"
-      ><div
-        ><div class="eyebrow">${c.code}</div
-        ><h2 id="modal-title">Choose your section.</h2></div
-      ><button
-        class="icon-button"
-        data-action="close-modal"
-        aria-label="Close section chooser"
-        >${icon('x')}</button
-      ></div
-    ><form id="section-form" data-course-id="${c.id}"
-      ><div class="modal-body"
-        ><p class="modal-description"
-          >${c.title} · ${c.units} units<br />Choose a section that works with
-          the rest of your plan.</p
-        >${c.pair ? /* HTML */ `<div class="pair-note">${icon('link')}<span>Lecture and laboratory are a pair. Both matching sections will be added together for ${c.units} units.</span></div>` : ''}${c.sections
-          .map((s) => {
-            const conflict = conflictFor(s, id);
-            return /* HTML */ `<label class="section-option"
-              ><input
-                type="radio"
-                name="section"
-                value="${s.id}"
-                ${current?.section === s.id ? 'checked' : ''}
-                ${!s.seats || conflict ? 'disabled' : ''}
-              /><span class="section-option-title"
-                >${s.name}<span
-                  class="badge ${s.seats ? 'badge-green' : 'badge-neutral'}"
-                  >${s.seats ? `${s.seats} seats left` : 'Full'}</span
-                ></span
-              ><p>${s.prof}</p
-              >${s.meetings.map((m) => /* HTML */ `<p>${m.label ? `${m.label} · ` : ''}${meetingLabel(m)}</p>`).join('')}${conflict ? /* HTML */ `<p class="conflict">Schedule conflicts with ${conflict}.</p>` : ''}</label
-            >`;
-          })
-          .join('')}<p
-          class="modal-error"
-          id="section-error"
-          role="alert"
-        ></p></div
-      ><div class="modal-footer"
-        ><button class="button" type="button" data-action="close-modal"
-          >Cancel</button
-        ><button class="button button-primary" type="submit"
-          >${current ? 'Update section' : c.pair ? 'Add lecture + laboratory' : 'Add to my plan'}
-          ${icon('plus')}</button
-        ></div
-      ></form
-    >`;
+  modal.innerHTML = renderTemplate('open-sections', {
+    code: c.code,
+    icon: icon('x'),
+    id: c.id,
+    title: c.title,
+    units: c.units,
+    content: c.pair
+      ? renderTemplate('open-sections-2', {
+          icon: icon('link'),
+          units: c.units,
+        })
+      : '',
+    content7: c.sections
+      .map((s) => {
+        const conflict = conflictFor(s, id);
+        return renderTemplate('open-sections-3', {
+          id: s.id,
+          content: current?.section === s.id ? 'checked' : '',
+          content3: !s.seats || conflict ? 'disabled' : '',
+          name: s.name,
+          content5: s.seats ? 'badge-green' : 'badge-neutral',
+          content6: s.seats ? `${s.seats} seats left` : 'Full',
+          prof: s.prof,
+          content8: s.meetings
+            .map((m) =>
+              renderTemplate('open-sections-4', {
+                content: m.label ? `${m.label} · ` : '',
+                meetingLabel: meetingLabel(m),
+              }),
+            )
+            .join(''),
+          content9: conflict
+            ? renderTemplate('open-sections-5', { conflict: conflict })
+            : '',
+        });
+      })
+      .join(''),
+    content8: current
+      ? 'Update section'
+      : c.pair
+        ? 'Add lecture + laboratory'
+        : 'Add to my plan',
+    icon9: icon('plus'),
+  });
   modal.showModal();
 }
 function schedule() {
-  return /* HTML */ `<div class="page-heading" style="justify-content:flex-end"
-      ><button class="button" data-view="enrollment"
-        >${icon('edit')}Edit my plan</button
-      ></div
-    ><div class="panel"
-      ><div class="schedule-toolbar"
-        ><div
-          ><h2 class="panel-title">Weekly schedule</h2
-          ><div class="panel-subtitle">${TERM}</div></div
-        ><span class="badge badge-wine"
-          >${state.plan.length} subjects · ${totalUnits()} units</span
-        ></div
-      >${!state.plan.length ? '<div class="schedule-empty">Your schedule will take shape as you add subjects.</div>' : ''}<div
-        class="table-wrap"
-        ><div class="schedule-grid"
-          ><div></div
-          >${DAYS.map((d) => /* HTML */ `<div class="day-header">${d.toUpperCase()}</div>`).join('')}<div
-            class="time-column"
-            >${Array.from(
-              { length: 10 },
-              (_, i) =>
-                /* HTML */ `<div class="time-label">${clockLabel(i + 7)}</div>`,
-            ).join('')}</div
-          >${DAYS.map(
-            (_, day) =>
-              `<div class="day-column" aria-label="${DAYS[day]} classes">${state.plan
-                .flatMap((p) => {
-                  const c = getCourse(p.course),
-                    s = getSection(p);
-                  return s.meetings
-                    .filter((m) => m.day === day)
-                    .map(
-                      (m) => /* HTML */ `<div
-                          class="schedule-event"
-                          style="top:${(m.start - 7) * 56}px;height:${(m.end - m.start) * 56 - 5}px;--event-color:${c.color};--event-bg:${c.bg}"
-                          ><strong>${c.title}</strong
-                          ><span>${m.label || s.name}</span
-                          ><span>${timeRange(m)}</span></div
-                        >`,
-                    );
-                })
-                .join('')}</div>`,
-          ).join('')}</div
-        ></div
-      ><div class="schedule-legend"
-        >${state.plan
-          .map((p) => {
-            const c = getCourse(p.course);
-            return /* HTML */ `<span
-              ><i class="legend-dot" style="background:${c.color}"></i
-              >${c.title}</span
-            >`;
+  return renderTemplate('schedule', {
+    icon: icon('edit'),
+    TERM: TERM,
+    length: state.plan.length,
+    totalUnits: totalUnits(),
+    content: !state.plan.length ? renderTemplate('schedule-2') : '',
+    content6: DAYS.map((d) =>
+      renderTemplate('schedule-3', { content: d.toUpperCase() }),
+    ).join(''),
+    content7: Array.from({ length: 10 }, (_, i) =>
+      renderTemplate('schedule-4', { clockLabel: clockLabel(i + 7) }),
+    ).join(''),
+    content8: DAYS.map((_, day) =>
+      renderTemplate('schedule-5', {
+        content: DAYS[day],
+        content2: state.plan
+          .flatMap((p) => {
+            const c = getCourse(p.course),
+              s = getSection(p);
+            return s.meetings
+              .filter((m) => m.day === day)
+              .map((m) =>
+                renderTemplate('schedule-6', {
+                  content: (m.start - 7) * 56,
+                  content2: (m.end - m.start) * 56 - 5,
+                  color: c.color,
+                  bg: c.bg,
+                  title: c.title,
+                  content6: m.label || s.name,
+                  timeRange: timeRange(m),
+                }),
+              );
           })
-          .join('')}</div
-      ></div
-    >`;
+          .join(''),
+      }),
+    ).join(''),
+    content9: state.plan
+      .map((p) => {
+        const c = getCourse(p.course);
+        return renderTemplate('schedule-7', { color: c.color, title: c.title });
+      })
+      .join(''),
+  });
 }
 const recordRows = [
   ['CIST_201', 'Data Structures & Algorithms', 3, '1.75'],
@@ -745,184 +676,97 @@ const recordRows = [
   ['GE_007', 'Art Appreciation', 3, '1.50'],
 ];
 function academicRecord() {
-  return /* HTML */ `<div class="stats-grid"
-      ><div class="stat-card"
-        ><div class="stat-label">Units in this record ${icon('book')}</div
-        ><div class="stat-value">18<small>units passed</small></div
-        ><p>All six subjects completed</p></div
-      ><div class="stat-card"
-        ><div class="stat-label">Term average ${icon('graduation')}</div
-        ><div class="stat-value">1.63<small>weighted average</small></div
-        ><p>For the term shown below</p></div
-      ><div class="stat-card"
-        ><div class="stat-label">Current standing ${icon('calendar')}</div
-        ><div class="stat-value">3rd<small>year level</small></div
-        ><p>BS Information Technology</p></div
-      ></div
-    ><section class="panel"
-      ><div class="panel-header"
-        ><h2 class="panel-title">Completed subjects</h2
-        ><span class="badge badge-green">6 passed</span></div
-      ><div class="record-year">2nd semester · A.Y. 2025–2026</div
-      ><div class="table-wrap"
-        ><table class="data-table"
-          ><thead
-            ><tr
-              ><th scope="col">COURSE CODE</th><th scope="col">SUBJECT</th
-              ><th scope="col">UNITS</th><th scope="col">GRADE</th
-              ><th scope="col">STATUS</th></tr
-            ></thead
-          ><tbody
-            >${recordRows
-              .map(
-                ([code, title, u, grade]) => /* HTML */ `<tr
-                    ><td class="muted">${code}</td
-                    ><td><strong>${title}</strong></td
-                    ><td>${u}</td><td class="grade">${grade}</td
-                    ><td><span class="badge badge-green">Passed</span></td></tr
-                  >`,
-              )
-              .join('')}</tbody
-          ></table
-        ></div
-      ><div class="academic-note"
-        >This preview shows one sample term. For official academic records,
-        contact the University Registrar.</div
-      ></section
-    >`;
+  return renderTemplate('academic-record', {
+    icon: icon('book'),
+    icon2: icon('graduation'),
+    icon3: icon('calendar'),
+    content: recordRows
+      .map(([code, title, u, grade]) =>
+        renderTemplate('academic-record-2', {
+          code: code,
+          title: title,
+          u: u,
+          grade: grade,
+        }),
+      )
+      .join(''),
+  });
 }
 function summary() {
-  return /* HTML */ `<section class="panel summary-sheet"
-      ><div class="summary-letterhead"
-        ><div class="brand-mark">${icon('book')}</div
-        ><div
-          ><h2>Pamantasan ng Lungsod ng Maynila</h2
-          ><p>BS Information Technology · Student Enrollment</p></div
-        ></div
-      ><div class="summary-heading"
-        ><h3>Enrollment summary</h3
-        ><span class="badge ${state.open ? 'badge-amber' : 'badge-green'}"
-          >${state.open ? 'Provisional plan' : 'Finalized plan'}</span
-        ></div
-      ><div class="summary-meta"
-        ><div><small>Student name</small><strong>Andrea Dela Cruz</strong></div
-        ><div><small>Student number</small><strong>2024–10287</strong></div
-        ><div
-          ><small>Program / year level</small
-          ><strong>BS Information Technology / 3rd year</strong></div
-        ><div><small>Academic term</small><strong>${TERM}</strong></div></div
-      ><div class="table-wrap"
-        ><table class="data-table"
-          ><thead
-            ><tr
-              ><th scope="col">SUBJECT</th><th scope="col">SECTION</th
-              ><th scope="col">SCHEDULE</th><th scope="col">UNITS</th></tr
-            ></thead
-          ><tbody
-            >${
-              state.plan.length
-                ? state.plan
-                    .map((p) => {
-                      const c = getCourse(p.course),
-                        s = getSection(p);
-                      return /* HTML */ `<tr
-                        ><td
-                          ><div class="course-code">${c.code}</div
-                          ><strong>${c.title}</strong></td
-                        ><td>${s.name}</td
-                        ><td
-                          >${s.meetings.map((m) => /* HTML */ `<div>${meetingLabel(m)}${m.label ? ` · ${m.label}` : ''}</div>`).join('')}</td
-                        ><td>${c.units}</td></tr
-                      >`;
-                    })
-                    .join('')
-                : '<tr><td colspan="4">No subjects selected.</td></tr>'
-            }</tbody
-          ></table
-        ></div
-      ><div class="summary-total"
-        ><span>Total enrolled units</span><strong>${totalUnits()}</strong></div
-      ><div class="summary-footnote"
-        >${icon('info')}<span
-          >${state.open ? 'This plan remains editable while enrollment is open. Save your changes before leaving the portal.' : 'Enrollment is closed. This plan is now read-only.'}<br />Design
-          prototype · Sample records only. This is not an official enrollment
-          document.</span
-        ></div
-      ></section
-    >`;
+  return renderTemplate('summary', {
+    icon: icon('book'),
+    content: state.open ? 'badge-amber' : 'badge-green',
+    content3: state.open ? 'Provisional plan' : 'Finalized plan',
+    TERM: TERM,
+    content5: state.plan.length
+      ? state.plan
+          .map((p) => {
+            const c = getCourse(p.course),
+              s = getSection(p);
+            return renderTemplate('summary-2', {
+              code: c.code,
+              title: c.title,
+              name: s.name,
+              content: s.meetings
+                .map((m) =>
+                  renderTemplate('summary-3', {
+                    meetingLabel: meetingLabel(m),
+                    content: m.label ? ` · ${m.label}` : '',
+                  }),
+                )
+                .join(''),
+              units: c.units,
+            });
+          })
+          .join('')
+      : renderTemplate('summary-4'),
+    totalUnits: totalUnits(),
+    icon7: icon('info'),
+    content8: state.open
+      ? 'This plan remains editable while enrollment is open. Save your changes before leaving the portal.'
+      : 'Enrollment is closed. This plan is now read-only.',
+  });
 }
 function login() {
-  return /* HTML */ `<main class="welcome-page"
-    ><section class="welcome-art"
-      >${brand()}<div class="welcome-copy"
-        ><div class="eyebrow">Pamantasan ng Lungsod ng Maynila</div
-        ><h1>A place to learn.<br />A future to<br /><em>make your own.</em></h1
-        ><p
-          >One thoughtful semester at a time. Welcome to your enrollment
-          portal.</p
-        ></div
-      >${campusArt()}<div class="welcome-footer"
-        >Karunungan. Kaunlaran. Kadakilaan.</div
-      ></section
-    ><section class="welcome-form"
-      ><div class="login-card"
-        ><div class="eyebrow">Your next chapter awaits</div
-        ><h2>Welcome back.</h2
-        ><p
-          >A new semester starts with a clear plan.<br />Sign in to your
-          workspace.</p
-        ><div class="login-roles" aria-label="Account type"
-          >${['student', 'professor', 'admin'].map((r) => `<button class="${state.loginRole === r ? 'active' : ''}" data-login-role="${r}" aria-pressed="${state.loginRole === r}">${r[0].toUpperCase() + r.slice(1)}</button>`).join('')}</div
-        ><form id="login-form"
-          ><label class="login-label" for="login-username"
-            >${state.loginRole === 'student' ? 'Student number' : 'Username'}</label
-          ><input
-            class="login-input"
-            id="login-username"
-            value="${state.loginRole === 'student' ? '202410287' : state.loginRole === 'professor' ? 'mreyes' : 'registrar'}"
-            autocomplete="off"
-          /><label class="login-label" for="login-password">Password</label
-          ><div class="password-wrap"
-            ><input
-              class="login-input"
-              id="login-password"
-              type="password"
-              value="preview-only"
-              autocomplete="off"
-            /><button
-              class="icon-button"
-              type="button"
-              data-action="show-password"
-              aria-label="Show password"
-              >${icon('eye')}</button
-            ></div
-          ><button class="button button-primary" type="submit"
-            >Open
-            ${state.loginRole === 'student' ? 'student portal' : state.loginRole === 'professor' ? 'faculty workspace' : 'admin workspace'}
-            ${icon('arrow')}</button
-          ></form
-        ><div class="login-preview-note"
-          >You're exploring a student project design. The sample account is
-          ready to use—no real credentials are needed.</div
-        ><button class="button button-quiet login-back" data-role="student"
-          >Explore the student portal ${icon('arrow')}</button
-        ></div
-      ></section
-    ></main
-  >`;
+  return renderTemplate('login', {
+    brand: brand(),
+    campusArt: campusArt(),
+    content: ['student', 'professor', 'admin']
+      .map((r) =>
+        renderTemplate('login-2', {
+          content: state.loginRole === r ? 'active' : '',
+          r: r,
+          content3: state.loginRole === r,
+          content4: r[0].toUpperCase() + r.slice(1),
+        }),
+      )
+      .join(''),
+    content4: state.loginRole === 'student' ? 'Student number' : 'Username',
+    content5:
+      state.loginRole === 'student'
+        ? '202410287'
+        : state.loginRole === 'professor'
+          ? 'mreyes'
+          : 'registrar',
+    icon: icon('eye'),
+    content7:
+      state.loginRole === 'student'
+        ? 'student portal'
+        : state.loginRole === 'professor'
+          ? 'faculty workspace'
+          : 'admin workspace',
+    icon8: icon('arrow'),
+    icon9: icon('arrow'),
+  });
 }
 function mobilePlanBar() {
-  return /* HTML */ `<div class="mobile-plan-bar"
-    ><div
-      ><strong>${totalUnits()} <span>/ ${MAX_UNITS} units</span></strong
-      ><small
-        >${state.plan.length} subjects selected ·
-        ${state.open ? 'Enrollment open' : 'Read-only'}</small
-      ></div
-    ><button class="button button-primary" data-action="mobile-plan"
-      >Your plan ${icon('arrow')}</button
-    ></div
-  >`;
+  return renderTemplate('mobile-plan-bar', {
+    totalUnits: totalUnits(),
+    MAX_UNITS: MAX_UNITS,
+    length: state.plan.length,
+    content: state.open ? 'Enrollment open' : 'Read-only',
+    icon: icon('arrow'),
+  });
 }
 function render() {
   const scroll = window.scrollY;
@@ -940,11 +784,16 @@ function render() {
           : state.view === 'summary'
             ? summary()
             : enrollment();
-  app.innerHTML = /* HTML */ `${sidebar()}<div class="shell"
-      >${topbar()}<main class="content" id="main-content" tabindex="-1"
-        >${content}${footer()}</main
-      >${state.role === 'student' && state.view === 'enrollment' ? mobilePlanBar() : ''}</div
-    >`;
+  app.innerHTML = renderTemplate('render', {
+    sidebar: sidebar(),
+    topbar: topbar(),
+    content: content,
+    footer: footer(),
+    content5:
+      state.role === 'student' && state.view === 'enrollment'
+        ? mobilePlanBar()
+        : '',
+  });
   window.scrollTo(0, scroll);
 }
 function navigate(view) {
@@ -964,45 +813,30 @@ function switchRole(role) {
   window.scrollTo(0, 0);
 }
 function help() {
-  modal.innerHTML = /* HTML */ `<div class="modal-header"
-      ><div
-        ><div class="eyebrow">A little guidance</div
-        ><h2 id="modal-title">Plan with confidence.</h2></div
-      ><button
-        class="icon-button"
-        data-action="close-modal"
-        aria-label="Close guide"
-        >${icon('x')}</button
-      ></div
-    ><div class="modal-body"
-      >${[
-        [
-          '01 · Choose your subjects',
-          'Browse subjects offered this semester. Eligibility tells you which subjects you can take based on the sample academic record.',
-        ],
-        [
-          '02 · Find a section that fits',
-          'Choose a schedule without overlaps. Lecture and laboratory pairs are added and removed together. Your load can reach up to 18 units in this preview.',
-        ],
-        [
-          '03 · Save and review',
-          'Save your plan, then check your weekly schedule and printable summary. You can keep editing while enrollment remains open.',
-        ],
-        [
-          'Need an adviser?',
-          'For official curriculum and enrollment decisions, consult your college adviser or the University Registrar.',
-        ],
-      ]
-        .map(
-          ([h, p]) =>
-            /* HTML */ `<div class="help-item"><h3>${h}</h3><p>${p}</p></div>`,
-        )
-        .join('')}</div
-    ><div class="modal-footer"
-      ><button class="button button-primary" data-action="close-modal"
-        >Got it ${icon('check')}</button
-      ></div
-    >`;
+  modal.innerHTML = renderTemplate('help', {
+    icon: icon('x'),
+    content: [
+      [
+        '01 · Choose your subjects',
+        'Browse subjects offered this semester. Eligibility tells you which subjects you can take based on the sample academic record.',
+      ],
+      [
+        '02 · Find a section that fits',
+        'Choose a schedule without overlaps. Lecture and laboratory pairs are added and removed together. Your load can reach up to 18 units in this preview.',
+      ],
+      [
+        '03 · Save and review',
+        'Save your plan, then check your weekly schedule and printable summary. You can keep editing while enrollment remains open.',
+      ],
+      [
+        'Need an adviser?',
+        'For official curriculum and enrollment decisions, consult your college adviser or the University Registrar.',
+      ],
+    ]
+      .map(([h, p]) => renderTemplate('help-2', { h: h, p: p }))
+      .join(''),
+    icon3: icon('check'),
+  });
   modal.showModal();
 }
 document.addEventListener('click', (e) => {
@@ -1054,35 +888,11 @@ document.addEventListener('click', (e) => {
     return;
   }
   if (action === 'staff-period-toggle' && state.open) {
-    modal.innerHTML = /* HTML */ `<div class="modal-header"
-        ><div
-          ><div class="eyebrow">Enrollment period</div
-          ><h2 id="modal-title">Close enrollment?</h2></div
-        ><button
-          class="icon-button"
-          data-action="close-modal"
-          aria-label="Cancel closing enrollment"
-          >${icon('x')}</button
-        ></div
-      ><div class="modal-body"
-        ><p class="modal-description"
-          >Student selections will become read-only, and their summaries will
-          show a finalized plan.</p
-        ><div class="pair-note"
-          >${icon('info')}<span
-            >This changes only the current design preview. You can reopen it
-            from the admin workspace.</span
-          ></div
-        ></div
-      ><div class="modal-footer"
-        ><button class="button" data-action="close-modal"
-          >Keep enrollment open</button
-        ><button
-          class="button button-primary"
-          data-action="staff-period-confirm"
-          >Close preview enrollment ${icon('lock')}</button
-        ></div
-      >`;
+    modal.innerHTML = renderTemplate('dialogs', {
+      icon: icon('x'),
+      icon2: icon('info'),
+      icon3: icon('lock'),
+    });
     modal.showModal();
     return;
   }
@@ -1116,32 +926,13 @@ document.addEventListener('click', (e) => {
       });
   if (action === 'help') help();
   if (action === 'notifications') {
-    modal.innerHTML = /* HTML */ `<div class="modal-header"
-        ><div
-          ><div class="eyebrow">Your updates</div
-          ><h2 id="modal-title">A new semester awaits.</h2></div
-        ><button
-          class="icon-button"
-          data-action="close-modal"
-          aria-label="Close notifications"
-          >${icon('x')}</button
-        ></div
-      ><div class="modal-body"
-        ><div class="help-item"
-          ><span class="badge badge-green"
-            >Enrollment ${state.open ? 'open' : 'closed'}</span
-          ><h3 style="margin-top:12px">First semester · A.Y. 2026–2027</h3
-          ><p
-            >${state.open ? 'You can now build and save your enrollment plan. Review your prerequisites and unit limit as you choose subjects.' : 'Your enrollment plan is now read-only. Contact your adviser for assistance.'}</p
-          ></div
-        ><div class="help-item"
-          ><h3>You're viewing sample records.</h3
-          ><p
-            >Dates, subjects, student details, and notifications are
-            illustrative for this design prototype.</p
-          ></div
-        ></div
-      >`;
+    modal.innerHTML = renderTemplate('dialogs-2', {
+      icon: icon('x'),
+      content: state.open ? 'open' : 'closed',
+      content3: state.open
+        ? 'You can now build and save your enrollment plan. Review your prerequisites and unit limit as you choose subjects.'
+        : 'Your enrollment plan is now read-only. Contact your adviser for assistance.',
+    });
     modal.showModal();
   }
   if (action === 'save-plan') {
@@ -1212,8 +1003,10 @@ document.addEventListener('change', (e) => {
         : label === 'Awaiting grade'
           ? 'neutral'
           : 'amber';
-    e.target.closest('tr').lastElementChild.innerHTML =
-      `<span class="badge badge-${color}">${label}</span>`;
+    e.target.closest('tr').lastElementChild.innerHTML = renderTemplate(
+      'dialogs-3',
+      { color: color, label: label },
+    );
   }
 });
 document.addEventListener('submit', (e) => {

@@ -1,0 +1,64 @@
+<!-- Edit markup here. {{name}} placeholders receive values from JavaScript. -->
+
+<template id="schedule">
+  <div class="page-heading" style="justify-content: flex-end">
+    <button class="button" data-view="enrollment">{{icon}}Edit my plan</button>
+  </div>
+  <div class="panel">
+    <div class="schedule-toolbar">
+      <div>
+        <h2 class="panel-title">Weekly schedule</h2>
+        <div class="panel-subtitle">{{TERM}}</div>
+      </div>
+      <span class="badge badge-wine">
+        {{length}} subjects · {{totalUnits}} units
+      </span>
+    </div>
+    {{content}}
+    <div class="table-wrap">
+      <div class="schedule-grid">
+        <div></div>
+        {{content6}}
+        <div class="time-column">{{content7}}</div>
+        {{content8}}
+      </div>
+    </div>
+    <div class="schedule-legend">{{content9}}</div>
+  </div>
+</template>
+
+<template id="schedule-2">
+  <div class="schedule-empty">
+    Your schedule will take shape as you add subjects.
+  </div>
+</template>
+
+<template id="schedule-3">
+  <div class="day-header">{{content}}</div>
+</template>
+
+<template id="schedule-4">
+  <div class="time-label">{{clockLabel}}</div>
+</template>
+
+<template id="schedule-5">
+  <div class="day-column" aria-label="{{content}} classes">{{content2}}</div>
+</template>
+
+<template id="schedule-6">
+  <div
+    class="schedule-event"
+    style="top:{{content}}px;height:{{content2}}px;--event-color:{{color}};--event-bg:{{bg}}"
+  >
+    <strong>{{title}}</strong>
+    <span>{{content6}}</span>
+    <span>{{timeRange}}</span>
+  </div>
+</template>
+
+<template id="schedule-7">
+  <span>
+    <i class="legend-dot" style="background:{{color}}"></i>
+    {{title}}
+  </span>
+</template>

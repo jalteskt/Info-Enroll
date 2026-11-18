@@ -1,0 +1,111 @@
+<!-- Edit markup here. {{name}} placeholders receive values from JavaScript. -->
+
+<template id="professor-view">
+  <div class="stats-grid">{{stat}} {{stat2}} {{stat3}}</div>
+  <div class="section-label">YOUR TEACHING LOAD</div>
+  <div class="stats-grid teaching-load-grid">{{content}}</div>
+  <section class="panel">
+    <div class="panel-header">
+      <div>
+        <p class="eyebrow">{{code}} / {{name}}</p>
+        <h2 class="panel-title">{{content7}}</h2>
+        <p class="muted">{{length}} students · {{schedule}}</p>
+      </div>
+      {{content10}}
+    </div>
+    {{content11}}
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th scope="col">Student number</th>
+            <th scope="col">Student name</th>
+            <th scope="col">Final grade</th>
+            <th scope="col">Standing</th>
+          </tr>
+        </thead>
+        <tbody>{{content12}}</tbody>
+      </table>
+    </div>
+    <div class="panel-header">
+      <p class="muted">{{content13}}</p>
+      <div class="toolbar">{{content14}}</div>
+    </div>
+  </section>
+</template>
+
+<template id="professor-view-2">
+  <button
+    type="button"
+    class="stat-card"
+    data-action="staff-section-{{i}}"
+    aria-pressed="{{content}}"
+  >
+    <div class="toolbar">
+      <span class="eyebrow">{{code}}</span>
+      {{content4}}
+    </div>
+    <h3 class="panel-title">{{title}}</h3>
+    <p class="muted">{{name}} · {{length}} students</p>
+    <p class="muted">{{schedule}}</p>
+    <span class="button-quiet">{{content9}} {{icon}}</span>
+  </button>
+</template>
+
+<template id="professor-view-3">
+  <p class="page-description">
+    Check each grade carefully. Submitting locks this class record; later
+    corrections go through the administrator.
+  </p>
+</template>
+
+<template id="professor-view-4">
+  <tr>
+    <td>{{content}}</td>
+    <td>{{content2}}</td>
+    <td>{{content3}}</td>
+    <td>{{content4}}</td>
+  </tr>
+</template>
+
+<template id="professor-view-5">
+  <strong>{{grade}}</strong>
+</template>
+
+<template id="professor-view-6">
+  <select
+    class="input"
+    data-staff-grade="{{i}}"
+    aria-label="Final grade for {{content}}"
+  >
+    <option value="">Select grade</option>
+    {{content3}}
+  </select>
+</template>
+
+<template id="professor-view-7">
+  <option value="{{value}}" {{content}}>{{value3}}</option>
+</template>
+
+<template id="professor-view-8">
+  <button type="button" class="button" data-action="staff-edit">
+    Back to editing
+  </button>
+  <button
+    type="button"
+    class="button button-primary"
+    data-action="staff-submit"
+  >
+    Submit & lock grades
+  </button>
+</template>
+
+<template id="professor-view-9">
+  <button
+    type="button"
+    class="button button-primary"
+    data-action="staff-review"
+  >
+    Review grades {{icon}}
+  </button>
+</template>
