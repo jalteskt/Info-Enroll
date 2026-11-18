@@ -35,10 +35,7 @@ const paths = {
     '<path d="M12 3v3m0 12v3M3 12h3m12 0h3M6 6l2 2m8 8 2 2M6 18l2-2m8-8 2-2"/><circle cx="12" cy="12" r="5"/>',
 };
 export function icon(name) {
-  return /* HTML */ `<svg
-    viewBox="0 0 24 24"
-    aria-hidden="true"
-  >
+  return /* HTML */ `<svg viewBox="0 0 24 24" aria-hidden="true">
     ${paths[name] || paths.book}
   </svg>`;
 }
@@ -46,13 +43,9 @@ const escapeHTML = (s) =>
   String(s).replace(
     /[&<>"']/g,
     (c) =>
-      ({
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#39;',
-      })[c],
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[
+        c
+      ],
   );
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const TERM = '1st Semester, A.Y. 2026–2027';
@@ -74,26 +67,14 @@ const offers = [
         name: 'BSIT 3-1',
         prof: 'Prof. M. Reyes',
         seats: 12,
-        meetings: [
-          {
-            day: 0,
-            start: 8,
-            end: 10,
-          },
-        ],
+        meetings: [{ day: 0, start: 8, end: 10 }],
       },
       {
         id: 'im2',
         name: 'BSIT 3-2',
         prof: 'Prof. M. Reyes',
         seats: 8,
-        meetings: [
-          {
-            day: 0,
-            start: 10,
-            end: 12,
-          },
-        ],
+        meetings: [{ day: 0, start: 10, end: 12 }],
       },
     ],
   },
@@ -115,18 +96,8 @@ const offers = [
         prof: 'Prof. A. Santos',
         seats: 14,
         meetings: [
-          {
-            day: 1,
-            start: 8,
-            end: 10,
-            label: 'Lecture',
-          },
-          {
-            day: 3,
-            start: 8,
-            end: 10,
-            label: 'Laboratory',
-          },
+          { day: 1, start: 8, end: 10, label: 'Lecture' },
+          { day: 3, start: 8, end: 10, label: 'Laboratory' },
         ],
       },
       {
@@ -135,18 +106,8 @@ const offers = [
         prof: 'Prof. A. Santos',
         seats: 0,
         meetings: [
-          {
-            day: 1,
-            start: 10,
-            end: 12,
-            label: 'Lecture',
-          },
-          {
-            day: 3,
-            start: 10,
-            end: 12,
-            label: 'Laboratory',
-          },
+          { day: 1, start: 10, end: 12, label: 'Lecture' },
+          { day: 3, start: 10, end: 12, label: 'Laboratory' },
         ],
       },
     ],
@@ -169,18 +130,8 @@ const offers = [
         prof: 'Prof. J. Mendoza',
         seats: 6,
         meetings: [
-          {
-            day: 0,
-            start: 10,
-            end: 12,
-            label: 'Lecture',
-          },
-          {
-            day: 2,
-            start: 13,
-            end: 15,
-            label: 'Laboratory',
-          },
+          { day: 0, start: 10, end: 12, label: 'Lecture' },
+          { day: 2, start: 13, end: 15, label: 'Laboratory' },
         ],
       },
       {
@@ -189,18 +140,8 @@ const offers = [
         prof: 'Prof. J. Mendoza',
         seats: 19,
         meetings: [
-          {
-            day: 1,
-            start: 13,
-            end: 15,
-            label: 'Lecture',
-          },
-          {
-            day: 3,
-            start: 13,
-            end: 15,
-            label: 'Laboratory',
-          },
+          { day: 1, start: 13, end: 15, label: 'Lecture' },
+          { day: 3, start: 13, end: 15, label: 'Laboratory' },
         ],
       },
     ],
@@ -221,26 +162,14 @@ const offers = [
         name: 'BSIT 3-1',
         prof: 'Prof. L. Garcia',
         seats: 11,
-        meetings: [
-          {
-            day: 2,
-            start: 8,
-            end: 10,
-          },
-        ],
+        meetings: [{ day: 2, start: 8, end: 10 }],
       },
       {
         id: 'se2',
         name: 'BSIT 3-2',
         prof: 'Prof. L. Garcia',
         seats: 7,
-        meetings: [
-          {
-            day: 2,
-            start: 13,
-            end: 15,
-          },
-        ],
+        meetings: [{ day: 2, start: 13, end: 15 }],
       },
     ],
   },
@@ -260,26 +189,14 @@ const offers = [
         name: 'BSIT 3-1',
         prof: 'Prof. E. Villanueva',
         seats: 25,
-        meetings: [
-          {
-            day: 2,
-            start: 9,
-            end: 11,
-          },
-        ],
+        meetings: [{ day: 2, start: 9, end: 11 }],
       },
       {
         id: 'tech2',
         name: 'BSIT 3-2',
         prof: 'Prof. E. Villanueva',
         seats: 16,
-        meetings: [
-          {
-            day: 4,
-            start: 8,
-            end: 10,
-          },
-        ],
+        meetings: [{ day: 4, start: 8, end: 10 }],
       },
     ],
   },
@@ -299,26 +216,14 @@ const offers = [
         name: 'BSIT 3-1',
         prof: 'Prof. C. Ramos',
         seats: 22,
-        meetings: [
-          {
-            day: 4,
-            start: 10,
-            end: 12,
-          },
-        ],
+        meetings: [{ day: 4, start: 10, end: 12 }],
       },
       {
         id: 'ethics2',
         name: 'BSIT 3-2',
         prof: 'Prof. C. Ramos',
         seats: 12,
-        meetings: [
-          {
-            day: 5,
-            start: 8,
-            end: 10,
-          },
-        ],
+        meetings: [{ day: 5, start: 8, end: 10 }],
       },
     ],
   },
@@ -346,18 +251,9 @@ const offers = [
   },
 ];
 const initialPlan = [
-  {
-    course: 'im',
-    section: 'im2',
-  },
-  {
-    course: 'se',
-    section: 'se1',
-  },
-  {
-    course: 'ethics',
-    section: 'ethics1',
-  },
+  { course: 'im', section: 'im2' },
+  { course: 'se', section: 'se1' },
+  { course: 'ethics', section: 'ethics1' },
 ];
 let stored;
 try {
@@ -426,18 +322,12 @@ function conflictFor(section, exclude) {
   return null;
 }
 function campusArt() {
-  return /* HTML */ `<div
-    class="hero-art"
-    aria-hidden="true"
+  return /* HTML */ `<div class="hero-art" aria-hidden="true"
     ><svg viewBox="0 0 320 200">
       <path
         d="M7 192h306M20 184h280M37 179V87h246v92M29 87h262M42 78h236l-23-18H65zM75 59V44h170v15M84 44h152l-76-29zM160 15V4m0 1h19l-4 7h-15M55 96v75m21-75v75m168-75v75m21-75v75M100 174v-67m120 67v-67M112 174v-53c0-33 48-33 48 0v53M160 174v-53c0-33 48-33 48 0v53M112 143h96m-72-39v70m48-70v70M100 174h120M51 104h28m-28 14h28m162-14h28m-28 14h28M90 56h140M37 178h246M32 183h256"
       />
-      <circle
-        cx="160"
-        cy="33"
-        r="5"
-      />
+      <circle cx="160" cy="33" r="5" />
       <path d="M13 178v-17m-8 8 8-13 8 13m278 9v-17m-8 8 8-13 8 13" /></svg
   ></div>`;
 }
@@ -551,14 +441,10 @@ function enrollment() {
         ${state.open ? 'open' : 'closed'}</span
       ></div
     ><div class="workspace"
-      ><section
-        class="panel"
-        aria-labelledby="subjects-title"
+      ><section class="panel" aria-labelledby="subjects-title"
         ><div class="panel-header"
           ><div
-            ><h2
-              class="panel-title"
-              id="subjects-title"
+            ><h2 class="panel-title" id="subjects-title"
               >Choose your subjects
               <span class="count-badge">${offers.length}</span></h2
             ><div class="panel-subtitle"
@@ -577,15 +463,11 @@ function enrollment() {
             class="filter-select"
             id="year-filter"
             aria-label="Filter by year level"
-            ><option
-              value="all"
-              ${state.filter === 'all' ? 'selected' : ''}
+            ><option value="all" ${state.filter === 'all' ? 'selected' : ''}
               >All year levels</option
             >${[2, 3, 4].map((y) => `<option value="${y}" ${state.filter === String(y) ? 'selected' : ''}>${y === 2 ? '2nd' : y === 3 ? '3rd' : '4th'} year</option>`).join('')}</select
           ></div
-        ><div
-          class="course-tabs"
-          aria-label="Subject filters"
+        ><div class="course-tabs" aria-label="Subject filters"
           >${[
             ['all', 'All subjects'],
             ['eligible', 'Eligible for you'],
@@ -601,9 +483,7 @@ function enrollment() {
           >${icon('info')}Lecture and laboratory pairs are selected
           together.</div
         ></section
-      ><aside
-        class="plan-sidebar"
-        aria-label="Your enrollment plan"
+      ><aside class="plan-sidebar" aria-label="Your enrollment plan"
         >${planPanel()}<div class="plan-tip"
           >${icon('shield')}<span
             >Your plan stays editable while enrollment is open. Review your
@@ -627,9 +507,7 @@ function courseRows() {
     return /* HTML */ `<div class="empty-state"
       >${icon('search')}<h3>No subjects found</h3
       ><p>Try another search or change your filters.</p
-      ><button
-        class="button button-quiet"
-        data-action="reset-filters"
+      ><button class="button button-quiet" data-action="reset-filters"
         >Clear filters</button
       ></div
     >`;
@@ -700,9 +578,7 @@ function planPanel() {
         aria-valuemin="0"
         aria-valuemax="18"
         >${Array.from(
-          {
-            length: 18,
-          },
+          { length: 18 },
           (_, i) => `<i class="${i < total ? 'filled' : ''}"></i>`,
         ).join('')}</div
       ><div class="unit-note"
@@ -716,10 +592,7 @@ function planPanel() {
                 const c = getCourse(p.course),
                   s = getSection(p);
                 return /* HTML */ `<div class="selected-item"
-                  ><i
-                    class="course-swatch"
-                    style="background:${c.color}"
-                  ></i
+                  ><i class="course-swatch" style="background:${c.color}"></i
                   ><div class="selected-info"
                     ><div class="course-code"
                       >${c.code} <span>· ${c.units} units</span></div
@@ -742,9 +615,7 @@ function planPanel() {
         ${!state.open || !state.plan.length ? 'disabled' : ''}
         >${icon(state.saved ? 'check' : 'shield')}${!state.open ? 'Enrollment closed' : state.saved ? 'Plan saved' : 'Save my plan'}
         ${state.saved ? '' : icon('arrow')}</button
-      ><button
-        class="button button-quiet"
-        data-view="schedule"
+      ><button class="button button-quiet" data-view="schedule"
         >${icon('calendar')}Preview weekly schedule</button
       ><p class="save-state"
         >${icon(state.saved ? 'check' : 'clock')}${state.saved ? 'Saved on this device' : !state.open ? 'Your plan is read-only' : 'Changes are not saved yet'}</p
@@ -768,9 +639,7 @@ function openSections(id) {
         aria-label="Close section chooser"
         >${icon('x')}</button
       ></div
-    ><form
-      id="section-form"
-      data-course-id="${c.id}"
+    ><form id="section-form" data-course-id="${c.id}"
       ><div class="modal-body"
         ><p class="modal-description"
           >${c.title} · ${c.units} units<br />Choose a section that works with
@@ -800,14 +669,9 @@ function openSections(id) {
           role="alert"
         ></p></div
       ><div class="modal-footer"
-        ><button
-          class="button"
-          type="button"
-          data-action="close-modal"
+        ><button class="button" type="button" data-action="close-modal"
           >Cancel</button
-        ><button
-          class="button button-primary"
-          type="submit"
+        ><button class="button button-primary" type="submit"
           >${current ? 'Update section' : c.pair ? 'Add lecture + laboratory' : 'Add to my plan'}
           ${icon('plus')}</button
         ></div
@@ -816,12 +680,8 @@ function openSections(id) {
   modal.showModal();
 }
 function schedule() {
-  return /* HTML */ `<div
-      class="page-heading"
-      style="justify-content:flex-end"
-      ><button
-        class="button"
-        data-view="enrollment"
+  return /* HTML */ `<div class="page-heading" style="justify-content:flex-end"
+      ><button class="button" data-view="enrollment"
         >${icon('edit')}Edit my plan</button
       ></div
     ><div class="panel"
@@ -839,9 +699,7 @@ function schedule() {
           >${DAYS.map((d) => /* HTML */ `<div class="day-header">${d.toUpperCase()}</div>`).join('')}<div
             class="time-column"
             >${Array.from(
-              {
-                length: 10,
-              },
+              { length: 10 },
               (_, i) =>
                 /* HTML */ `<div class="time-label">${clockLabel(i + 7)}</div>`,
             ).join('')}</div
@@ -871,10 +729,7 @@ function schedule() {
           .map((p) => {
             const c = getCourse(p.course);
             return /* HTML */ `<span
-              ><i
-                class="legend-dot"
-                style="background:${c.color}"
-              ></i
+              ><i class="legend-dot" style="background:${c.color}"></i
               >${c.title}</span
             >`;
           })
@@ -945,9 +800,7 @@ function summary() {
         ><p class="page-description"
           >Review the details. Keep a copy for your next chapter.</p
         ></div
-      ><button
-        class="button"
-        data-action="print"
+      ><button class="button" data-action="print"
         >${icon('print')}Print summary</button
       ></div
     ><section class="panel summary-sheet"
@@ -1029,24 +882,17 @@ function login() {
         ><p
           >A new semester starts with a clear plan.<br />Sign in to your
           workspace.</p
-        ><div
-          class="login-roles"
-          aria-label="Account type"
+        ><div class="login-roles" aria-label="Account type"
           >${['student', 'professor', 'admin'].map((r) => `<button class="${state.loginRole === r ? 'active' : ''}" data-login-role="${r}" aria-pressed="${state.loginRole === r}">${r[0].toUpperCase() + r.slice(1)}</button>`).join('')}</div
         ><form id="login-form"
-          ><label
-            class="login-label"
-            for="login-username"
+          ><label class="login-label" for="login-username"
             >${state.loginRole === 'student' ? 'Student number' : 'Username'}</label
           ><input
             class="login-input"
             id="login-username"
             value="${state.loginRole === 'student' ? '202410287' : state.loginRole === 'professor' ? 'mreyes' : 'registrar'}"
             autocomplete="off"
-          /><label
-            class="login-label"
-            for="login-password"
-            >Password</label
+          /><label class="login-label" for="login-password">Password</label
           ><div class="password-wrap"
             ><input
               class="login-input"
@@ -1061,9 +907,7 @@ function login() {
               aria-label="Show password"
               >${icon('eye')}</button
             ></div
-          ><button
-            class="button button-primary"
-            type="submit"
+          ><button class="button button-primary" type="submit"
             >Open
             ${state.loginRole === 'student' ? 'student portal' : state.loginRole === 'professor' ? 'faculty workspace' : 'admin workspace'}
             ${icon('arrow')}</button
@@ -1071,9 +915,7 @@ function login() {
         ><div class="login-preview-note"
           >You're exploring a student project design. The sample account is
           ready to use—no real credentials are needed.</div
-        ><button
-          class="button button-quiet login-back"
-          data-role="student"
+        ><button class="button button-quiet login-back" data-role="student"
           >Explore the student portal ${icon('arrow')}</button
         ></div
       ></section
@@ -1088,9 +930,7 @@ function mobilePlanBar() {
         >${state.plan.length} subjects selected ·
         ${state.open ? 'Enrollment open' : 'Read-only'}</small
       ></div
-    ><button
-      class="button button-primary"
-      data-action="mobile-plan"
+    ><button class="button button-primary" data-action="mobile-plan"
       >Your plan ${icon('arrow')}</button
     ></div
   >`;
@@ -1112,10 +952,7 @@ function render() {
             ? summary()
             : enrollment();
   app.innerHTML = /* HTML */ `${sidebar()}<div class="shell"
-      >${topbar()}<main
-        class="content"
-        id="main-content"
-        tabindex="-1"
+      >${topbar()}<main class="content" id="main-content" tabindex="-1"
         >${content}${footer()}</main
       >${state.role === 'student' && state.view === 'enrollment' ? mobilePlanBar() : ''}</div
     >`;
@@ -1127,9 +964,7 @@ function navigate(view) {
   state.menu = false;
   render();
   window.scrollTo(0, 0);
-  document.querySelector('#main-content')?.focus({
-    preventScroll: true,
-  });
+  document.querySelector('#main-content')?.focus({ preventScroll: true });
 }
 function switchRole(role) {
   state.role = role;
@@ -1175,9 +1010,7 @@ function help() {
         )
         .join('')}</div
     ><div class="modal-footer"
-      ><button
-        class="button button-primary"
-        data-action="close-modal"
+      ><button class="button button-primary" data-action="close-modal"
         >Got it ${icon('check')}</button
       ></div
     >`;
@@ -1253,9 +1086,7 @@ document.addEventListener('click', (e) => {
           ></div
         ></div
       ><div class="modal-footer"
-        ><button
-          class="button"
-          data-action="close-modal"
+        ><button class="button" data-action="close-modal"
           >Keep enrollment open</button
         ><button
           class="button button-primary"
@@ -1286,12 +1117,14 @@ document.addEventListener('click', (e) => {
     render();
   }
   if (action === 'mobile-plan')
-    document.querySelector('.plan-panel')?.scrollIntoView({
-      behavior: matchMedia('(prefers-reduced-motion: reduce)').matches
-        ? 'auto'
-        : 'smooth',
-      block: 'start',
-    });
+    document
+      .querySelector('.plan-panel')
+      ?.scrollIntoView({
+        behavior: matchMedia('(prefers-reduced-motion: reduce)').matches
+          ? 'auto'
+          : 'smooth',
+        block: 'start',
+      });
   if (action === 'help') help();
   if (action === 'notifications') {
     modal.innerHTML = /* HTML */ `<div class="modal-header"
@@ -1426,10 +1259,7 @@ document.addEventListener('submit', (e) => {
     return;
   }
   state.plan = state.plan.filter((p) => p.course !== c.id);
-  state.plan.push({
-    course: c.id,
-    section: s.id,
-  });
+  state.plan.push({ course: c.id, section: s.id });
   state.saved = false;
   modal.close();
   render();

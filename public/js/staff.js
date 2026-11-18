@@ -1,10 +1,5 @@
 const gradeOptions = [
-  ...Array.from(
-    {
-      length: 17,
-    },
-    (_, i) => (1 + i * 0.25).toFixed(2),
-  ),
+  ...Array.from({ length: 17 }, (_, i) => (1 + i * 0.25).toFixed(2)),
   'INC',
 ];
 const people = [
@@ -299,20 +294,14 @@ export function handleStaffAction(action) {
     if (sections[index]) {
       selectedSection = index;
       reviewing = false;
-      return {
-        rerender: true,
-      };
+      return { rerender: true };
     }
   }
   if (action === 'staff-period-toggle') {
     periodOpen = !periodOpen;
     if (typeof window !== 'undefined')
       window.dispatchEvent(
-        new CustomEvent('plm:period-change', {
-          detail: {
-            open: periodOpen,
-          },
-        }),
+        new CustomEvent('plm:period-change', { detail: { open: periodOpen } }),
       );
     return {
       rerender: true,
@@ -324,9 +313,7 @@ export function handleStaffAction(action) {
   const current = sections[selectedSection];
   if (action === 'staff-edit') {
     reviewing = false;
-    return {
-      rerender: true,
-    };
+    return { rerender: true };
   }
   if (action === 'staff-review' || action === 'staff-submit') {
     if (current.submitted)
@@ -341,9 +328,7 @@ export function handleStaffAction(action) {
       };
     if (action === 'staff-review') {
       reviewing = true;
-      return {
-        rerender: true,
-      };
+      return { rerender: true };
     }
     if (!reviewing)
       return {

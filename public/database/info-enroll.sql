@@ -95,14 +95,7 @@ CREATE TABLE enrollment_period (
 CREATE TABLE section (
   section_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
   section_no TINYINT UNSIGNED NOT NULL,
-  day ENUM(
-    'Mon',
-    'Tue',
-    'Wed',
-    'Thu',
-    'Fri',
-    'Sat'
-  ) NOT NULL,
+  day ENUM('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat') NOT NULL,
   time_start TIME NOT NULL,
   time_end TIME NOT NULL,
   max_students TINYINT UNSIGNED NOT NULL DEFAULT 50,
@@ -113,12 +106,7 @@ CREATE TABLE section (
   professor_id INT UNSIGNED NOT NULL,
   submitted_by_admin_id INT UNSIGNED NULL,
   PRIMARY KEY (section_id),
-  UNIQUE KEY uq_section_offering (
-    course_code,
-    school_year,
-    semester,
-    section_no
-  ),
+  UNIQUE KEY uq_section_offering (course_code, school_year, semester, section_no),
   UNIQUE KEY uq_section_id_course (section_id, course_code),
   CONSTRAINT chk_section_no CHECK (section_no > 0),
   CONSTRAINT chk_section_time CHECK (time_end > time_start),
@@ -167,12 +155,7 @@ CREATE TABLE unit_limit (
 
 
 INSERT INTO
-  unit_limit (
-    year_level,
-    semester,
-    min_units,
-    max_units
-  )
+  unit_limit (year_level, semester, min_units, max_units)
 VALUES
   (1, 1, 0, 23),
   (1, 2, 0, 23),
