@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;450;500;550;600;650;700&family=Newsreader:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@400;500;600;700&family=Open+Sans:wght@400;500;600;700&display=swap');
 .sr-only {
   position: absolute;
   width: 1px;
@@ -36,8 +36,8 @@
   --green-pale: #edf5ef;
   --gold: #af8746;
   --shadow: 0 8px 30px #29272306;
-  --sans: 'DM Sans', 'Segoe UI', sans-serif;
-  --serif: 'Newsreader', Georgia, serif;
+  --sans: 'Open Sans', 'Segoe UI', sans-serif;
+  --serif: 'Merriweather', Georgia, serif;
 }
 * {
   box-sizing: border-box;
