@@ -397,8 +397,7 @@ function topbar() {
         aria-label="Open navigation"
         aria-expanded="${state.mobile}"
         >${icon('menu')}</button
-      ><div class="breadcrumb"
-        ><span
+      ><div class="breadcrumb"><span class="institution-name">PAMANTASAN NG LUNGSOD NG MAYNILA</span>${icon('chevron-right')}<span
           >${state.role === 'student' ? 'Student portal' : state.role === 'professor' ? 'Faculty portal' : 'Administration'}</span
         >${icon('chevron-right')}<span>${labels[state.view]}</span></div
       ></div

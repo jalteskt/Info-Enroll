@@ -244,11 +244,14 @@ button {
   height: 24px;
 }
 .brand-name {
-  font-size: 23px;
-  line-height: 1.05;
-  letter-spacing: 2px;
+  font-family: var(--serif);
+  font-size: 16px;
+  line-height: 1.3;
+  letter-spacing: 0.3px;
   font-weight: 700;
   color: var(--wine);
+  max-width: 130px;
+  text-transform: uppercase;
 }
 .brand-label {
   display: block;
@@ -2103,7 +2106,7 @@ dialog::backdrop {
     height: 34px;
   }
   .welcome-art .brand-name {
-    font-size: 19px;
+    font-size: 16px;
   }
   .welcome-art .brand-label {
     font-size: 10px;
@@ -2520,3 +2523,22 @@ dialog::backdrop {
     color: #747c70;
   }
 }
+
+.institution-name {
+  display: inline-block;
+  font-family: 'Merriweather' !important;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--wine);
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+@media (max-width: 700px) {
+  .institution-name {
+    max-width: 125px;
+    font-size: 11px;
+    white-space: normal;
+    line-height: 1.15;
+  }
+}
+
