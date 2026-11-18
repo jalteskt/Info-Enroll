@@ -2527,7 +2527,7 @@ dialog::backdrop {
 .institution-name {
   display: inline-block;
   font-family: 'Merriweather' !important;
-  font-size: 18px;
+  font-size: 28px;
   font-weight: 700;
   color: var(--wine);
   letter-spacing: 0.2px;
@@ -2535,8 +2535,8 @@ dialog::backdrop {
 }
 @media (max-width: 700px) {
   .institution-name {
-    max-width: 125px;
-    font-size: 11px;
+    max-width: 145px;
+    font-size: 14px;
     white-space: normal;
     line-height: 1.15;
   }
