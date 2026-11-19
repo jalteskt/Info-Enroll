@@ -53,8 +53,8 @@
   --cream: var(--surface);
   --green: var(--primary-dark);
   --green-pale: var(--teal-tint);
-  --sans: 'DM Sans', 'Segoe UI', sans-serif;
-  --serif: 'Newsreader', Georgia, serif;
+  --sans: 'Open Sans';
+  --serif: 'Merriweather';
 }
 * {
   box-sizing: border-box;
@@ -2609,3 +2609,7 @@ dialog::backdrop {
     outline-color: var(--yellow);
   }
 }
+
+.institution-name{display:inline-block;font-family:'Merriweather' !important;font-size:28px;font-weight:700;color:var(--wine);letter-spacing:.2px;margin-left:-12px;white-space:nowrap}@media(max-width:700px){.institution-name{max-width:145px;font-size:14px;margin-left:0;white-space:normal;line-height:1.15}}
+
+.nav-item, .nav-item span { font-family: 'Merriweather' !important; }

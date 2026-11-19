@@ -397,12 +397,11 @@ function topbar() {
         aria-label="Open navigation"
         aria-expanded="${state.mobile}"
         >${icon('menu')}</button
-      ><div class="breadcrumb"><span class="institution-name">PAMANTASAN NG LUNGSOD NG MAYNILA</span>${icon('chevron-right')}<span
+      ><span class="institution-name">PAMANTASAN NG LUNGSOD NG MAYNILA</span></div
+    ><div class="topbar-right"
+      ><div class="breadcrumb"><span
           >${state.role === 'student' ? 'Student portal' : state.role === 'professor' ? 'Faculty portal' : 'Administration'}</span
         >${icon('chevron-right')}<span>${labels[state.view]}</span></div
-      ></div
-    ><div class="topbar-right"
-      ><span class="prototype-label">Design preview · Sample records</span
       ><button
         class="icon-button"
         data-action="notifications"
