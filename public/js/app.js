@@ -335,7 +335,7 @@ function brand() {
   return /* HTML */ `<div class="brand"
     ><div class="brand-mark">${icon('book')}</div
     ><div
-      ><div class="brand-name">PAMANTASAN NG LUNGSOD NG MAYNILA</div
+      ><div class="brand-name">PLM</div
       ><span class="brand-label">Enrollment portal</span></div
     ></div
   >`;
@@ -397,11 +397,12 @@ function topbar() {
         aria-label="Open navigation"
         aria-expanded="${state.mobile}"
         >${icon('menu')}</button
-      ><span class="institution-name">PAMANTASAN NG LUNGSOD NG MAYNILA</span></div
-    ><div class="topbar-right"
-      ><div class="breadcrumb"><span
+      ><div class="breadcrumb"><span class="institution-name">PAMANTASAN NG LUNGSOD NG MAYNILA</span>${icon('chevron-right')}<span
           >${state.role === 'student' ? 'Student portal' : state.role === 'professor' ? 'Faculty portal' : 'Administration'}</span
         >${icon('chevron-right')}<span>${labels[state.view]}</span></div
+      ></div
+    ><div class="topbar-right"
+      ><span class="prototype-label">Design preview · Sample records</span
       ><button
         class="icon-button"
         data-action="notifications"
@@ -791,17 +792,7 @@ function academicRecord() {
     >`;
 }
 function summary() {
-  return /* HTML */ `<div class="page-heading"
-      ><div
-        ><div class="eyebrow">Everything, in one place</div
-        ><h1 class="page-title">Your enrollment summary.</h1
-        ><p class="page-description"
-          >Review the details. Keep a copy for your next chapter.</p
-        ></div
-      ><button class="button" data-action="print"
-        >${icon('print')}Print summary</button
-      ></div
-    ><section class="panel summary-sheet"
+  return /* HTML */ `<section class="panel summary-sheet"
       ><div class="summary-letterhead"
         ><div class="brand-mark">${icon('book')}</div
         ><div
