@@ -41,6 +41,42 @@ export async function checkCoRows(db = pool) {
   return problems;
 }
 
+// Rule 22: no prerequisite loops (A needs B, B needs A; or longer chains).
+// The database only blocks self-prerequisites, so longer loops are found here.
+// Takes [{ code, req }] PRE rows and returns each loop as a list of codes
+// that starts and ends with the same course (empty = no loops).
+export function findPrerequisiteLoops(rows) {
+  const needs = new Map();
+  for (const { code, req } of rows) {
+    if (!needs.has(code)) needs.set(code, []);
+    needs.get(code).push(req);
+  }
+  const state = new Map(); // undefined = not visited, 1 = on current path, 2 = done
+  const path = [];
+  const loops = [];
+  const visit = (code) => {
+    state.set(code, 1);
+    path.push(code);
+    for (const req of needs.get(code) ?? []) {
+      if (state.get(req) === 1) loops.push([...path.slice(path.indexOf(req)), req]);
+      else if (!state.has(req)) visit(req);
+    }
+    path.pop();
+    state.set(code, 2);
+  };
+  for (const code of [...needs.keys()].sort()) if (!state.has(code)) visit(code);
+  return loops;
+}
+
+// Rule 22 against the database. CO rows are left out: they only record the
+// lab -> lec pairing (rule 26), not an order in which subjects are passed.
+export async function checkPrerequisiteLoops(db = pool) {
+  const [rows] = await db.query(
+    "SELECT course_code AS code, required_course_code AS req FROM prerequisite WHERE requisite_type = 'PRE'",
+  );
+  return findPrerequisiteLoops(rows).map((loop) => `Prerequisite loop: ${loop.join(' -> ')}`);
+}
+
 // Map of course_code -> { code, title, units, yearLevel, semester, requiredStanding, pre: [codes] }
 export async function loadCourses(db = pool) {
   const [rows] = await db.query(

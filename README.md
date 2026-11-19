@@ -35,8 +35,8 @@ the enrollment periods, sections and professors.
    npm run db:reset
    ```
 
-   This **drops and recreates every table** in the `info_enroll` database
-   (creating the database if needed) from `server/database/`, then loads the demo students, professors and terms.
+   This **drops and recreates** the `info_enroll` database from
+   `server/database/`, then loads the demo students, professors and terms.
    Run it again any time you want to start over.
 
 5. Start the server:
@@ -80,6 +80,14 @@ The demo has four finished school years (2022–2023 to 2025–2026). The
 ### Admin
 
 `registrar`
+
+The admin creates accounts on two pages:
+
+- **Students → Add student:** first, middle (optional) and last name, entrance
+  date and a temporary password. The student number is generated: entrance
+  year + a 5-digit running number (e.g. `202600002`). New students start
+  ACTIVE, in 1st year, with no records.
+- **Professors → Add professor:** name, username and a temporary password.
 
 ## Trying a whole semester
 
@@ -145,6 +153,7 @@ them, e.g. `// rule 23`. The main places:
 | Periods, sections, professors | 2, 9, 13–15, 17, 20, 28, 35–37 | `server/src/services/admin.js` |
 | Encoding, submitting and completing grades, dropping students | 30–32, 34, 40 | `server/src/services/grades.js` |
 | Tables, keys and checks (e.g. one enrollment per term, one section number per course) | 8, 16, 18, 22 (no self-prerequisite), 32 | `server/database/info-enroll.sql` |
+| No prerequisite loops; `npm run db:reset` refuses data with one | 22 | `server/src/services/academic.js` (`checkPrerequisiteLoops`), `server/scripts/db-reset.js` |
 
 Rules the database itself guarantees (keys, unique constraints, checks) are in
 the SQL files; everything else is checked in the services above, inside a

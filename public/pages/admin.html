@@ -85,7 +85,7 @@
             <th scope="col">Professor</th>
             <th scope="col">Students</th>
             <th scope="col">Grades</th>
-            <th scope="col"><span class="visually-hidden">Actions</span></th>
+            <th scope="col"><span class="sr-only">Actions</span></th>
           </tr>
         </thead>
         <tbody>{{rows}}</tbody>
@@ -140,7 +140,7 @@
             <th scope="col">Term</th>
             <th scope="col">Professor</th>
             <th scope="col">Progress</th>
-            <th scope="col"><span class="visually-hidden">Actions</span></th>
+            <th scope="col"><span class="sr-only">Actions</span></th>
           </tr>
         </thead>
         <tbody>{{pendingRows}}</tbody>
@@ -256,7 +256,7 @@
             <th scope="col">Username</th>
             <th scope="col">Status</th>
             <th scope="col">Sections</th>
-            <th scope="col"><span class="visually-hidden">Actions</span></th>
+            <th scope="col"><span class="sr-only">Actions</span></th>
           </tr>
         </thead>
         <tbody>{{rows}}</tbody>
@@ -272,6 +272,53 @@
     <td>{{status}}</td>
     <td>{{sections}}</td>
     <td><div class="toolbar">{{actions}}</div></td>
+  </tr>
+</template>
+
+<!-- ============================== Students ============================== -->
+<template id="admin-students">
+  <section class="panel">
+    <div class="panel-header">
+      <div>
+        <p class="eyebrow">STUDENTS</p>
+        <h2 class="panel-title">Student accounts</h2>
+        <p class="muted">
+          The student number is generated from the entrance year. New students
+          start as 1st year with no records.
+        </p>
+      </div>
+      <button
+        type="button"
+        class="button button-primary"
+        data-action="staff-student-new"
+      >
+        {{icon}} Add student
+      </button>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th scope="col">Student number</th>
+            <th scope="col">Name</th>
+            <th scope="col">Entrance date</th>
+            <th scope="col">Year level</th>
+            <th scope="col">Status</th>
+          </tr>
+        </thead>
+        <tbody>{{rows}}</tbody>
+      </table>
+    </div>
+  </section>
+</template>
+
+<template id="admin-student-row">
+  <tr>
+    <td><strong>{{studentNo}}</strong></td>
+    <td>{{name}}</td>
+    <td>{{entrance}}</td>
+    <td>{{year}}</td>
+    <td>{{status}}</td>
   </tr>
 </template>
 
@@ -441,6 +488,64 @@
         Cancel
       </button>
       <button type="submit" class="button button-primary">Add professor</button>
+    </div>
+  </form>
+</template>
+
+<template id="admin-student-form">
+  <form id="staff-form" data-staff-form="student">
+    <div class="modal-header">
+      <div>
+        <div class="eyebrow">Students</div>
+        <h2 id="modal-title">Add student</h2>
+      </div>
+      <button
+        type="button"
+        class="icon-button"
+        data-action="close-modal"
+        aria-label="Cancel"
+      >
+        {{icon}}
+      </button>
+    </div>
+    <div class="modal-body admin-form">
+      <label class="admin-field">
+        <span>First name</span>
+        <input class="input" name="firstName" required maxlength="50" autocomplete="off" />
+      </label>
+      <label class="admin-field">
+        <span>Middle name (optional)</span>
+        <input class="input" name="middleName" maxlength="50" autocomplete="off" />
+      </label>
+      <label class="admin-field">
+        <span>Last name</span>
+        <input class="input" name="lastName" required maxlength="50" autocomplete="off" />
+      </label>
+      <label class="admin-field">
+        <span>Entrance date</span>
+        <input class="input" name="entranceDate" type="date" value="{{today}}" required />
+      </label>
+      <label class="admin-field">
+        <span>Temporary password</span>
+        <input
+          class="input"
+          name="password"
+          type="password"
+          minlength="8"
+          required
+          autocomplete="new-password"
+        />
+      </label>
+      <p class="muted admin-field-wide">
+        The student number is generated when you save, from the entrance year.
+      </p>
+      <p class="modal-error admin-field-wide" id="staff-form-error" role="alert"></p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="button" data-action="close-modal">
+        Cancel
+      </button>
+      <button type="submit" class="button button-primary">Add student</button>
     </div>
   </form>
 </template>

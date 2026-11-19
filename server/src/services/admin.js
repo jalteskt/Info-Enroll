@@ -365,6 +365,75 @@ export async function createProfessor({ username, password, firstName, lastName 
   }
 }
 
+// ---- students
+
+// Every student with status and year level. Year level follows rule 4:
+// finalized (CLOSED period), non-empty enrollments.
+export async function listStudents() {
+  const [rows] = await pool.query(
+    `SELECT s.student_no AS studentNo, s.first_name AS firstName, s.middle_name AS middleName,
+            s.last_name AS lastName, DATE_FORMAT(s.entrance_date, '%Y-%m-%d') AS entranceDate,
+            s.status,
+            (SELECT COUNT(*) FROM enrollment e
+               JOIN enrollment_period ep ON ep.school_year = e.school_year AND ep.semester = e.semester
+             WHERE e.student_no = s.student_no AND ep.status = 'CLOSED'
+               AND EXISTS (SELECT 1 FROM enrolled_course ec WHERE ec.enrollment_id = e.enrollment_id)) AS pastTerms
+     FROM student s ORDER BY s.student_no DESC`,
+  );
+  return rows.map(({ pastTerms, ...r }) => ({ ...r, yearLevel: Math.ceil((Number(pastTerms) + 1) / 2) }));
+}
+
+const DATE = /^\d{4}-\d{2}-\d{2}$/;
+const today = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+
+// The student number is generated: entrance year + a 5-digit running number,
+// e.g. 202600008. New students start ACTIVE with no records (1st year).
+export async function createStudent({ firstName, middleName, lastName, entranceDate, password } = {}) {
+  const clean = (s) => (typeof s === 'string' ? s.trim() : '');
+  if (!clean(firstName) || !clean(lastName)) throw new AppError(400, 'Enter the first and last name.');
+  if ([firstName, middleName, lastName].some((s) => clean(s).length > 50)) {
+    throw new AppError(400, 'Names can be at most 50 characters.');
+  }
+  if (typeof password !== 'string' || password.length < 8) {
+    throw new AppError(400, 'Password must be at least 8 characters.');
+  }
+  const date = clean(entranceDate) || today();
+  const parsed = new Date(`${date}T00:00:00Z`);
+  if (!DATE.test(date) || Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== date) {
+    throw new AppError(400, 'Enter a valid entrance date.');
+  }
+  const year = date.slice(0, 4);
+  const hash = await bcrypt.hash(password, 10);
+
+  // Two admins adding at once could pick the same number; the primary key
+  // rejects the second one, so it simply tries the next number.
+  for (let attempt = 0; attempt < 5; attempt++) {
+    try {
+      return await withTransaction(async (conn) => {
+        const [[{ last }]] = await conn.query(
+          "SELECT MAX(student_no) AS last FROM student WHERE student_no REGEXP CONCAT('^', ?, '[0-9]{5}$')",
+          [year],
+        );
+        const next = last ? Number(last.slice(4)) + 1 : 1;
+        if (next > 99999) throw new AppError(409, `No student numbers left for ${year}.`);
+        const studentNo = year + String(next).padStart(5, '0');
+        await conn.query(
+          `INSERT INTO student (student_no, last_name, first_name, middle_name, entrance_date, password, status)
+           VALUES (?, ?, ?, ?, ?, ?, 'ACTIVE')`,
+          [studentNo, clean(lastName), clean(firstName), clean(middleName) || null, date, hash],
+        );
+        return { studentNo };
+      });
+    } catch (err) {
+      if (err.code !== 'ER_DUP_ENTRY') throw err;
+    }
+  }
+  throw new AppError(409, 'Could not assign a student number. Try again.');
+}
+
 // Rule 37: a professor with sections in the open period must be reassigned
 // out of them before being deactivated.
 export function setProfessorActive(id, active) {

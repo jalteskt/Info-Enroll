@@ -11,7 +11,8 @@ import {
 } from './helpers.js';
 
 const { addSubject, removeSubject } = await import('../src/services/enrollment.js');
-const { loadCourses, buildStanding, checkCoRows, loadStatus } = await import('../src/services/academic.js');
+const { loadCourses, buildStanding, checkCoRows, loadStatus, findPrerequisiteLoops, checkPrerequisiteLoops } =
+  await import('../src/services/academic.js');
 const { checkCourse, enrollmentView } = await import('../src/services/eligibility.js');
 
 const ANDREA = '202600001'; // freshman, year 1, cap 23
@@ -42,6 +43,19 @@ test('CO rows match the lec/lab code pairs (rule 26)', async () => {
   assert.deepEqual(await checkCoRows(), []);
   const [co] = await q("SELECT COUNT(*) AS n FROM prerequisite WHERE requisite_type = 'CO'");
   assert.equal(co.n, 18);
+});
+
+test('the curriculum has no prerequisite loops (rule 22)', async () => {
+  assert.deepEqual(await checkPrerequisiteLoops(), []);
+});
+
+test('prerequisite loops are found, short and long (rule 22)', () => {
+  const pre = (pairs) => pairs.map(([code, req]) => ({ code, req }));
+  assert.deepEqual(findPrerequisiteLoops(pre([['A', 'B'], ['B', 'C']])), []);
+  assert.deepEqual(findPrerequisiteLoops(pre([['A', 'B'], ['B', 'A']])), [['A', 'B', 'A']]);
+  assert.deepEqual(findPrerequisiteLoops(pre([['X', 'A'], ['A', 'B'], ['B', 'C'], ['C', 'A']])), [['A', 'B', 'C', 'A']]);
+  // Two subjects sharing a prerequisite is not a loop.
+  assert.deepEqual(findPrerequisiteLoops(pre([['A', 'C'], ['B', 'C'], ['A', 'B']])), []);
 });
 
 test('first add creates the enrollment; a lec is added on its own (rule 27)', async () => {

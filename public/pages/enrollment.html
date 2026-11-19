@@ -15,15 +15,15 @@
   <div class="student-strip">
     <div class="student-detail">
       <small>Student</small>
-      <strong>Andrea Dela Cruz</strong>
+      <strong>{{studentName}}</strong>
     </div>
     <div class="student-detail">
       <small>Student number</small>
-      <strong class="student-number">2024–10287</strong>
+      <strong class="student-number">{{studentNo}}</strong>
     </div>
     <div class="student-detail">
       <small>Program & standing</small>
-      <strong>BS Information Technology · 3rd year</strong>
+      <strong>{{standing}}</strong>
     </div>
     <span class="badge {{content}}">
       <i class="status-dot"></i>
@@ -42,7 +42,7 @@
             Find the right subjects and a schedule that fits.
           </div>
         </div>
-        <span class="badge badge-neutral">1st semester</span>
+        <span class="badge badge-neutral">{{semester}}</span>
       </div>
       <div class="toolbar">
         <label class="search-field">
@@ -215,7 +215,7 @@
     <div class="selected-info">
       <div class="course-code">
         {{code}}
-        <span>· {{units}} units</span>
+        <span>· {{units}}</span>
       </div>
       <h4>{{title}}</h4>
       <p>{{icon}}{{name}}</p>

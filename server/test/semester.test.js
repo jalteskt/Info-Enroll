@@ -164,6 +164,29 @@ test('professor management (rule 37)', async () => {
   await admin.deleteProfessor(id); // never had a section
 });
 
+test('the admin adds students; the number is generated from the entrance year', async () => {
+  const [[{ last }]] = await pool.query("SELECT MAX(student_no) AS last FROM student WHERE student_no LIKE '2026%'");
+  const a = await admin.createStudent({ firstName: ' Lea ', lastName: 'Santos', entranceDate: '2026-08-10', password: 'longenough' });
+  assert.equal(a.studentNo, String(Number(last) + 1));
+  const b = await admin.createStudent({ firstName: 'Noel', middleName: 'Cruz', lastName: 'Lim', entranceDate: '2026-08-11', password: 'longenough' });
+  assert.equal(Number(b.studentNo), Number(a.studentNo) + 1);
+  const c = await admin.createStudent({ firstName: 'Ivy', lastName: 'Tan', entranceDate: '2031-06-01', password: 'longenough' });
+  assert.equal(c.studentNo, '203100001'); // first of a new entrance year
+
+  const [[row]] = await pool.query('SELECT first_name, middle_name, status, password FROM student WHERE student_no = ?', [a.studentNo]);
+  assert.deepEqual([row.first_name, row.middle_name, row.status], ['Lea', null, 'ACTIVE']);
+  const bcrypt = (await import('bcryptjs')).default;
+  assert.ok(await bcrypt.compare('longenough', row.password)); // hashed (rule 38), and the login password works
+
+  const listed = (await admin.listStudents()).find((s) => s.studentNo === a.studentNo);
+  assert.deepEqual([listed.yearLevel, listed.entranceDate, listed.status], [1, '2026-08-10', 'ACTIVE']);
+
+  await rejects(admin.createStudent({ firstName: 'X', password: 'longenough' }), 400, /first and last name/);
+  await rejects(admin.createStudent({ firstName: 'X', lastName: 'Y', password: 'short' }), 400, /8 characters/);
+  await rejects(admin.createStudent({ firstName: 'X', lastName: 'Y', password: 'longenough', entranceDate: '2026-02-30' }), 400, /entrance date/);
+  await pool.query('DELETE FROM student WHERE student_no IN (?, ?, ?)', [a.studentNo, b.studentNo, c.studentNo]);
+});
+
 test('grades cannot be encoded while enrollment is open', async () => {
   const id = await sectionId('GEC_ETHC', 1);
   await rejects(grades.saveGrades(id, [{ studentNo: AMARA, grade: '1.00' }], { adminId: ADMIN_ID }), 409, /closed/);

@@ -1,5 +1,5 @@
 import { renderTemplate } from './templates.js';
-import { renderStaffView, handleStaffAction, loadStaffData } from './staff.js';
+import { renderStaffView, handleStaffAction, loadStaffData, staffPeriod } from './staff.js';
 import { api } from './api.js';
 
 const paths = {
@@ -56,10 +56,12 @@ let offers = []; // catalog items in the shape the render code expects
 let term = null; // GET /api/student/enrollment
 let record = null; // GET /api/student/record
 const ord = (n) => `${n}${['th', 'st', 'nd', 'rd'][n] ?? 'th'}`;
-const termText = () =>
-  term?.period
-    ? `${ord(term.period.semester)} Semester, A.Y. ${term.period.schoolYear.replace('-', '–')}`
-    : '';
+const periodText = (p) =>
+  p ? `${ord(p.semester)} Semester, A.Y. ${p.schoolYear.replace('-', '–')}` : '';
+const termText = () => periodText(term?.period);
+// The period shown in the top bar and notifications, for any role.
+const currentPeriod = () =>
+  state.role === 'student' ? term?.period ?? null : staffPeriod(state.role);
 const maxUnits = () => term?.unitLimit?.maxUnits ?? null; // null = no cap
 // Rule 39: shown only, never blocks. Same formula as the server's loadStatus().
 const loadLabel = (total = totalUnits(), max = maxUnits()) =>
@@ -213,6 +215,7 @@ function sidebar() {
           ['workspace', 'Overview', 'grid'],
           ['admin-sections', 'Sections', 'calendar'],
           ['admin-grades', 'Grades', 'graduation'],
+          ['admin-students', 'Students', 'users'],
           ['admin-professors', 'Professors', 'users'],
         ]
     : [
@@ -257,9 +260,14 @@ function topbar() {
     workspace: state.role === 'professor' ? 'My classes' : 'Overview',
     'admin-sections': 'Sections',
     'admin-grades': 'Grades',
+    'admin-students': 'Students',
     'admin-professors': 'Professors',
   };
+  const period = currentPeriod();
   return renderTemplate('topbar', {
+    termLabel: period
+      ? `<span class="prototype-label">${periodText(period)}</span>`
+      : '',
     mobile: state.mobile,
     icon: icon('menu'),
     icon3: icon('chevron-right'),
@@ -289,7 +297,14 @@ function footer() {
   return renderTemplate('footer');
 }
 function enrollment() {
+  const st = term.student;
   return renderTemplate('enrollment', {
+    studentName: escapeHTML(
+      [st.firstName, st.middleName, st.lastName].filter(Boolean).join(' '),
+    ),
+    studentNo: escapeHTML(st.studentNo),
+    standing: `BS Information Technology · ${ord(term.yearLevel)} year${st.status === 'DROPPED' ? ' · Dropped' : ''}`,
+    semester: term.period ? `${ord(term.period.semester)} semester` : 'No period',
     content: state.open ? 'badge-green' : 'badge-neutral',
     content2: state.open ? 'open' : 'closed',
     length: offers.length,
@@ -349,7 +364,7 @@ function courseRows() {
           type: c.type,
           content6: ord(c.year),
           units: c.units,
-          content8: 'units',
+          content8: c.units === 1 ? 'unit' : 'units',
           content9: c.locked || c.passed ? 'locked' : '',
           icon: icon(c.locked ? 'lock' : 'check'),
           content11: c.locked
@@ -411,7 +426,7 @@ function planPanel() {
             return renderTemplate('plan-panel-3', {
               color: c.color,
               code: c.code,
-              units: c.units,
+              units: c.units === 1 ? '1 unit' : `${c.units} units`,
               title: c.title,
               icon: icon('users'),
               name: s.name,
@@ -502,6 +517,17 @@ function openSections(id) {
       .join(''),
     content8: current ? 'Change section' : 'Add to my enrollment',
     icon9: icon('plus'),
+    removeButton: current
+      ? renderTemplate('open-sections-remove', {
+          id: c.id,
+          title: c.title,
+          lab:
+            c.type === 'Lecture' && state.plan.some((p) => p.course === c.partner)
+              ? ' and its laboratory'
+              : '',
+          icon: icon('x'),
+        })
+      : '',
   });
   modal.showModal();
 }
@@ -773,7 +799,7 @@ function help() {
     content: [
       [
         '01 · Choose your subjects',
-        'Browse subjects offered this semester. Eligibility tells you which subjects you can take based on the sample academic record.',
+        'Browse subjects offered this semester. Eligibility tells you which subjects you can take based on your academic record.',
       ],
       [
         '02 · Find a section that fits',
@@ -820,6 +846,7 @@ document.addEventListener('click', (e) => {
   const remove = e.target.closest('[data-remove]');
   if (remove) {
     if (!state.open || busy) return;
+    if (modal.open) modal.close(); // "Remove subject" in the section dialog
     const c = getCourse(remove.dataset.remove);
     const withLab =
       c.type === 'Lecture' && state.plan.some((p) => p.course === c.partner);
@@ -870,12 +897,28 @@ document.addEventListener('click', (e) => {
       });
   if (action === 'help') help();
   if (action === 'notifications') {
+    const period = currentPeriod();
+    const isOpen = period?.status === 'OPEN';
+    const student = state.role === 'student';
+    const blocked = student && term?.blockReason && term.blockReason !== 'Enrollment is closed.';
     modal.innerHTML = renderTemplate('dialogs-2', {
       icon: icon('x'),
-      content: state.open ? 'open' : 'closed',
-      content3: state.open
-        ? 'You can now build and save your enrollment plan. Review your prerequisites and unit limit as you choose subjects.'
-        : 'Your enrollment plan is now read-only. Contact your adviser for assistance.',
+      badge: isOpen ? 'badge-green' : 'badge-neutral',
+      content: isOpen ? 'open' : 'closed',
+      term: period ? periodText(period) : 'No enrollment period yet',
+      content3: !student
+        ? isOpen
+          ? 'Students can add and remove subjects. Grades are encoded after enrollment closes.'
+          : 'Enrollment is closed. Professors can encode and submit grades.'
+        : isOpen && !blocked
+          ? 'You can now build your enrollment. Review your prerequisites and unit limit as you choose subjects.'
+          : 'Your enrollment is read-only. Contact your adviser for assistance.',
+      notice: blocked
+        ? renderTemplate('dialogs-notice', {
+            title: "You can't enroll this term",
+            text: escapeHTML(term.blockReason),
+          })
+        : '',
     });
     modal.showModal();
   }

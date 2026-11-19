@@ -7,6 +7,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import mysql from 'mysql2/promise';
 import { seedDemo, DEMO_PASSWORD } from './seed-demo.js';
+import { checkPrerequisiteLoops } from '../src/services/academic.js';
 
 const dbDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../database');
 const files = ['info-enroll.sql', 'info-enroll_insert.sql'];
@@ -31,6 +32,10 @@ export async function resetDatabase(dbName = process.env.DB_NAME || 'info_enroll
     await conn.query(
       "SET SESSION sql_mode = 'STRICT_ALL_TABLES,NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'",
     );
+    // Rule 22: refuse prerequisite data with a loop (the database only blocks
+    // a subject requiring itself).
+    const loops = await checkPrerequisiteLoops(conn);
+    if (loops.length) throw new Error(`Prerequisite data has loops, fix info-enroll_insert.sql:\n  ${loops.join('\n  ')}`);
     log('Seeding demo data ...');
     await conn.beginTransaction();
     try {

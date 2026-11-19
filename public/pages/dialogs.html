@@ -47,6 +47,7 @@
       <p class="modal-error" id="section-error" role="alert"></p>
     </div>
     <div class="modal-footer">
+      {{removeButton}}
       <button class="button" type="button" data-action="close-modal">
         Cancel
       </button>
@@ -73,17 +74,11 @@
   </div>
   <div class="modal-body">
     <div class="help-item">
-      <span class="badge badge-green">Enrollment {{content}}</span>
-      <h3 style="margin-top: 12px">First semester · A.Y. 2026–2027</h3>
+      <span class="badge {{badge}}">Enrollment {{content}}</span>
+      <h3 style="margin-top: 12px">{{term}}</h3>
       <p>{{content3}}</p>
     </div>
-    <div class="help-item">
-      <h3>You're viewing sample records.</h3>
-      <p>
-        Dates, subjects, student details, and notifications are illustrative for
-        this design prototype.
-      </p>
-    </div>
+    {{notice}}
   </div>
 </template>
 
@@ -127,6 +122,25 @@
   <p>{{content}}{{meetingLabel}}</p>
 </template>
 
+<!-- Shown only when the subject is already in the plan. -->
+<template id="open-sections-remove">
+  <button
+    class="button button-remove"
+    type="button"
+    data-remove="{{id}}"
+    aria-label="Remove {{title}}{{lab}} from my enrollment"
+  >
+    {{icon}} Remove subject
+  </button>
+</template>
+
 <template id="open-sections-5">
   <p class="conflict">Schedule conflicts with {{conflict}}.</p>
+</template>
+
+<template id="dialogs-notice">
+  <div class="help-item">
+    <h3>{{title}}</h3>
+    <p>{{text}}</p>
+  </div>
 </template>

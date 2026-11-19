@@ -1188,6 +1188,10 @@ dialog::backdrop {
 .modal-footer .button {
   font-size: 13px;
 }
+/* "Remove subject" sits on the left, apart from Cancel and the main action. */
+.modal-footer .button-remove {
+  margin-right: auto;
+}
 .modal-error {
   color: var(--primary);
   font-size: 13px;
@@ -2592,6 +2596,13 @@ dialog::backdrop {
     background: var(--gold);
     border-color: var(--gold);
   }
+  /* A disabled button on a teal panel must not look clickable. */
+  .panel-header .button-primary:disabled,
+  .schedule-toolbar .button-primary:disabled {
+    background: transparent;
+    border-color: rgba(255, 255, 255, 0.35);
+    color: rgba(255, 255, 255, 0.6);
+  }
   .panel-header .button-quiet,
   .panel-header .icon-button,
   .schedule-toolbar .icon-button {
@@ -2657,5 +2668,33 @@ dialog:has(.data-table) {
   .admin-form,
   .admin-fieldset {
     grid-template-columns: 1fr;
+  }
+}
+
+/* Readable text inside the teal panel headers and schedule toolbar.
+   They set white text that every child inherits, so children that kept their
+   own teal/grey colour, or a white box without a text colour, disappeared. */
+@media screen {
+  .panel-header .eyebrow,
+  .panel-header .section-label,
+  .schedule-toolbar .eyebrow {
+    color: var(--yellow);
+  }
+  .panel-header .muted,
+  .panel-header .page-description,
+  .panel-header .panel-subtitle,
+  .schedule-toolbar .muted {
+    color: color-mix(in srgb, var(--background) 88%, transparent);
+  }
+  .panel-header .input,
+  .panel-header select,
+  .panel-header input,
+  .schedule-toolbar .input,
+  .schedule-toolbar select {
+    color: var(--text);
+    background: var(--background);
+  }
+  .plan-panel > .panel-header > .panel-title > svg {
+    color: var(--yellow);
   }
 }

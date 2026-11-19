@@ -47,6 +47,17 @@ export async function loadStaffData(role) {
 }
 
 // Returns (a promise of) { rerender, toast, error, modal, closeModal, formError }.
+// The newest period a staff member sees: { schoolYear, semester, status } or null.
+// Used by the top bar and the notifications dialog.
+export function staffPeriod(role) {
+  if (role === 'professor') {
+    const s = prof.sections[0]; // newest first
+    return s ? { schoolYear: s.schoolYear, semester: s.semester, status: s.periodStatus } : null;
+  }
+  const p = admin.periods[0]; // newest first
+  return p ? { schoolYear: p.schoolYear, semester: p.semester, status: p.status } : null;
+}
+
 export function handleStaffAction(action, role, value, icon) {
   return role === 'professor'
     ? professorAction(action, value)
@@ -139,7 +150,7 @@ function professorView(icon) {
               : badge(`${s.graded} of ${s.students} graded`, 'amber'),
           title: esc(s.title),
           name: s.name,
-          length: s.students,
+          length: plural(s.students, 'student'),
           schedule: when(s),
           content9: s.id === prof.selectedId ? 'Currently viewing' : 'View class list',
           icon: icon('arrow-right'),
@@ -155,7 +166,7 @@ function professorView(icon) {
         : prof.reviewing
           ? 'Review your grades'
           : 'Class record',
-    length: students.length,
+    length: plural(students.length, 'student'),
     schedule: current ? when(current) : '',
     content10: !current
       ? ''
@@ -309,6 +320,7 @@ const admin = {
   overview: null,
   periods: [],
   professors: [],
+  students: [],
   courses: [],
   incompletes: [],
   gradeOptions: [],
@@ -333,14 +345,15 @@ const profName = (p) => `${p.firstName} ${p.lastName}`;
 const openPeriod = () => admin.periods.find((p) => p.status === 'OPEN') ?? null;
 
 async function loadAdmin() {
-  const [overview, periods, professors, courses, incompletes] = await Promise.all([
+  const [overview, periods, professors, students, courses, incompletes] = await Promise.all([
     api('/admin/overview'),
     api('/admin/periods'),
     api('/admin/professors'),
+    api('/admin/students'),
     api('/admin/courses'),
     api('/admin/incompletes'),
   ]);
-  Object.assign(admin, { overview, periods, professors, courses, incompletes });
+  Object.assign(admin, { overview, periods, professors, students, courses, incompletes });
   if (!periods.some((p) => termKey(p) === admin.term))
     admin.term = periods[0] ? termKey(periods[0]) : null;
   await loadAdminSections();
@@ -375,6 +388,7 @@ function adminView(icon, view) {
   if (view === 'admin-sections') return adminSections(icon);
   if (view === 'admin-grades') return adminGrades();
   if (view === 'admin-professors') return adminProfessors(icon);
+  if (view === 'admin-students') return adminStudents(icon);
   return adminOverview(icon);
 }
 
@@ -555,6 +569,25 @@ function adminProfessors(icon) {
         }),
       )
       .join(''),
+  });
+}
+
+function adminStudents(icon) {
+  return renderTemplate('admin-students', {
+    icon: icon('plus'),
+    rows: admin.students.length
+      ? admin.students
+          .map((s) =>
+            renderTemplate('admin-student-row', {
+              studentNo: esc(s.studentNo),
+              name: esc([s.lastName + ',', s.firstName, s.middleName].filter(Boolean).join(' ')),
+              entrance: esc(s.entranceDate ?? '—'),
+              year: `${ord(s.yearLevel)} year`,
+              status: s.status === 'DROPPED' ? badge('Dropped', 'amber') : badge('Active', 'green'),
+            }),
+          )
+          .join('')
+      : emptyRow(5, 'No students yet.'),
   });
 }
 
@@ -755,6 +788,17 @@ async function adminAction(action, value, icon) {
         body: { studentNo: m[2], grade },
       });
       return done(`INC of ${m[2]} replaced with ${grade}.`);
+    }
+
+    // ---- students
+    if (action === 'staff-student-new') {
+      const d = new Date();
+      const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      return { modal: renderTemplate('admin-student-form', { icon: icon('x'), today: today }) };
+    }
+    if (action === 'staff-form-student') {
+      const r = await api('/admin/students', { method: 'POST', body: formValues(value) });
+      return done(`Student added. Their student number is ${r.studentNo}.`);
     }
 
     // ---- professors

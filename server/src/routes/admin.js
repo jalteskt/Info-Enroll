@@ -76,6 +76,8 @@ router.post('/sections/:id/complete-inc', wrap(async (req) => {
 }));
 
 // Professors
+router.get('/students', wrap(() => admin.listStudents()));
+router.post('/students', wrap((req) => admin.createStudent(req.body ?? {})));
 router.get('/professors', wrap(() => admin.listProfessors()));
 router.post('/professors', wrap((req) => admin.createProfessor(req.body ?? {})));
 router.post('/professors/:id/activate', wrap((req) => admin.setProfessorActive(req.params.id, true)));
