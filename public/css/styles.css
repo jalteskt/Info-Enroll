@@ -26,6 +26,7 @@
   /* PLM uniform palette: surfaces, brand, and restrained accents. */
   --primary: #005f60;
   --primary-dark: #004243;
+  --portal-teal: #00494b;
   --teal-tint: #e6f2f2;
   --gold: #eab308;
   --yellow: #facc15;
@@ -53,8 +54,8 @@
   --cream: var(--surface);
   --green: var(--primary-dark);
   --green-pale: var(--teal-tint);
-  --sans: 'DM Sans', 'Segoe UI', sans-serif;
-  --serif: 'Newsreader', Georgia, serif;
+  --sans: 'Open Sans', 'Segoe UI', sans-serif;
+  --serif: 'Merriweather', Georgia, serif;
 }
 * {
   box-sizing: border-box;
@@ -2493,7 +2494,7 @@ dialog::backdrop {
     font-size: 13px;
   }
 }
-@media (max-width: 700px) {
+@media screen and (max-width: 950px) {
   .mobile-plan-bar {
     position: fixed;
     bottom: 0;
@@ -2696,5 +2697,329 @@ dialog:has(.data-table) {
   }
   .plan-panel > .panel-header > .panel-title > svg {
     color: var(--yellow);
+  }
+}
+
+/* Shared portal styling for screens. Printed enrollment records keep their layout. */
+@media screen {
+  body { background: #f3f7f7; }
+  .shell { min-width: 0; }
+  .content { padding-bottom: 3rem; }
+  .topbar { height: 64px; background: #fff; }
+  .topbar-left, .breadcrumb { min-width: 0; }
+  .breadcrumb { gap: 8px; }
+  .institution-name { color: var(--primary); font-weight: 700; letter-spacing: .08em; }
+  .account-name { white-space: nowrap; }
+  .sidebar { background: var(--portal-teal); }
+  .nav-item.active { box-shadow: inset 3px 0 var(--yellow); }
+  .brand-mark { flex-shrink: 0; }
+  .page-title { font-size: clamp(1.75rem, 4vw, 2.5rem); }
+  .panel, .stat-card { background: #fff; border-color: #dce7e7; border-radius: 12px; }
+  .panel-header, .schedule-toolbar { background: #fff; color: var(--text); }
+  .panel-header .panel-subtitle, .panel-header > .muted,
+  .schedule-toolbar .panel-subtitle { color: var(--text-muted); }
+  .panel-header .eyebrow { color: var(--primary); }
+  .panel-header .icon-button, .panel-header .button-quiet,
+  .schedule-toolbar .icon-button { color: var(--primary); }
+  .panel-header :focus-visible, .schedule-toolbar :focus-visible { outline-color: var(--primary); }
+  .panel-header .button-quiet:hover, .panel-header .icon-button:hover,
+  .schedule-toolbar .icon-button:hover { background: var(--teal-tint); }
+  .panel-title { font-size: 1rem; }
+  .panel-subtitle, .course-code, .course-type, .plan-term { font-size: .8125rem; }
+  .course-table th, .data-table th { background: #f3f7f7; }
+  .course-table tr.selected-row { background: #eef7f5; }
+  .course-table tr.selected-row:hover { background: #e6f2ee; }
+  .plan-sidebar { min-width: 0; }
+  .section-option:has(input:checked) { background: #eef7f5; }
+  .schedule-grid { background: #fff; }
+  .summary-sheet { max-width: 1010px; margin-inline: auto; }
+  .table-wrap:has(.grade) .data-table th:last-child,
+  .table-wrap:has(.grade) .data-table td:last-child,
+  .table-wrap:has([data-staff-grade]) .data-table th:last-child,
+  .table-wrap:has([data-staff-grade]) .data-table td:last-child { text-align: center; }
+  .badge-green { background: #e3f4e9; color: #216542; }
+  .badge-red { background: #fbe9e8; color: #9e2d35; }
+  .badge-amber { background: #fff2cb; color: #745000; }
+  .welcome-page { background: #f3f7f7; }
+  .welcome-art {
+    isolation: isolate;
+    background: var(--portal-teal);
+  }
+  .welcome-art .brand-name {
+    font-size: clamp(.9375rem, 1.65vw, 1.25rem);
+  }
+  .welcome-copy h1 { max-width: 12ch; font-size: clamp(2rem, 5vw, 4rem); }
+  .login-card { width: min(100%, 480px); padding: clamp(22px, 4vw, 42px); background: #fff; border: 1px solid #dce7e7; border-radius: 16px; box-shadow: var(--shadow); }
+  .login-roles, .login-preview-note { background: #eef5f5; }
+  .login-input { min-height: 45px; }
+
+  .enrollment-banner {
+    background: var(--portal-teal);
+    border: 1px solid var(--portal-teal);
+    border-radius: 17px;
+    overflow: hidden;
+    margin-bottom: 24px;
+    box-shadow: 0 10px 28px #003d471c;
+  }
+  .enrollment-heading {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    padding: clamp(20px, 3vw, 36px) clamp(20px, 3.3vw, 40px);
+    background: linear-gradient(108deg, #00494b 25%, #0d6261 68%, #258578);
+  }
+  .campus-facade {
+    position: absolute;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .campus-facade img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: saturate(.8);
+  }
+  .campus-facade::after {
+    position: absolute;
+    inset: 0;
+    content: "";
+  }
+  .enrollment-heading .campus-facade {
+    inset: 0 0 0 auto;
+    width: 58%;
+    mask-image: linear-gradient(90deg, transparent, #000 56%);
+  }
+  .enrollment-heading .campus-facade img { object-position: 59% 37%; }
+  .enrollment-heading .campus-facade::after {
+    background: linear-gradient(90deg, #00494bbf, #00494b29 78%, #00494b20);
+  }
+  .welcome-art .campus-facade {
+    inset: 26% 0 0;
+    mask-image: linear-gradient(180deg, transparent, #0002 12%, #0008 25%, #000 47%);
+  }
+  .welcome-art .campus-facade img { object-position: 64% 45%; }
+  .welcome-art .campus-facade::after {
+    background:
+      linear-gradient(0deg, color-mix(in srgb, var(--portal-teal) 44%, transparent), transparent 30%),
+      linear-gradient(90deg,
+        color-mix(in srgb, var(--portal-teal) 94%, transparent),
+        color-mix(in srgb, var(--portal-teal) 78%, transparent) 34%,
+        color-mix(in srgb, var(--portal-teal) 40%, transparent) 70%,
+        color-mix(in srgb, var(--portal-teal) 20%, transparent));
+  }
+  .enrollment-heading h1 {
+    margin: 8px 0 15px;
+    font: 700 clamp(1.875rem, 4vw, 3rem)/1.1 var(--serif);
+    letter-spacing: -.035em;
+    color: #fff;
+  }
+  .term-label {
+    margin: 0;
+    font-size: .875rem;
+    font-weight: 600;
+    color: #d7eeea;
+  }
+  .badge.enrollment-state {
+    padding: 6px 11px;
+    border: 1px solid #fff3;
+    border-radius: 6px;
+    background: #e0f4e9;
+    color: #1b5741;
+    font-size: .8125rem;
+  }
+  .badge.enrollment-state.badge-neutral {
+    background: #e7eeee;
+    color: #374f52;
+  }
+  .student-strip {
+    display: grid;
+    grid-template-columns: 1.15fr .95fr 1.35fr .72fr;
+    gap: 0;
+    align-items: center;
+    background: #003e40;
+    border-top: 1px solid #ffffff32;
+    padding: 15px clamp(20px, 3.3vw, 40px);
+    margin: 0;
+  }
+  .student-strip .student-detail {
+    min-width: 0;
+    padding: 0 14px;
+    border: 0;
+    border-inline-start: 1px solid #cde7e63d;
+  }
+  .student-strip .student-detail:first-child { padding-inline-start: 0; border: 0; }
+  .student-strip .student-detail:last-child { padding-inline-end: 0; }
+  .student-strip small, .student-strip strong { display: block; }
+  .student-strip small { color: #cde7e6; font-size: .8125rem; margin: 0 0 3px; }
+  .student-strip strong { color: #fff; font-size: .9375rem; font-weight: 650; overflow-wrap: anywhere; }
+  .student-strip .year-standing {
+    display: inline-block;
+    background: var(--teal-tint);
+    color: var(--primary-dark);
+    padding: 3px 8px;
+    border-radius: 5px;
+    white-space: nowrap;
+  }
+
+  .subject-catalog > .panel-header { padding: 18px 21px 10px; border: 0; }
+  .catalog-heading { display: flex; align-items: center; gap: 12px; }
+  .catalog-icon {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    background: #e2f1ee;
+    color: var(--primary-dark);
+    border-radius: 9px;
+  }
+  .subject-catalog .panel-title, .plan-panel .panel-title { font-size: 1.0625rem; }
+  .subject-catalog .toolbar { border: 0; padding-top: 8px; }
+  .subject-catalog .search-field, .subject-catalog .filter-select {
+    min-height: 40px;
+    border-color: #b7cdca;
+    border-radius: 8px;
+  }
+  .subject-catalog .course-tabs {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    padding: 3px;
+    margin: 0 20px 14px;
+    border: 1px solid #e2ecea;
+    border-radius: 8px;
+    background: #f0f5f4;
+  }
+  .subject-catalog .course-tabs button {
+    padding: 6px 11px;
+    min-height: 34px;
+    border: 1px solid transparent;
+    border-radius: 5px;
+  }
+  .subject-catalog .course-tabs button.active {
+    background: #fff;
+    border-color: #c8dcda;
+    color: var(--primary-dark);
+    box-shadow: 0 1px 2px #12342b13;
+  }
+  .subject-catalog .course-tabs button:hover { color: var(--primary-dark); }
+  .subject-catalog .course-table td { padding-block: 15px; }
+  .subject-catalog .course-table th { border-top: 1px solid var(--line); }
+  .subject-catalog .course-name { font-size: .9375rem; font-weight: 700; }
+  .subject-catalog .course-type { flex-wrap: wrap; gap: 2px 5px; }
+  .subject-catalog .course-type .course-code { margin: 0; font-size: .75rem; font-weight: 650; }
+  .subject-catalog .selected-row td:first-child { box-shadow: inset 3px 0 #429183; }
+  .course-status {
+    border-radius: 6px;
+    padding: 4px 7px;
+    font-weight: 650;
+    line-height: 1.35;
+  }
+  .course-status.eligible { background: #e9f4eb; color: #25613d; }
+  .course-status.in-plan { background: #d7ece8; color: var(--primary-dark); }
+  .course-status.completed, .course-status.locked { background: #eef3f3; color: #425858; }
+  .add-button {
+    display: inline-flex;
+    justify-content: center;
+    min-width: 70px;
+    min-height: 36px;
+    width: auto;
+    height: auto;
+    padding: 6px 9px;
+    border-color: #adcac5;
+    border-radius: 7px;
+    font-size: .8125rem;
+    font-weight: 650;
+    white-space: nowrap;
+  }
+  .add-button:disabled { color: var(--text-muted); }
+
+  .plan-panel .panel-header { border: 0; gap: 6px; }
+  .plan-count { color: var(--text-muted); font-size: .75rem; white-space: nowrap; }
+  .plan-top {
+    margin: 0 16px 7px;
+    padding: 14px 16px;
+    background: linear-gradient(125deg, #e6f4ef, #dceeea);
+    border: 1px solid #d1e5e0;
+    border-radius: 10px;
+  }
+  .unit-total { flex-wrap: wrap; margin: 0; gap: 5px 6px; }
+  .unit-total strong { color: var(--primary-dark); font-size: 2.625rem; font-weight: 700; }
+  .unit-total .unit-label {
+    flex: 0 0 100%;
+    margin: 0;
+    color: #315b56;
+    font-size: .8125rem;
+    font-weight: 650;
+  }
+  .unit-meter { height: 6px; }
+  .unit-meter i { background: #bfd8d3; }
+  .unit-meter i.filled { background: var(--primary); }
+  .unit-note { color: #315b56; }
+  .selected-list { padding-inline: 16px; }
+  .selected-item { padding-block: 12px; }
+  .selected-item .icon-button { width: 28px; height: 28px; }
+  .plan-actions { background: #f4f9f8; }
+}
+@media screen and (max-width: 1150px) {
+  .prototype-label { display: none; }
+}
+@media screen and (max-width: 850px) {
+  .sidebar { transform: translateX(-100%); visibility: hidden; width: 240px; transition: transform .2s; }
+  .sidebar.is-open { transform: translateX(0); visibility: visible; }
+  .sidebar-scrim { position: fixed; inset: 0; z-index: 29; border: 0; background: var(--scrim); }
+  .shell { margin-left: 0; }
+  .mobile-menu { display: grid; }
+  .topbar-left { display: flex; align-items: center; gap: 4px; }
+  .toast { left: 50%; }
+}
+@media screen and (min-width: 851px) and (max-width: 950px) {
+  .mobile-plan-bar { left: 195px; }
+}
+@media screen and (max-width: 760px) {
+  .enrollment-heading .campus-facade { width: 64%; }
+  .student-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 13px; }
+  .student-strip .student-detail:nth-child(3) { border: 0; padding-inline-start: 0; }
+}
+@media screen and (max-width: 700px) {
+  .topbar { padding-inline: 12px; }
+  .topbar-right { gap: 8px; }
+  .breadcrumb span:nth-child(3), .breadcrumb svg:nth-child(4) { display: none; }
+  .enrollment-heading { padding: 19px 16px; }
+  .enrollment-heading .campus-facade { width: 72%; }
+  .enrollment-heading .campus-facade::after {
+    background: linear-gradient(90deg, #00494bdf 15%, #00494b90 52%, #00494b35);
+  }
+  .student-strip { padding: 15px 16px; }
+  .student-strip .student-detail { padding-inline: 9px; }
+  .student-strip strong { font-size: .875rem; }
+  .subject-catalog > .panel-header { padding-inline: 14px; }
+  .subject-catalog .course-tabs { margin-inline: 12px; }
+  .subject-catalog .course-tabs button { padding-inline: 7px; }
+  .subject-catalog .course-name { font-size: .875rem; }
+  .subject-catalog .course-type { font-size: .6875rem; }
+  .subject-catalog .course-type .course-code { font-size: .6875rem; }
+  .course-table th, .course-table td { padding-inline: 8px; }
+  .add-button { min-width: 0; padding-inline: 7px; font-size: .75rem; }
+  .welcome-art { min-height: 200px; }
+  .welcome-art .campus-facade { inset-block-start: 14%; }
+  .welcome-art .campus-facade img { object-position: 64% 34%; }
+  .login-card { padding: 20px; }
+}
+
+.grade-table th:last-child, .grade-table td:last-child { text-align: center; }
+
+/* Keep controls readable on the refreshed white panel headers. */
+@media screen {
+  .panel-header .section-label, .schedule-toolbar .eyebrow,
+  .panel-header .muted, .panel-header .page-description,
+  .schedule-toolbar .muted { color: var(--text-muted); }
+  .plan-panel > .panel-header > .panel-title > svg { color: var(--primary); }
+  .panel-header .button-primary, .schedule-toolbar .button-primary {
+    background: var(--primary); border-color: var(--primary); color: #fff;
+  }
+  .panel-header .button-primary:disabled, .schedule-toolbar .button-primary:disabled {
+    background: #e6eeee; border-color: #d2dddd; color: #596969;
   }
 }

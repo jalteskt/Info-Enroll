@@ -299,6 +299,9 @@ function footer() {
 function enrollment() {
   const st = term.student;
   return renderTemplate('enrollment', {
+    campusPhoto: campusArt(),
+    termLabel: escapeHTML(termText() || 'No enrollment period'),
+    yearStanding: `${ord(term.yearLevel)} year${st.status === 'DROPPED' ? ' · Dropped' : ''}`,
     studentName: escapeHTML(
       [st.firstName, st.middleName, st.lastName].filter(Boolean).join(' '),
     ),

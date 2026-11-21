@@ -12,26 +12,36 @@
 </template>
 
 <template id="enrollment">
-  <div class="student-strip">
-    <div class="student-detail">
-      <small>Student</small>
-      <strong>{{studentName}}</strong>
-    </div>
-    <div class="student-detail">
-      <small>Student number</small>
-      <strong class="student-number">{{studentNo}}</strong>
-    </div>
-    <div class="student-detail">
-      <small>Program & standing</small>
-      <strong>{{standing}}</strong>
-    </div>
-    <span class="badge {{content}}">
-      <i class="status-dot"></i>
-      Enrollment {{content2}}
-    </span>
-  </div>
+  <section class="enrollment-banner" aria-labelledby="enrollment-title">
+    <header class="enrollment-heading">
+      <p class="term-label">{{termLabel}}</p>
+      <h1 id="enrollment-title">Student enrollment</h1>
+      <span class="badge enrollment-state {{content}}">
+        <i class="status-dot"></i>Enrollment {{content2}}
+      </span>
+      {{campusPhoto}}
+    </header>
+    <section class="student-strip" aria-label="Student details">
+      <div class="student-detail student-identity">
+        <small>Student</small>
+        <strong>{{studentName}}</strong>
+      </div>
+      <div class="student-detail">
+        <small>Student number</small>
+        <strong class="student-number">{{studentNo}}</strong>
+      </div>
+      <div class="student-detail student-program">
+        <small>Program</small>
+        <strong>BS Information Technology</strong>
+      </div>
+      <div class="student-detail">
+        <small>Year standing</small>
+        <strong class="year-standing">{{yearStanding}}</strong>
+      </div>
+    </section>
+  </section>
   <div class="workspace">
-    <section class="panel" aria-labelledby="subjects-title">
+    <section class="panel subject-catalog" aria-labelledby="subjects-title">
       <div class="panel-header">
         <div>
           <h2 class="panel-title" id="subjects-title">
