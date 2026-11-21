@@ -148,7 +148,7 @@ let state = {
   plan: [],
   search: '',
   filter: 'all',
-  tab: 'all',
+  tab: 'eligible',
   menu: false,
   mobile: false,
   saved: true,
