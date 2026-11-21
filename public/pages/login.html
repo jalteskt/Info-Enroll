@@ -3,26 +3,15 @@
 <template id="login">
   <main class="welcome-page">
     <section class="welcome-art">
-      {{brand}}
       <div class="welcome-copy">
         <div class="eyebrow">Pamantasan ng Lungsod ng Maynila</div>
-        <h1>Student enrollment</h1>
-        <p>
-          One thoughtful semester at a time. Welcome to your enrollment portal.
-        </p>
+        <h1>Student enrollment system</h1>
       </div>
-      {{campusArt}}
       <div class="welcome-footer">Karunungan. Kaunlaran. Kadakilaan.</div>
     </section>
     <section class="welcome-form">
       <div class="login-card">
-        <div class="eyebrow">Your next chapter awaits</div>
         <h2>Sign in</h2>
-        <p>
-          A new semester starts with a clear plan.
-          <br />
-          Sign in to your workspace.
-        </p>
         <div class="login-roles" aria-label="Account type">{{content}}</div>
         <form id="login-form">
           <label class="login-label" for="login-username">{{content4}}</label>
@@ -53,12 +42,19 @@
           </div>
           <p class="modal-error" id="login-error" role="alert"></p>
           <button class="button button-primary" type="submit">
-            Open {{content7}} {{icon8}}
+            Login
           </button>
         </form>
+        {{demoLogin}}
       </div>
     </section>
   </main>
+</template>
+
+<template id="demo-login">
+  <button type="button" class="button button-quiet" data-demo-login>
+    Use demo {{role}} account
+  </button>
 </template>
 
 <template id="login-2">

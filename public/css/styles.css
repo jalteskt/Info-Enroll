@@ -461,8 +461,12 @@ button {
   display: block;
 }
 .account-menu button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   border: 0;
-  background: none;
+  background: var(--surface);
   text-align: left;
   width: 100%;
   border-radius: 5px;
@@ -470,6 +474,7 @@ button {
   font-size: 14px;
 }
 .account-menu button:hover,
+.account-menu button:focus-visible,
 .account-menu button.active {
   background: var(--teal-tint);
   color: var(--primary);
@@ -1534,7 +1539,7 @@ dialog::backdrop {
 .welcome-page {
   min-height: 100vh;
   display: grid;
-  grid-template-columns: 1.1fr 1fr;
+  grid-template-columns: 0.9fr 1fr;
   background: var(--background);
 }
 .welcome-art {
@@ -1559,7 +1564,9 @@ dialog::backdrop {
   border: 1px solid var(--on-brand-border);
 }
 .welcome-copy {
-  margin: auto 0;
+  margin: 0 0 auto;
+  padding: clamp(16px, 2vw, 28px);
+  background: var(--portal-teal);
   position: relative;
   z-index: 1;
 }
@@ -1664,6 +1671,11 @@ dialog::backdrop {
 .login-card .button-primary {
   width: 100%;
   margin-top: 24px;
+}
+.login-card [data-demo-login] {
+  width: 100%;
+  margin-top: 12px;
+  border: 1px solid var(--primary);
 }
 .login-preview-note {
   font-size: 12px;
@@ -2132,7 +2144,7 @@ dialog::backdrop {
     font-size: 10px;
   }
   .welcome-copy {
-    margin: 30px 0 10px;
+    margin: 0 0 10px;
   }
   .welcome-copy .eyebrow {
     font-size: 10px;
@@ -2740,10 +2752,30 @@ dialog:has(.data-table) {
   .badge-green { background: #e3f4e9; color: #216542; }
   .badge-red { background: #fbe9e8; color: #9e2d35; }
   .badge-amber { background: #fff2cb; color: #745000; }
-  .welcome-page { background: #f3f7f7; }
+  .welcome-page { background: var(--portal-teal); grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .welcome-art {
     isolation: isolate;
-    background: var(--portal-teal);
+    background: #fff;
+    color: var(--primary-dark);
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .welcome-art .welcome-copy {
+    margin: 0;
+    padding: clamp(28px, 4vw, 50px) clamp(24px, 4vw, 65px);
+    background: transparent;
+    text-shadow: none;
+  }
+  .welcome-art .welcome-copy .eyebrow { color: var(--primary); }
+  .welcome-art .welcome-footer {
+    color: var(--primary-dark);
+    text-shadow: none;
+    position: absolute;
+    bottom: 28px;
+    left: clamp(24px, 4vw, 65px);
+    right: 24px;
+    z-index: 1;
   }
   .welcome-art .brand-name {
     font-size: clamp(.9375rem, 1.65vw, 1.25rem);
@@ -2796,18 +2828,18 @@ dialog:has(.data-table) {
     background: linear-gradient(90deg, #00494bbf, #00494b29 78%, #00494b20);
   }
   .welcome-art .campus-facade {
-    inset: 26% 0 0;
-    mask-image: linear-gradient(180deg, transparent, #0002 12%, #0008 25%, #000 47%);
+    position: absolute;
+    inset: 0;
+    z-index: 0;
   }
-  .welcome-art .campus-facade img { object-position: 64% 45%; }
+  .welcome-art .campus-facade img {
+    position: absolute;
+    inset: 0;
+    object-position: 35% 45%;
+    filter: none;
+  }
   .welcome-art .campus-facade::after {
-    background:
-      linear-gradient(0deg, color-mix(in srgb, var(--portal-teal) 44%, transparent), transparent 30%),
-      linear-gradient(90deg,
-        color-mix(in srgb, var(--portal-teal) 94%, transparent),
-        color-mix(in srgb, var(--portal-teal) 78%, transparent) 34%,
-        color-mix(in srgb, var(--portal-teal) 40%, transparent) 70%,
-        color-mix(in srgb, var(--portal-teal) 20%, transparent));
+    content: none;
   }
   .enrollment-heading h1 {
     margin: 8px 0 15px;
@@ -3003,8 +3035,7 @@ dialog:has(.data-table) {
   .course-table th, .course-table td { padding-inline: 8px; }
   .add-button { min-width: 0; padding-inline: 7px; font-size: .75rem; }
   .welcome-art { min-height: 200px; }
-  .welcome-art .campus-facade { inset-block-start: 14%; }
-  .welcome-art .campus-facade img { object-position: 64% 34%; }
+  .welcome-art .campus-facade img { object-position: 35% 34%; }
   .login-card { padding: 20px; }
 }
 
@@ -3022,4 +3053,7 @@ dialog:has(.data-table) {
   .panel-header .button-primary:disabled, .schedule-toolbar .button-primary:disabled {
     background: #e6eeee; border-color: #d2dddd; color: #596969;
   }
+}
+.section-name-cell {
+  white-space: nowrap;
 }

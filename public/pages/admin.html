@@ -2,7 +2,26 @@
 
 <!-- ============================== Overview ============================== -->
 <template id="admin-view">
-  <div class="stats-grid">{{stat}}{{stat2}}{{stat3}}</div>
+  <section class="enrollment-banner" aria-labelledby="registrar-title">
+    <header class="enrollment-heading">
+      <p class="term-label">{{periodTitle}}</p>
+      <h1 id="registrar-title">Registrar overview</h1>
+      <span class="badge enrollment-state {{statusClass}}">
+        <i class="status-dot"></i>{{statusText}}
+      </span>
+      {{campusPhoto}}
+    </header>
+    <div class="student-strip">
+      <div class="student-detail"><small>Students enrolled</small><strong>{{studentsEnrolled}}</strong></div>
+      <div class="student-detail"><small>Sections</small><strong>{{sectionCount}}</strong></div>
+      <div class="student-detail"><small>Seats left</small><strong>{{seatsLeft}}</strong></div>
+      <div class="student-detail">
+        <small>Grades to finish</small>
+        <strong>{{gradesToFinish}}</strong>
+        <small>{{gradeBreakdown}}</small>
+      </div>
+    </div>
+  </section>
   <section class="panel admin-period-panel">
     <div class="panel-header">
       <div>
@@ -100,7 +119,7 @@
       <strong>{{code}}</strong>
       <div class="muted">{{title}}</div>
     </td>
-    <td>{{name}}</td>
+    <td class="section-name-cell">{{name}}</td>
     <td>{{schedule}}</td>
     <td>{{professor}}</td>
     <td>{{students}}</td>

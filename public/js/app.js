@@ -1,5 +1,5 @@
 import { renderTemplate } from './templates.js';
-import { renderStaffView, handleStaffAction, loadStaffData, staffPeriod } from './staff.js';
+import { renderStaffView, handleStaffAction, loadStaffData } from './staff.js';
 import { api } from './api.js';
 
 const paths = {
@@ -12,7 +12,6 @@ const paths = {
   'arrow-right': renderTemplate('icon-arrow-right'),
   'chevron-right': renderTemplate('icon-chevron-right'),
   'chevron-down': renderTemplate('icon-chevron-down'),
-  bell: renderTemplate('icon-bell'),
   search: renderTemplate('icon-search'),
   plus: renderTemplate('icon-plus'),
   check: renderTemplate('icon-check'),
@@ -59,9 +58,6 @@ const ord = (n) => `${n}${['th', 'st', 'nd', 'rd'][n] ?? 'th'}`;
 const periodText = (p) =>
   p ? `${ord(p.semester)} Semester, A.Y. ${p.schoolYear.replace('-', '–')}` : '';
 const termText = () => periodText(term?.period);
-// The period shown in the top bar and notifications, for any role.
-const currentPeriod = () =>
-  state.role === 'student' ? term?.period ?? null : staffPeriod(state.role);
 const maxUnits = () => term?.unitLimit?.maxUnits ?? null; // null = no cap
 // Rule 39: shown only, never blocks. Same formula as the server's loadStatus().
 const loadLabel = (total = totalUnits(), max = maxUnits()) =>
@@ -228,7 +224,7 @@ function sidebar() {
     content: state.mobile ? renderTemplate('sidebar-2') : '',
     content2: state.mobile ? 'is-open' : '',
     brand: brand(),
-    content4: state.role.toUpperCase(),
+    portalLabel: `${state.role.toUpperCase()} PORTAL`,
     content5: nav
       .map(([key, label, i]) =>
         renderTemplate('sidebar-3', {
@@ -248,7 +244,7 @@ function topbar() {
   const name = `${user.firstName} ${user.lastName}`;
   const role = {
     student: `Student no. ${user.login}`,
-    professor: 'Faculty workspace',
+    professor: 'Faculty portal',
     admin: 'Administration',
   }[user.role];
   const initials = (user.firstName[0] + user.lastName[0]).toUpperCase();
@@ -263,11 +259,7 @@ function topbar() {
     'admin-students': 'Students',
     'admin-professors': 'Professors',
   };
-  const period = currentPeriod();
   return renderTemplate('topbar', {
-    termLabel: period
-      ? `<span class="prototype-label">${periodText(period)}</span>`
-      : '',
     mobile: state.mobile,
     icon: icon('menu'),
     icon3: icon('chevron-right'),
@@ -279,7 +271,6 @@ function topbar() {
           : 'Administration',
     icon5: icon('chevron-right'),
     content6: labels[state.view],
-    icon7: icon('bell'),
     menu: state.menu,
     initials: initials,
     name: name,
@@ -292,9 +283,6 @@ function topbar() {
         })
       : '',
   });
-}
-function footer() {
-  return renderTemplate('footer');
 }
 function enrollment() {
   const st = term.student;
@@ -665,8 +653,10 @@ function summary() {
       : 'Enrollment is closed. This plan is now read-only.',
   });
 }
+let demoAccounts = null;
 function login() {
   return renderTemplate('login', {
+    demoLogin: demoAccounts ? renderTemplate('demo-login', { role: state.loginRole }) : '',
     brand: brand(),
     campusArt: campusArt(),
     content: ['student', 'professor', 'admin']
@@ -683,13 +673,6 @@ function login() {
     content5:
       state.loginRole === 'student' ? 'e.g. 202500002' : 'e.g. mreyes',
     icon: icon('eye'),
-    content7:
-      state.loginRole === 'student'
-        ? 'student portal'
-        : state.loginRole === 'professor'
-          ? 'faculty workspace'
-          : 'admin workspace',
-    icon8: icon('arrow'),
   });
 }
 function mobilePlanBar() {
@@ -722,7 +705,6 @@ function render() {
     sidebar: sidebar(),
     topbar: topbar(),
     content: content,
-    footer: footer(),
     content5:
       state.role === 'student' && state.view === 'enrollment'
         ? mobilePlanBar()
@@ -775,7 +757,7 @@ async function applyUser(user) {
   } catch (err) {
     state.user = null;
     render();
-    notify(`Could not load your workspace: ${err.message}`, true);
+    notify(`Could not load your portal: ${err.message}`, true);
     return;
   }
   state.user = user;
@@ -824,6 +806,13 @@ function help() {
   modal.showModal();
 }
 document.addEventListener('click', (e) => {
+  if (demoAccounts && e.target.closest('[data-demo-login]')) {
+    const form = document.querySelector('#login-form');
+    form.querySelector('#login-username').value = demoAccounts.logins[state.loginRole];
+    form.querySelector('#login-password').value = demoAccounts.password;
+    form.requestSubmit();
+    return;
+  }
   const loginRole = e.target.closest('[data-login-role]');
   if (loginRole) {
     state.loginRole = loginRole.dataset.loginRole;
@@ -899,32 +888,6 @@ document.addEventListener('click', (e) => {
         block: 'start',
       });
   if (action === 'help') help();
-  if (action === 'notifications') {
-    const period = currentPeriod();
-    const isOpen = period?.status === 'OPEN';
-    const student = state.role === 'student';
-    const blocked = student && term?.blockReason && term.blockReason !== 'Enrollment is closed.';
-    modal.innerHTML = renderTemplate('dialogs-2', {
-      icon: icon('x'),
-      badge: isOpen ? 'badge-green' : 'badge-neutral',
-      content: isOpen ? 'open' : 'closed',
-      term: period ? periodText(period) : 'No enrollment period yet',
-      content3: !student
-        ? isOpen
-          ? 'Students can add and remove subjects. Grades are encoded after enrollment closes.'
-          : 'Enrollment is closed. Professors can encode and submit grades.'
-        : isOpen && !blocked
-          ? 'You can now build your enrollment. Review your prerequisites and unit limit as you choose subjects.'
-          : 'Your enrollment is read-only. Contact your adviser for assistance.',
-      notice: blocked
-        ? renderTemplate('dialogs-notice', {
-            title: "You can't enroll this term",
-            text: escapeHTML(term.blockReason),
-          })
-        : '',
-    });
-    modal.showModal();
-  }
   if (action === 'reset-filters') {
     state.search = '';
     state.filter = 'all';
@@ -1084,7 +1047,8 @@ modal.addEventListener('click', (e) => {
 
 // Restore an existing session on page load; otherwise show the sign-in page.
 try {
-  const { user } = await api('/auth/me');
+  const { user, demoLogin } = await api('/auth/me');
+  demoAccounts = demoLogin;
   if (user) await applyUser(user);
   else render();
 } catch {

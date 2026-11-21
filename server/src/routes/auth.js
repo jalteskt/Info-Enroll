@@ -2,6 +2,7 @@
 // username. All passwords are bcrypt hashes.
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
+import { DEMO_PASSWORD } from '../../scripts/seed-demo.js';
 import { pool } from '../db.js';
 import { AppError } from '../errors.js';
 
@@ -66,8 +67,15 @@ router.post('/logout', (req, res, next) => {
   });
 });
 
+function localDebug(req) {
+  return req.app.locals.demoLogin && ['localhost', '127.0.0.1'].includes(req.hostname);
+}
+
 router.get('/me', (req, res) => {
-  res.json({ user: req.session.user ?? null });
+  const demoLogin = localDebug(req)
+    ? { logins: { student: '202500002', professor: 'mreyes', admin: 'registrar' }, password: DEMO_PASSWORD }
+    : null;
+  res.set('Cache-Control', 'no-store').json({ user: req.session.user ?? null, demoLogin });
 });
 
 export default router;

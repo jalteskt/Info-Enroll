@@ -58,30 +58,6 @@
   </form>
 </template>
 
-<template id="dialogs-2">
-  <div class="modal-header">
-    <div>
-      <div class="eyebrow">Your updates</div>
-      <h2 id="modal-title">A new semester awaits.</h2>
-    </div>
-    <button
-      class="icon-button"
-      data-action="close-modal"
-      aria-label="Close notifications"
-    >
-      {{icon}}
-    </button>
-  </div>
-  <div class="modal-body">
-    <div class="help-item">
-      <span class="badge {{badge}}">Enrollment {{content}}</span>
-      <h3 style="margin-top: 12px">{{term}}</h3>
-      <p>{{content3}}</p>
-    </div>
-    {{notice}}
-  </div>
-</template>
-
 <template id="dialogs-3">
   <span class="badge badge-{{color}}">{{label}}</span>
 </template>
@@ -136,11 +112,4 @@
 
 <template id="open-sections-5">
   <p class="conflict">Schedule conflicts with {{conflict}}.</p>
-</template>
-
-<template id="dialogs-notice">
-  <div class="help-item">
-    <h3>{{title}}</h3>
-    <p>{{text}}</p>
-  </div>
 </template>

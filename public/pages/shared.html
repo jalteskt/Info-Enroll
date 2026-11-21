@@ -8,20 +8,15 @@
   <div class="brand">
     <div class="brand-mark">{{icon}}</div>
     <div>
-      <div class="brand-name">PLM</div>
-      <span class="brand-label">Enrollment portal</span>
+      <div class="brand-name">Student Enrollment System</div>
     </div>
   </div>
 </template>
 
 <template id="campus-art">
   <div class="campus-facade" aria-hidden="true">
-    <img src="/assets/plm-facade.jpg" alt="" />
+    <img src="/assets/plm-facade.png" alt="" />
   </div>
-</template>
-
-<template id="footer">
-  <footer class="content-footer"><span>PLM BSIT / ENROLLMENT</span></footer>
 </template>
 
 <template id="render">
@@ -29,7 +24,7 @@
   <div class="shell">
     {{topbar}}
     <main class="content" id="main-content" tabindex="-1">
-      {{content}}{{footer}}
+      {{content}}
     </main>
     {{content5}}
   </div>
@@ -39,7 +34,7 @@
   {{content}}
   <aside class="sidebar {{content2}}" aria-label="Main navigation">
     {{brand}}
-    <div class="portal-label">{{content4}} WORKSPACE</div>
+    <div class="portal-label">{{portalLabel}}</div>
     <nav class="side-nav">{{content5}}</nav>
   </aside>
 </template>
@@ -72,14 +67,6 @@
       </div>
     </div>
     <div class="topbar-right">
-      {{termLabel}}
-      <button
-        class="icon-button"
-        data-action="notifications"
-        aria-label="View notifications"
-      >
-        {{icon7}}
-      </button>
       <button
         class="account-button"
         data-action="account-menu"

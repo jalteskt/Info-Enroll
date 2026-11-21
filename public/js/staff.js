@@ -47,17 +47,6 @@ export async function loadStaffData(role) {
 }
 
 // Returns (a promise of) { rerender, toast, error, modal, closeModal, formError }.
-// The newest period a staff member sees: { schoolYear, semester, status } or null.
-// Used by the top bar and the notifications dialog.
-export function staffPeriod(role) {
-  if (role === 'professor') {
-    const s = prof.sections[0]; // newest first
-    return s ? { schoolYear: s.schoolYear, semester: s.semester, status: s.periodStatus } : null;
-  }
-  const p = admin.periods[0]; // newest first
-  return p ? { schoolYear: p.schoolYear, semester: p.semester, status: p.status } : null;
-}
-
 export function handleStaffAction(action, role, value, icon) {
   return role === 'professor'
     ? professorAction(action, value)
@@ -398,23 +387,14 @@ function adminOverview(icon) {
   const latest = admin.periods[0];
   const waiting = o.sectionsWithoutGrades;
   return renderTemplate('admin-view', {
-    stat: stat(
-      'Enrollment period',
-      open ? 'Open' : 'Closed',
-      open ? termName(open) : latest ? `Last: ${termName(latest)}` : 'No period yet',
-    ),
-    stat2: stat(
-      'Students enrolled',
-      open ? two(open.studentsEnrolled) : '—',
-      open
-        ? `${plural(open.sections, 'section')} · ${open.seatsAvailable} seats left`
-        : 'No open period',
-    ),
-    stat3: stat(
-      'Grades to finish',
-      two(waiting + o.incompletes),
-      `${plural(waiting, 'section')} unsubmitted · ${o.incompletes} INC`,
-    ),
+    campusPhoto: renderTemplate('campus-art'),
+    statusClass: open ? 'badge-green' : 'badge-neutral',
+    statusText: open ? 'Enrollment open' : 'Enrollment closed',
+    studentsEnrolled: open?.studentsEnrolled ?? '—',
+    sectionCount: open?.sections ?? '—',
+    seatsLeft: open?.seatsAvailable ?? '—',
+    gradesToFinish: waiting + o.incompletes,
+    gradeBreakdown: `${plural(waiting, 'section')} unsubmitted · ${o.incompletes} INC`,
     periodTitle: open
       ? termName(open)
       : latest

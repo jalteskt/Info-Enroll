@@ -18,6 +18,8 @@ if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET === 'change-me') {
 }
 
 const app = express();
+const demoLogin = process.argv.includes('--local-demo-login') && process.env.NODE_ENV !== 'production';
+app.locals.demoLogin = demoLogin;
 app.use(express.json());
 
 // Sessions live in server memory (fine for the demo). Restarting the server,
@@ -61,6 +63,6 @@ app.use((err, req, res, next) => {
 });
 
 const port = Number(process.env.PORT || 3000);
-app.listen(port, () => {
+app.listen(port, demoLogin ? '127.0.0.1' : undefined, () => {
   console.log(`Info-Enroll running at http://localhost:${port}`);
 });
