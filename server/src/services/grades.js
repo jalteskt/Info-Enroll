@@ -15,45 +15,26 @@ const VALID = new Set(VALID_GRADES);
 
 const SECTION_SQL = `
   SELECT
-      s.section_id                             AS id
-    , s.section_no                             AS sectionNo
-    , s.course_code                            AS code
-    , c.course_title                           AS title
-    , c.units
-    , c.year_level                             AS yearLevel
+      s.section_id            AS id
+    , s.section_no            AS sectionNo
+    , s.course_code           AS code
+    , s.course_title          AS title
+    , s.units
+    , s.year_level            AS yearLevel
     , s.day
-    , TIME_FORMAT(s.time_start, '%H:%i')       AS timeStart
-    , TIME_FORMAT(s.time_end, '%H:%i')         AS timeEnd
-    , s.school_year                            AS schoolYear
+    , s.time_start            AS timeStart
+    , s.time_end              AS timeEnd
+    , s.school_year           AS schoolYear
     , s.semester
-    , p.status                                 AS periodStatus
-    , s.grades_submitted_at                    AS submittedAt
-    , s.submitted_by_admin_id                  AS submittedByAdminId
-    , s.professor_id                           AS professorId
-    , CONCAT(pr.first_name, ' ', pr.last_name) AS professor
-    , (
-        SELECT COUNT(*)
-        FROM enrolled_course ec
-        WHERE ec.section_id = s.section_id
-      ) AS students
-    , (
-        SELECT COUNT(*)
-        FROM enrolled_course ec
-        JOIN enrollment e ON e.enrollment_id = ec.enrollment_id
-        WHERE ec.section_id = s.section_id
-          AND e.date_enrolled IS NOT NULL
-      ) AS enrolledStudents
-    , (
-        SELECT COUNT(*)
-        FROM enrolled_course ec
-        WHERE ec.section_id = s.section_id
-          AND ec.grade IS NOT NULL
-      ) AS graded
-  FROM section s
-  JOIN course c ON c.course_code = s.course_code
-  JOIN enrollment_period p ON p.school_year = s.school_year
-    AND p.semester = s.semester
-  JOIN professor pr ON pr.professor_id = s.professor_id
+    , s.period_status         AS periodStatus
+    , s.grades_submitted_at   AS submittedAt
+    , s.submitted_by_admin_id AS submittedByAdminId
+    , s.professor_id          AS professorId
+    , s.professor
+    , s.students
+    , s.enrolled_students     AS enrolledStudents
+    , s.graded
+  FROM vwSectionDetails s
 `;
 
 const withName = (s) => ({ ...s, name: `BSIT ${s.yearLevel}-${s.sectionNo}` }); // rule 14
@@ -102,18 +83,16 @@ export async function sectionRoster(sectionId, actor, db = pool, { lock = false 
   }
   const [students] = await db.query(`
     SELECT
-        st.student_no  AS studentNo
-      , st.last_name   AS lastName
-      , st.first_name  AS firstName
-      , st.middle_name AS middleName
-      , ec.grade
-    FROM enrolled_course ec
-    JOIN enrollment e ON e.enrollment_id = ec.enrollment_id
-    JOIN student st ON st.student_no = e.student_no
-    WHERE ec.section_id = ?
+        student_no  AS studentNo
+      , last_name   AS lastName
+      , first_name  AS firstName
+      , middle_name AS middleName
+      , grade
+    FROM vwStudentSubjects
+    WHERE section_id = ?
     ORDER BY
-        st.last_name
-      , st.first_name
+        last_name
+      , first_name
   `, [section.id]);
   return { section: withName(section), students };
 }
@@ -235,24 +214,19 @@ export async function completeInc(sectionId, studentNo, grade, adminId) {
 export async function listIncompletes() {
   const [rows] = await pool.query(`
     SELECT
-        ec.section_id  AS sectionId
-      , s.course_code  AS code
-      , c.course_title AS title
-      , s.school_year  AS schoolYear
-      , s.semester
-      , e.student_no   AS studentNo
-      , CONCAT(st.last_name, ', ', st.first_name) AS student
-    FROM enrolled_course ec
-    JOIN enrollment e ON e.enrollment_id = ec.enrollment_id
-    JOIN student st ON st.student_no = e.student_no
-    JOIN section s ON s.section_id = ec.section_id
-    JOIN course c ON c.course_code = s.course_code
-    WHERE ec.grade = 'INC'
-      AND s.grades_submitted_at IS NOT NULL
+        section_id   AS sectionId
+      , course_code  AS code
+      , course_title AS title
+      , school_year  AS schoolYear
+      , semester
+      , student_no   AS studentNo
+      , student_name AS student
+    FROM vwReviewQueue
+    WHERE item_type = 'INC'
     ORDER BY
-        s.school_year
-      , s.semester
-      , st.last_name
+        school_year
+      , semester
+      , student_name
   `);
   return rows;
 }

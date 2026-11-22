@@ -2,7 +2,7 @@
 import bcrypt from 'bcryptjs';
 import { pool, withTransaction } from '../db.js';
 import { AppError } from '../errors.js';
-import { loadCourses, currentPeriod, ordinal } from './academic.js';
+import { loadCourses, ordinal } from './academic.js';
 import { sectionGroup, labDroppedWith } from './pairing.js';
 import { overlaps, describeTime } from './schedule.js';
 import { planDefaultSections } from './defaultSections.js';
@@ -15,32 +15,16 @@ const TIME = /^([01]\d|2[0-3]):[0-5]\d$/;
 export async function listPeriods() {
   const [rows] = await pool.query(`
     SELECT
-        p.school_year AS schoolYear
-      , p.semester
-      , p.status
-      , (
-          SELECT COUNT(*)
-          FROM section s
-          WHERE s.school_year = p.school_year
-            AND s.semester = p.semester
-        ) AS sections
-      , (
-          SELECT COUNT(*)
-          FROM section s
-          WHERE s.school_year = p.school_year
-            AND s.semester = p.semester
-            AND s.grades_submitted_at IS NULL
-        ) AS sectionsWithoutGrades
-      , (
-          SELECT COUNT(*)
-          FROM enrollment e
-          WHERE e.school_year = p.school_year
-            AND e.semester = p.semester
-        ) AS enrollments
-    FROM enrollment_period p
+        school_year             AS schoolYear
+      , semester
+      , status
+      , sections
+      , sections_without_grades AS sectionsWithoutGrades
+      , enrollments
+    FROM vwPeriodSummary
     ORDER BY
-        p.school_year DESC
-      , p.semester DESC
+        school_year DESC
+      , semester DESC
   `);
   return rows;
 }
@@ -548,28 +532,17 @@ export function reassignProfessor(sectionId, professorId) {
 export async function listProfessors() {
   const [rows] = await pool.query(`
     SELECT
-        p.professor_id  AS id
-      , p.username
-      , p.first_name    AS firstName
-      , p.last_name     AS lastName
-      , p.is_active = 1 AS active
-      , (
-          SELECT COUNT(*)
-          FROM section s
-          WHERE s.professor_id = p.professor_id
-        ) AS sectionsEver
-      , (
-          SELECT COUNT(*)
-          FROM section s
-          JOIN enrollment_period ep ON ep.school_year = s.school_year
-            AND ep.semester = s.semester
-          WHERE s.professor_id = p.professor_id
-            AND ep.status = 'OPEN'
-        ) AS sectionsOpen
-    FROM professor p
+        professor_id  AS id
+      , username
+      , first_name    AS firstName
+      , last_name     AS lastName
+      , is_active = 1 AS active
+      , sections_ever AS sectionsEver
+      , sections_open AS sectionsOpen
+    FROM vwProfessorLoad
     ORDER BY
-        p.last_name
-      , p.first_name
+        last_name
+      , first_name
   `);
   return rows.map((r) => ({ ...r, active: Boolean(r.active) }));
 }
@@ -612,48 +585,20 @@ export async function createProfessor({ username, password, firstName, lastName 
 // Every student with status and year level. Year level follows rule 4:
 // earlier school years with a finalized (CLOSED), non-empty enrollment, plus 1.
 export async function listStudents() {
-  const period = await currentPeriod();
   const [rows] = await pool.query(`
     SELECT
-        s.student_no                             AS studentNo
-      , s.first_name                             AS firstName
-      , s.middle_name                            AS middleName
-      , s.last_name                              AS lastName
-      , DATE_FORMAT(s.entrance_date, '%Y-%m-%d') AS entranceDate
-      , s.status
-      , CASE
-          WHEN cur.date_enrolled IS NOT NULL THEN 'ENROLLED'
-          WHEN EXISTS (
-            SELECT 1
-            FROM enrolled_course ec
-            WHERE ec.enrollment_id = cur.enrollment_id
-          ) THEN 'ENLISTED'
-        END AS termState
-      , (
-          SELECT COUNT(DISTINCT e.school_year)
-          FROM enrollment e
-          JOIN enrollment_period ep ON ep.school_year = e.school_year
-            AND ep.semester = e.semester
-          WHERE e.student_no = s.student_no
-            AND ep.status = 'CLOSED'
-            AND e.school_year < ?
-            AND EXISTS (
-              SELECT 1
-              FROM enrolled_course ec
-              WHERE ec.enrollment_id = e.enrollment_id
-            )
-        ) AS finishedYears
-    FROM student s
-    LEFT JOIN enrollment cur ON cur.student_no = s.student_no
-      AND cur.school_year = ?
-      AND cur.semester = ?
-    ORDER BY s.student_no DESC
-  `, [
-    period?.schoolYear ?? '9999',
-    period?.status === 'OPEN' ? period.schoolYear : '',
-    period?.status === 'OPEN' ? period.semester : 0,
-  ]);
-  return rows.map(({ finishedYears, ...r }) => ({ ...r, yearLevel: Number(finishedYears) + 1 }));
+        student_no    AS studentNo
+      , first_name    AS firstName
+      , middle_name   AS middleName
+      , last_name     AS lastName
+      , entrance_date AS entranceDate
+      , status
+      , term_state    AS termState
+      , year_level    AS yearLevel
+    FROM vwStudentList
+    ORDER BY student_no DESC
+  `);
+  return rows.map((r) => ({ ...r, yearLevel: Number(r.yearLevel) }));
 }
 
 // The admin undoes a student's Enroll while the period is open. Their subjects
@@ -853,10 +798,9 @@ export async function overview() {
           ) AS seatsAvailable
         , (
             SELECT COUNT(*)
-            FROM enrollment e
-            WHERE e.school_year = ?
-              AND e.semester = ?
-              AND e.date_enrolled IS NOT NULL
+            FROM vwEnrolledList el
+            WHERE el.school_year = ?
+              AND el.semester = ?
           ) AS studentsEnrolled
         , (
             SELECT COUNT(*)

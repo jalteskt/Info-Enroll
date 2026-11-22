@@ -111,25 +111,20 @@ export async function enrollmentView(studentNo, db = pool) {
   const [sections] = period
     ? await db.query(`
       SELECT
-          s.section_id                           AS sectionId
-        , s.section_no                           AS sectionNo
-        , s.day
-        , s.course_code                          AS code
-        , TIME_FORMAT(s.time_start, '%H:%i')     AS timeStart
-        , TIME_FORMAT(s.time_end, '%H:%i')       AS timeEnd
-        , s.max_students - (
-            SELECT COUNT(*)
-            FROM enrolled_course ec
-            WHERE ec.section_id = s.section_id
-          ) AS seatsLeft
-        , CONCAT(p.first_name, ' ', p.last_name) AS professor
-      FROM section s
-      JOIN professor p ON p.professor_id = s.professor_id
-      WHERE s.school_year = ?
-        AND s.semester = ?
+          section_id  AS sectionId
+        , section_no  AS sectionNo
+        , day
+        , course_code AS code
+        , time_start  AS timeStart
+        , time_end    AS timeEnd
+        , slots_left  AS seatsLeft
+        , professor
+      FROM vwSectionDetails
+      WHERE school_year = ?
+        AND semester = ?
       ORDER BY
-          s.course_code
-        , s.section_no
+          course_code
+        , section_no
     `, [period.schoolYear, period.semester])
     : [[]];
 

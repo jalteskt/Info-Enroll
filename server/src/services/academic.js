@@ -100,9 +100,9 @@ export async function loadCourses(db = pool) {
   const courses = new Map(rows.map((c) => [c.code, { ...c, pre: [] }]));
   const [pre] = await db.query(`
     SELECT
-        course_code          AS code
-      , required_course_code AS req
-    FROM prerequisite
+        course_code   AS code
+      , required_code AS req
+    FROM vwPrerequisiteList
     WHERE requisite_type = 'PRE'
   `);
   for (const p of pre) courses.get(p.code).pre.push(p.req);

@@ -10,7 +10,7 @@ import { seedDemo, DEMO_PASSWORD } from './seed-demo.js';
 import { checkPrerequisiteLoops } from '../src/services/academic.js';
 
 const dbDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../database');
-const files = ['info-enroll.sql', 'info-enroll_insert.sql'];
+const files = ['info-enroll.sql', 'info-enroll_insert.sql', 'view.sql'];
 
 export async function resetDatabase(dbName = process.env.DB_NAME || 'info_enroll', { log = () => {} } = {}) {
   if (!/^\w+$/.test(dbName)) throw new Error(`Bad database name: ${dbName}`);
