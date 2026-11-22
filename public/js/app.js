@@ -630,7 +630,6 @@ function academicRecord() {
 function summary() {
   const st = term.student;
   return renderTemplate('summary', {
-    icon: icon('book'),
     content: isEnrolled() ? 'badge-green' : 'badge-amber',
     content3: isEnrolled() ? 'Enrolled' : state.open ? 'Enlisted, not yet enrolled' : 'Not enrolled',
     studentName: escapeHTML(

@@ -479,7 +479,7 @@ function adminSections(icon) {
               actions: isOpen
                 ? actionButton(`staff-section-delete-${s.id}`, 'Delete')
                 : !s.submittedAt
-                  ? actionButton(`staff-grade-open-${s.id}`, 'Encode grades')
+                  ? actionButton(`staff-grade-open-${s.id}`, '<span aria-hidden="true">✎</span> Encode grades', 'button-table-action button-encode')
                   : '',
             }),
           )
@@ -544,9 +544,9 @@ function adminProfessors(icon) {
           sections: `${p.sectionsOpen} this term · ${p.sectionsEver} in total`,
           actions: [
             p.active
-              ? actionButton(`staff-prof-deactivate-${p.id}`, 'Deactivate')
-              : actionButton(`staff-prof-activate-${p.id}`, 'Activate'),
-            p.sectionsEver ? '' : actionButton(`staff-prof-delete-${p.id}`, 'Delete'),
+              ? actionButton(`staff-prof-deactivate-${p.id}`, '<span aria-hidden="true">⊖</span> Deactivate', 'button-table-action button-deactivate')
+              : actionButton(`staff-prof-activate-${p.id}`, '<span aria-hidden="true">✓</span> Activate', 'button-table-action button-activate'),
+            p.sectionsEver ? '' : actionButton(`staff-prof-delete-${p.id}`, 'Delete', 'button-table-action'),
           ].join(''),
         }),
       )
@@ -574,7 +574,7 @@ function adminStudents(icon) {
                     : badge('None'),
               actions:
                 s.termState === 'ENROLLED'
-                  ? actionButton(`staff-student-reopen-${esc(s.studentNo)}`, 'Reopen')
+                  ? actionButton(`staff-student-reopen-${esc(s.studentNo)}`, '<span aria-hidden="true">↶</span> Reopen', 'button-reopen')
                   : '',
             }),
           )

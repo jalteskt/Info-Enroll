@@ -205,6 +205,101 @@ button {
   background: var(--teal-tint);
   border-color: transparent;
 }
+.button.button-reopen,
+.button.button-table-action {
+  min-height: 32px;
+  padding: 6px 14px;
+  gap: 6px;
+  background: #fff;
+  border-radius: 5px;
+  font-size: 12px;
+  line-height: 18px;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.button.button-deactivate {
+  background: #fff;
+  border-color: #d97706;
+  color: #92400e;
+}
+.button.button-deactivate:hover {
+  background: #fffbeb;
+  border-color: #b45309;
+}
+.button.button-reopen {
+  min-height: 32px;
+  padding: 6px 14px;
+  gap: 6px;
+  background: #fff;
+  border-color: #d97706;
+  color: #92400e;
+}
+.button.button-reopen:hover {
+  background: #fffbeb;
+  border-color: #b45309;
+}
+.button.button-activate {
+  background: #fff;
+  border-color: #16a34a;
+  color: #166534;
+}
+.button.button-activate:hover {
+  background: #f0fdf4;
+  border-color: #15803d;
+}
+.admin-grades-panel + .admin-grades-panel {
+  margin-top: 24px;
+}
+.button.button-complete,
+.button.button-encode {
+  background: #fff;
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.button.button-complete:hover,
+.button.button-encode:hover {
+  background: var(--teal-tint);
+  border-color: var(--primary-dark);
+}
+.grade-completion-actions,
+.section-row-actions,
+.professor-row-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.student-number-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 12px;
+  border-left: 3px solid var(--primary);
+  border-radius: 5px;
+  background: var(--teal-tint);
+  color: var(--primary-dark);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.student-number-info-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+}
+.grade-completion-actions .input {
+  height: 32px;
+  padding: 5px 10px;
+  font-size: 12px;
+}
 .icon-button {
   width: 36px;
   height: 36px;
@@ -1416,6 +1511,12 @@ dialog::backdrop {
   font-size: 12px;
   color: var(--text-muted);
 }
+.academic-record-term {
+  margin: 20px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+}
 .record-year {
   color: var(--primary);
   font-size: 13px;
@@ -1434,9 +1535,11 @@ dialog::backdrop {
   padding-bottom: 25px;
   border-bottom: 2px solid var(--primary);
 }
-.summary-letterhead .brand-mark {
-  width: 43px;
-  height: 48px;
+.summary-seal {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 .summary-letterhead h2 {
   font-size: 18px;
@@ -2118,10 +2221,9 @@ dialog::backdrop {
   .summary-letterhead p {
     font-size: 10px;
   }
-  .summary-letterhead .brand-mark {
-    width: 35px;
-    height: 40px;
-    flex-shrink: 0;
+  .summary-seal {
+    width: 44px;
+    height: 44px;
   }
   .summary-heading h3 {
     font-size: 24px;

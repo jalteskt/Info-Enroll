@@ -104,7 +104,7 @@
             <th scope="col">Professor</th>
             <th scope="col">Students</th>
             <th scope="col">Grades</th>
-            <th scope="col"><span class="sr-only">Actions</span></th>
+            <th scope="col">Actions</th>
           </tr>
         </thead>
         <tbody>{{rows}}</tbody>
@@ -124,7 +124,7 @@
     <td>{{professor}}</td>
     <td>{{students}}</td>
     <td>{{grades}}</td>
-    <td><div class="toolbar">{{actions}}</div></td>
+    <td><div class="section-row-actions">{{actions}}</div></td>
   </tr>
 </template>
 
@@ -140,7 +140,7 @@
 
 <!-- ============================== Grades ============================== -->
 <template id="admin-grades">
-  <section class="panel">
+  <section class="panel admin-grades-panel">
     <div class="panel-header">
       <div>
         <p class="eyebrow">MISSING GRADES</p>
@@ -159,14 +159,14 @@
             <th scope="col">Term</th>
             <th scope="col">Professor</th>
             <th scope="col">Progress</th>
-            <th scope="col"><span class="sr-only">Actions</span></th>
+            <th scope="col">Actions</th>
           </tr>
         </thead>
         <tbody>{{pendingRows}}</tbody>
       </table>
     </div>
   </section>
-  <section class="panel">
+  <section class="panel admin-grades-panel">
     <div class="panel-header">
       <div>
         <p class="eyebrow">INCOMPLETE GRADES</p>
@@ -206,10 +206,10 @@
     <td>
       <button
         type="button"
-        class="button"
+        class="button button-table-action button-encode"
         data-action="staff-grade-open-{{id}}"
       >
-        Encode grades
+        <span aria-hidden="true">✎</span> Encode grades
       </button>
     </td>
   </tr>
@@ -227,7 +227,7 @@
     </td>
     <td>{{term}}</td>
     <td>
-      <div class="toolbar">
+      <div class="grade-completion-actions">
         <select
           class="input"
           id="inc-{{sectionId}}-{{studentNo}}"
@@ -238,10 +238,10 @@
         </select>
         <button
           type="button"
-          class="button"
+          class="button button-table-action button-complete"
           data-action="staff-inc-{{sectionId}}-{{studentNo}}"
         >
-          Complete
+          <span aria-hidden="true">✓</span> Complete
         </button>
       </div>
     </td>
@@ -275,7 +275,7 @@
             <th scope="col">Username</th>
             <th scope="col">Status</th>
             <th scope="col">Sections</th>
-            <th scope="col"><span class="sr-only">Actions</span></th>
+            <th scope="col">Actions</th>
           </tr>
         </thead>
         <tbody>{{rows}}</tbody>
@@ -290,7 +290,7 @@
     <td>{{username}}</td>
     <td>{{status}}</td>
     <td>{{sections}}</td>
-    <td><div class="toolbar">{{actions}}</div></td>
+    <td><div class="professor-row-actions">{{actions}}</div></td>
   </tr>
 </template>
 
@@ -324,7 +324,7 @@
             <th scope="col">Year level</th>
             <th scope="col">Status</th>
             <th scope="col">This term</th>
-            <th scope="col"><span class="sr-only">Actions</span></th>
+            <th scope="col">Actions</th>
           </tr>
         </thead>
         <tbody>{{rows}}</tbody>
@@ -567,8 +567,9 @@
           autocomplete="new-password"
         />
       </label>
-      <p class="muted admin-field-wide">
-        The student number is generated when you save, from the entrance year.
+      <p class="student-number-info admin-field-wide">
+        <span class="student-number-info-icon" aria-hidden="true">i</span>
+        <span>The student number is generated automatically from the entrance year when you save.</span>
       </p>
       <p class="modal-error admin-field-wide" id="staff-form-error" role="alert"></p>
     </div>
