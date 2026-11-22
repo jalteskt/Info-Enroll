@@ -76,43 +76,65 @@ export async function enrollmentView(studentNo, db = pool) {
     currentPeriod(db),
     loadTerms(studentNo, db),
   ]);
-  const [[student]] = await db.query(
-    `SELECT student_no AS studentNo, first_name AS firstName, middle_name AS middleName,
-            last_name AS lastName, status FROM student WHERE student_no = ?`,
-    [studentNo],
-  );
+  const [[student]] = await db.query(`
+    SELECT
+        student_no  AS studentNo
+      , first_name  AS firstName
+      , middle_name AS middleName
+      , last_name   AS lastName
+      , status
+    FROM student
+    WHERE student_no = ?
+  `, [studentNo]);
 
   // Standing is built from finished terms only; the current enrollment
   // doesn't count yet.
   const isCurrent = (t) =>
     period && t.schoolYear === period.schoolYear && t.semester === period.semester;
-  const standing = buildStanding(terms.filter((t) => !isCurrent(t)), courses);
+  const standing = buildStanding(terms.filter((t) => !isCurrent(t)), courses, period?.schoolYear);
   const current = terms.find(isCurrent) ?? null;
   const yearLevel = current?.yearLevel ?? standing.yearLevel;
   const enrolledNo = new Map((current?.courses ?? []).map((c) => [c.code, c.sectionNo]));
 
   const [[limit]] = period
-    ? await db.query(
-        'SELECT min_units AS minUnits, max_units AS maxUnits FROM unit_limit WHERE year_level = ? AND semester = ?',
-        [Math.min(yearLevel, MAX_YEAR_LEVEL), period.semester],
-      )
+    ? await db.query(`
+      SELECT
+          min_units AS minUnits
+        , max_units AS maxUnits
+      FROM unit_limit
+      WHERE year_level = ?
+        AND semester = ?
+    `, [Math.min(yearLevel, MAX_YEAR_LEVEL), period.semester])
     : [[null]];
 
   // Sections of this period with seats left.
   const [sections] = period
-    ? await db.query(
-        `SELECT s.section_id AS sectionId, s.section_no AS sectionNo, s.day, s.course_code AS code,
-                TIME_FORMAT(s.time_start, '%H:%i') AS timeStart, TIME_FORMAT(s.time_end, '%H:%i') AS timeEnd,
-                s.max_students - (SELECT COUNT(*) FROM enrolled_course ec WHERE ec.section_id = s.section_id) AS seatsLeft,
-                CONCAT(p.first_name, ' ', p.last_name) AS professor
-         FROM section s JOIN professor p ON p.professor_id = s.professor_id
-         WHERE s.school_year = ? AND s.semester = ?
-         ORDER BY s.course_code, s.section_no`,
-        [period.schoolYear, period.semester],
-      )
+    ? await db.query(`
+      SELECT
+          s.section_id                           AS sectionId
+        , s.section_no                           AS sectionNo
+        , s.day
+        , s.course_code                          AS code
+        , TIME_FORMAT(s.time_start, '%H:%i')     AS timeStart
+        , TIME_FORMAT(s.time_end, '%H:%i')       AS timeEnd
+        , s.max_students - (
+            SELECT COUNT(*)
+            FROM enrolled_course ec
+            WHERE ec.section_id = s.section_id
+          ) AS seatsLeft
+        , CONCAT(p.first_name, ' ', p.last_name) AS professor
+      FROM section s
+      JOIN professor p ON p.professor_id = s.professor_id
+      WHERE s.school_year = ?
+        AND s.semester = ?
+      ORDER BY
+          s.course_code
+        , s.section_no
+    `, [period.schoolYear, period.semester])
     : [[]];
 
   const block = studentBlock({ period, standing, studentStatus: student.status });
+  const isEnrolled = Boolean(current?.dateEnrolled); // clicked Enroll: final
 
   // One item per course of this period's semester (rule 17). Lec and lab are
   // separate items (rule 27); each says who its partner is.
@@ -150,10 +172,12 @@ export async function enrollmentView(studentNo, db = pool) {
     period,
     yearLevel,
     unitLimit: limit ?? null,
-    canEnroll: !block,
-    blockReason: block,
+    canEnroll: !block && !isEnrolled,
+    blockReason: block ?? (isEnrolled ? 'You are enrolled for this semester. Ask the registrar if you need changes.' : null),
     enrollment: current
       ? {
+          status: isEnrolled ? 'ENROLLED' : 'ENLISTED',
+          reopenNote: current.reopenNote,
           totalUnits: current.totalUnits,
           dateEnrolled: current.dateEnrolled,
           loadStatus: loadStatus(current.totalUnits, limit?.maxUnits ?? null), // rule 39

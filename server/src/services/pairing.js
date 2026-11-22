@@ -22,15 +22,27 @@ export function labDroppedWith(code, courses) {
 // Locking the row makes concurrent adds to the same section wait for each
 // other, so the seat count is always current (rule 16).
 export async function lockSection(conn, { code, sectionNo, period }) {
-  const [[row]] = await conn.query(
-    `SELECT section_id AS id, course_code AS code, section_no AS sectionNo, day,
-            time_start AS timeStart, time_end AS timeEnd, max_students AS maxStudents
-     FROM section
-     WHERE course_code = ? AND section_no = ? AND school_year = ? AND semester = ?
-     FOR UPDATE`,
-    [code, sectionNo, period.schoolYear, period.semester],
-  );
+  const [[row]] = await conn.query(`
+    SELECT
+        section_id   AS id
+      , course_code  AS code
+      , section_no   AS sectionNo
+      , day
+      , time_start   AS timeStart
+      , time_end     AS timeEnd
+      , max_students AS maxStudents
+    FROM section
+    WHERE course_code = ?
+      AND section_no = ?
+      AND school_year = ?
+      AND semester = ?
+    FOR UPDATE
+  `, [code, sectionNo, period.schoolYear, period.semester]);
   if (!row) throw new AppError(404, 'That section is not offered this term.');
-  const [[{ n }]] = await conn.query('SELECT COUNT(*) AS n FROM enrolled_course WHERE section_id = ?', [row.id]);
+  const [[{ n }]] = await conn.query(`
+    SELECT COUNT(*) AS n
+    FROM enrolled_course
+    WHERE section_id = ?
+  `, [row.id]);
   return { ...row, enrolled: n };
 }

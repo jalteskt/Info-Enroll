@@ -6,14 +6,19 @@ import { pool, q, freshDatabase, sectionId, totalUnitsMismatches, currentSubject
 
 const admin = await import('../src/services/admin.js');
 const grades = await import('../src/services/grades.js');
-const { addSubject, removeSubject } = await import('../src/services/enrollment.js');
+const { addSubject, removeSubject, confirmEnrollment } = await import('../src/services/enrollment.js');
 const { enrollmentView } = await import('../src/services/eligibility.js');
+const { planDefaultSections } = await import('../src/services/defaultSections.js');
 
 const ANDREA = '202600001';
 const AMARA = '202500002';
 const JOAQUIN = '202500003';
 const ELIANA = '202200005'; // failed BSIT_403 once
-const statusOf = async (no) => (await q('SELECT status FROM student WHERE student_no = ?', [no]))[0].status;
+const statusOf = async (no) => (await q(`
+  SELECT status
+  FROM student
+  WHERE student_no = ?
+`, [no]))[0].status;
 const PROF = { mreyes: 1, asantos: 2, lgarcia: 3, cramos: 4, evillanueva: 5, jmendoza: 6 };
 const ADMIN_ID = 1;
 
@@ -24,19 +29,68 @@ async function rejects(promise, status, text) {
     return true;
   });
 }
-const sectionRow = async (id) => (await q('SELECT * FROM section WHERE section_id = ?', [id]))[0];
+const sectionRow = async (id) => (await q(`
+  SELECT *
+  FROM section
+  WHERE section_id = ?
+`, [id]))[0];
+// Pairs of sections in a period that clash: same professor, or same section number.
+const clashes = async (schoolYear, semester) =>
+  (await q(`
+    SELECT COUNT(*) AS n
+    FROM section a
+    JOIN section b ON a.section_id < b.section_id
+      AND a.school_year = b.school_year
+      AND a.semester = b.semester
+      AND a.day = b.day
+      AND a.time_start < b.time_end
+      AND b.time_start < a.time_end
+      AND (a.professor_id = b.professor_id OR a.section_no = b.section_no)
+    WHERE a.school_year = ?
+      AND a.semester = ?
+  `, [schoolYear, semester]))[0].n;
 
 before(freshDatabase);
 after(() => pool.end());
 
 // ------------------------------------------------------------ admin, OPEN period
 
+test('the demo period has 2 sections of every subject, with no clashes', async () => {
+  const [row] = await q(`
+    SELECT
+        COUNT(*)                    AS n
+      , COUNT(DISTINCT course_code) AS subjects
+      , SUM(section_no = 2)         AS seconds
+    FROM section
+    WHERE school_year = '2026-2027'
+      AND semester = 1
+  `);
+  assert.deepEqual([row.n, row.subjects, Number(row.seconds)], [68, 34, 34]);
+  assert.equal(await clashes('2026-2027', 1), 0);
+});
+
+test('default sections skip what no free professor can take', () => {
+  const courses = Array.from({ length: 34 }, (_, i) => ({ code: `C${String(i).padStart(2, '0')}`, yearLevel: 1 }));
+  const one = planDefaultSections(courses, [7]);
+  assert.deepEqual([one.sections.length, one.skipped], [48, 20]);
+  const none = planDefaultSections(courses, []);
+  assert.deepEqual([none.sections.length, none.skipped], [0, 68]);
+  const two = planDefaultSections(courses, [7, 8]);
+  assert.deepEqual([two.sections.length, two.skipped], [68, 0]);
+});
+
 test('next period cannot open while one is OPEN', async () => {
   await rejects(admin.openNextPeriod(), 409, /Close the current/);
 });
 
 test('professor time conflict when creating a section (rule 36)', async () => {
-  const busy = (await q('SELECT * FROM section WHERE professor_id = ? AND school_year = ? LIMIT 1', [PROF.mreyes, '2026-2027']))[0];
+  const busy = (await q(`
+    SELECT *
+    FROM section
+    WHERE professor_id = ?
+      AND school_year = ?
+    LIMIT 1
+  `, [PROF.mreyes, '2026-2027']))[0];
   await rejects(
     admin.createSection({
       code: 'GEC_ETHC',
@@ -56,11 +110,22 @@ test('wrong semester, inactive professor, lec/lab overlap are refused (rules 17,
     admin.createSection({
       code: 'BSIT_201',
       professorId: PROF.asantos,
+      labProfessorId: PROF.cramos,
       lec: slot,
       lab: { day: 'Sat', timeStart: '20:00', timeEnd: '21:00' },
     }),
     409,
     /overlap/,
+  );
+  await rejects(
+    admin.createSection({
+      code: 'BSIT_201',
+      professorId: PROF.asantos,
+      lec: slot,
+      lab: { day: 'Fri', timeStart: '19:00', timeEnd: '20:30' },
+    }),
+    400,
+    /laboratory professor/,
   );
   await rejects(admin.createSection({ code: 'BSIT_201', professorId: PROF.asantos, lec: slot }), 400, /Laboratory/);
 });
@@ -70,68 +135,79 @@ test('a lec + lab section pair is created together with the next section_no (rul
   const r = await admin.createSection({
     code: 'BSIT_201',
     professorId: PROF.asantos,
+    labProfessorId: PROF.cramos,
     lec: { day: 'Sat', timeStart: '19:00', timeEnd: '20:30' },
     lab: { day: 'Fri', timeStart: '19:00', timeEnd: '20:30' },
   });
-  const rows = await q('SELECT professor_id AS p FROM section WHERE section_id IN (?)', [r.sectionIds]);
-  assert.deepEqual(rows.map((x) => x.p), [PROF.asantos, PROF.asantos]); // one professor for lec + lab
-  assert.equal(r.sectionNo, 2);
-  assert.equal(r.name, 'BSIT 2-2');
+  // the lec and lab each get the professor chosen for them
+  assert.equal((await sectionRow(r.sectionIds[0])).professor_id, PROF.asantos);
+  assert.equal((await sectionRow(r.sectionIds[1])).professor_id, PROF.cramos);
+  assert.equal(r.sectionNo, 3); // sections 1 and 2 are the defaults
+  assert.equal(r.name, 'BSIT 2-3');
   assert.equal(r.sectionIds.length, 2);
   newLec = r.sectionIds[0];
 });
 
 test('deleting a lab section removes only that section and its students (rule 13)', async () => {
-  await addSubject(JOAQUIN, { code: 'BSIT_201', sectionNo: 2 });
-  await addSubject(JOAQUIN, { code: 'BSIT_201.1', sectionNo: 2 });
-  const r = await admin.deleteSection(await sectionId('BSIT_201.1', 2));
+  await addSubject(JOAQUIN, { code: 'BSIT_201', sectionNo: 3 });
+  await addSubject(JOAQUIN, { code: 'BSIT_201.1', sectionNo: 3 });
+  const r = await admin.deleteSection(await sectionId('BSIT_201.1', 3));
   assert.equal(r.deletedSection, 'BSIT_201.1');
   assert.equal(r.studentsUnenrolled, 1);
   assert.ok(await sectionRow(newLec)); // the lec section stays
-  assert.deepEqual(await currentSubjects(JOAQUIN), { BSIT_201: 2 });
+  assert.deepEqual(await currentSubjects(JOAQUIN), { BSIT_201: 3 });
   assert.equal(await totalUnitsMismatches(), 0);
 });
 
 test('the missing lab section can be created again with the same number (rule 28)', async () => {
   // its time must not overlap the lec section that is still there
   await rejects(
-    admin.createSection({ code: 'BSIT_201', sectionNo: 2, lab: { day: 'Sat', timeStart: '19:30', timeEnd: '21:00' } }),
+    admin.createSection({ code: 'BSIT_201', sectionNo: 3, lab: { day: 'Sat', timeStart: '19:30', timeEnd: '21:00' } }),
     409,
     /overlap/,
   );
   const r = await admin.createSection({
-    code: 'BSIT_201', sectionNo: 2, lab: { day: 'Fri', timeStart: '19:00', timeEnd: '20:30' },
+    code: 'BSIT_201', sectionNo: 3, lab: { day: 'Fri', timeStart: '19:00', timeEnd: '20:30' },
   });
   assert.deepEqual(r.created, ['BSIT_201.1']);
-  // it takes the professor of the lec section that is still there
+  // with no professor given, it takes the one of the lec section still there
   assert.equal((await sectionRow(r.sectionIds[0])).professor_id, PROF.asantos);
-  await rejects(admin.createSection({ code: 'BSIT_201', sectionNo: 2 }), 409, /already exists/);
+  await rejects(admin.createSection({ code: 'BSIT_201', sectionNo: 3 }), 409, /already exists/);
 });
 
 test('deleting a lec section also drops its students\' lab, but keeps the lab section (rules 13, 27)', async () => {
-  await addSubject(JOAQUIN, { code: 'BSIT_201.1', sectionNo: 2 });
+  await addSubject(JOAQUIN, { code: 'BSIT_201.1', sectionNo: 3 });
   const r = await admin.deleteSection(newLec);
   assert.equal(r.deletedSection, 'BSIT_201');
   assert.equal(r.labsRemoved, 1);
   assert.deepEqual(await currentSubjects(JOAQUIN), {});
-  assert.ok(await sectionId('BSIT_201.1', 2)); // lab section still offered
+  assert.ok(await sectionId('BSIT_201.1', 3)); // lab section still offered
   assert.equal(await totalUnitsMismatches(), 0);
 });
 
-test('reassigning a section moves its lec and lab to the new professor together', async () => {
+test('reassigning a lec section leaves its lab with its own professor', async () => {
   const lec = await sectionId('BSIT_201', 1);
-  const free = await q(
-    `SELECT p.professor_id AS id FROM professor p WHERE p.is_active = 1 AND NOT EXISTS (
-       SELECT 1 FROM section s JOIN section mine ON mine.section_id IN (?, ?)
-       WHERE s.professor_id = p.professor_id AND s.school_year = mine.school_year AND s.semester = mine.semester
-         AND s.day = mine.day AND s.time_start < mine.time_end AND mine.time_start < s.time_end)`,
-    [lec, await sectionId('BSIT_201.1', 1)],
-  );
+  const labBefore = (await sectionRow(await sectionId('BSIT_201.1', 1))).professor_id;
+  const free = await q(`
+    SELECT p.professor_id AS id
+    FROM professor p
+    WHERE p.is_active = 1
+      AND NOT EXISTS (
+        SELECT 1
+        FROM section s
+        JOIN section mine ON mine.section_id IN (?, ?)
+        WHERE s.professor_id = p.professor_id
+          AND s.school_year = mine.school_year
+          AND s.semester = mine.semester
+          AND s.day = mine.day
+          AND s.time_start < mine.time_end
+          AND mine.time_start < s.time_end
+      )
+  `, [lec, await sectionId('BSIT_201.1', 1)]);
   const r = await admin.reassignProfessor(lec, free[0].id);
-  assert.deepEqual(r.reassigned, ['BSIT_201', 'BSIT_201.1']);
-  const [a, b] = await q('SELECT professor_id AS p FROM section WHERE section_id IN (?, ?)', [lec, await sectionId('BSIT_201.1', 1)]);
-  assert.equal(a.p, free[0].id);
-  assert.equal(b.p, free[0].id);
+  assert.deepEqual(r.reassigned, ['BSIT_201']);
+  assert.equal((await sectionRow(lec)).professor_id, free[0].id);
+  assert.equal((await sectionRow(await sectionId('BSIT_201.1', 1))).professor_id, labBefore);
 });
 
 test('reassigning a professor (rule 37)', async () => {
@@ -145,17 +221,6 @@ test('reassigning a professor (rule 37)', async () => {
   });
 });
 
-test('demo seed: every lec and lab with the same section number share one professor', async () => {
-  const [bad] = await q(
-    `SELECT COUNT(*) AS n FROM section lab JOIN section lec
-       ON lec.course_code = SUBSTRING(lab.course_code, 1, CHAR_LENGTH(lab.course_code) - 2)
-      AND lab.course_code LIKE '%.1' AND lec.section_no = lab.section_no
-      AND lec.school_year = lab.school_year AND lec.semester = lab.semester
-     WHERE lec.professor_id <> lab.professor_id`,
-  );
-  assert.equal(bad.n, 0);
-});
-
 test('professor management (rule 37)', async () => {
   await rejects(admin.setProfessorActive(PROF.mreyes, false), 409, /Reassign/);
   await rejects(admin.deleteProfessor(PROF.mreyes), 409, /Deactivate/);
@@ -165,7 +230,11 @@ test('professor management (rule 37)', async () => {
 });
 
 test('the admin adds students; the number is generated from the entrance year', async () => {
-  const [[{ last }]] = await pool.query("SELECT MAX(student_no) AS last FROM student WHERE student_no LIKE '2026%'");
+  const [[{ last }]] = await pool.query(`
+    SELECT MAX(student_no) AS last
+    FROM student
+    WHERE student_no LIKE '2026%'
+  `);
   const a = await admin.createStudent({ firstName: ' Lea ', lastName: 'Santos', entranceDate: '2026-08-10', password: 'longenough' });
   assert.equal(a.studentNo, String(Number(last) + 1));
   const b = await admin.createStudent({ firstName: 'Noel', middleName: 'Cruz', lastName: 'Lim', entranceDate: '2026-08-11', password: 'longenough' });
@@ -173,7 +242,15 @@ test('the admin adds students; the number is generated from the entrance year', 
   const c = await admin.createStudent({ firstName: 'Ivy', lastName: 'Tan', entranceDate: '2031-06-01', password: 'longenough' });
   assert.equal(c.studentNo, '203100001'); // first of a new entrance year
 
-  const [[row]] = await pool.query('SELECT first_name, middle_name, status, password FROM student WHERE student_no = ?', [a.studentNo]);
+  const [[row]] = await pool.query(`
+    SELECT
+        first_name
+      , middle_name
+      , status
+      , password
+    FROM student
+    WHERE student_no = ?
+  `, [a.studentNo]);
   assert.deepEqual([row.first_name, row.middle_name, row.status], ['Lea', null, 'ACTIVE']);
   const bcrypt = (await import('bcryptjs')).default;
   assert.ok(await bcrypt.compare('longenough', row.password)); // hashed (rule 38), and the login password works
@@ -184,7 +261,10 @@ test('the admin adds students; the number is generated from the entrance year', 
   await rejects(admin.createStudent({ firstName: 'X', password: 'longenough' }), 400, /first and last name/);
   await rejects(admin.createStudent({ firstName: 'X', lastName: 'Y', password: 'short' }), 400, /8 characters/);
   await rejects(admin.createStudent({ firstName: 'X', lastName: 'Y', password: 'longenough', entranceDate: '2026-02-30' }), 400, /entrance date/);
-  await pool.query('DELETE FROM student WHERE student_no IN (?, ?, ?)', [a.studentNo, b.studentNo, c.studentNo]);
+  await pool.query(`
+    DELETE FROM student
+    WHERE student_no IN (?, ?, ?)
+  `, [a.studentNo, b.studentNo, c.studentNo]);
 });
 
 test('grades cannot be encoded while enrollment is open', async () => {
@@ -200,15 +280,27 @@ test('closing deletes empty enrollments and empty sections (rules 9, 20)', async
   await removeSubject(ANDREA, 'GEC_ARTA'); // leaves an empty enrollment
   await addSubject(JOAQUIN, { code: 'CIST_102.1', sectionNo: 1 }); // lab only (lec passed), 2nd attempt
   await addSubject(ELIANA, { code: 'BSIT_403', sectionNo: 1 }); // 2nd attempt
+  for (const no of [AMARA, JOAQUIN, ELIANA]) await confirmEnrollment(no);
   closeResult = await admin.closePeriod();
   assert.equal(closeResult.emptyEnrollmentsDeleted, 1);
   assert.ok(closeResult.emptySectionsDeleted > 30);
-  const [left] = await q(
-    `SELECT COUNT(*) AS n FROM section s WHERE school_year = '2026-2027'
-     AND NOT EXISTS (SELECT 1 FROM enrolled_course ec WHERE ec.section_id = s.section_id)`,
-  );
+  const [left] = await q(`
+    SELECT COUNT(*) AS n
+    FROM section s
+    WHERE school_year = '2026-2027'
+      AND NOT EXISTS (
+        SELECT 1
+        FROM enrolled_course ec
+        WHERE ec.section_id = s.section_id
+      )
+  `);
   assert.equal(left.n, 0);
-  assert.equal((await q("SELECT COUNT(*) AS n FROM enrollment WHERE student_no = ? AND school_year = '2026-2027'", [ANDREA]))[0].n, 0);
+  assert.equal((await q(`
+    SELECT COUNT(*) AS n
+    FROM enrollment
+    WHERE student_no = ?
+      AND school_year = '2026-2027'
+  `, [ANDREA]))[0].n, 0);
 });
 
 test('after closing: no student changes, no section changes (rules 7, 13)', async () => {
@@ -250,7 +342,13 @@ test('next period stays closed until every section is submitted (rule 35)', asyn
 
 test('admin encodes and submits the rest; INC on the last attempt drops, on the first does not (rules 31, 34, 35, 40)', async () => {
   const dropped = [];
-  const pending = await q("SELECT section_id AS id, course_code AS code FROM section WHERE grades_submitted_at IS NULL");
+  const pending = await q(`
+    SELECT
+        section_id  AS id
+      , course_code AS code
+    FROM section
+    WHERE grades_submitted_at IS NULL
+  `);
   for (const s of pending) {
     const { students } = await grades.sectionRoster(s.id, { adminId: ADMIN_ID });
     const g = students.map((st) => ({ studentNo: st.studentNo, grade: ['GEC_ETHC', 'BSIT_403'].includes(s.code) ? 'INC' : '1.50' }));
@@ -261,9 +359,17 @@ test('admin encodes and submits the rest; INC on the last attempt drops, on the 
   assert.equal(await statusOf(ELIANA), 'DROPPED');
   assert.equal(await statusOf(AMARA), 'ACTIVE');
   // The grade itself is not changed (rule 40).
-  const [ec] = await q('SELECT CAST(grade AS CHAR) AS g FROM enrolled_course WHERE section_id = ?', [await sectionId('BSIT_403', 1)]);
+  const [ec] = await q(`
+    SELECT CAST(grade AS CHAR) AS g
+    FROM enrolled_course
+    WHERE section_id = ?
+  `, [await sectionId('BSIT_403', 1)]);
   assert.equal(ec.g, 'INC');
-  const [row] = await q('SELECT submitted_by_admin_id FROM section WHERE section_id = ?', [await sectionId('GEC_ETHC', 1)]);
+  const [row] = await q(`
+    SELECT submitted_by_admin_id
+    FROM section
+    WHERE section_id = ?
+  `, [await sectionId('GEC_ETHC', 1)]);
   assert.equal(row.submitted_by_admin_id, ADMIN_ID);
 });
 
@@ -280,14 +386,44 @@ test('the admin completes an INC by replacing it with a grade (rule 34)', async 
 
 // ------------------------------------------------------------ next period
 
-test('next period opens as the 2nd semester, OPEN', async () => {
+test('next period opens as the 2nd semester with 2 sections of every subject', async () => {
   const r = await admin.openNextPeriod();
-  assert.deepEqual(r, { schoolYear: '2026-2027', semester: 2, status: 'OPEN' });
+  assert.deepEqual(r, { schoolYear: '2026-2027', semester: 2, status: 'OPEN', sectionsCreated: 66, sectionsSkipped: 0 });
+  const perSubject = await q(`
+    SELECT
+        c.course_code
+      , COUNT(s.section_id) AS n
+    FROM course c
+    LEFT JOIN section s ON s.course_code = c.course_code
+      AND s.school_year = '2026-2027'
+      AND s.semester = 2
+    WHERE c.semester = 2
+    GROUP BY c.course_code
+  `);
+  assert.equal(perSubject.length, 33);
+  assert.ok(perSubject.every((c) => c.n === 2));
+  assert.equal(await clashes('2026-2027', 2), 0);
 });
 
-test('year levels count only finalized, non-empty terms (rule 4)', async () => {
+test('a student with no earlier enrollment can pick a default section right away', async () => {
+  const open = (await enrollmentView(ANDREA)).items.find((i) => i.status === 'eligible');
+  assert.ok(open, 'at least one subject is open');
+  assert.equal(open.sections.length, 2);
+  const added = await addSubject(ANDREA, { code: open.code, sectionNo: 2 });
+  assert.equal(added.totalUnits, (await q(`
+    SELECT units
+    FROM course
+    WHERE course_code = ?
+  `, [open.code]))[0].units);
+  await removeSubject(ANDREA, open.code);
+});
+
+test('year levels count school years with finalized, non-empty terms (rule 4)', async () => {
   assert.equal((await enrollmentView(ANDREA)).yearLevel, 1); // her empty term was deleted
-  assert.equal((await enrollmentView(AMARA)).yearLevel, 2); // 3 terms -> ceil(4/2)
+  assert.equal((await enrollmentView(AMARA)).yearLevel, 2); // 2025-2026 is the only earlier year
+  const listed = await admin.listStudents();
+  assert.equal(listed.find((s) => s.studentNo === AMARA).yearLevel, 2);
+  assert.equal(listed.find((s) => s.studentNo === ANDREA).yearLevel, 1);
   assert.equal(await totalUnitsMismatches(), 0);
 });
 

@@ -14,18 +14,47 @@ export const VALID_GRADES = [
 const VALID = new Set(VALID_GRADES);
 
 const SECTION_SQL = `
-  SELECT s.section_id AS id, s.section_no AS sectionNo, s.course_code AS code, c.course_title AS title,
-         c.units, c.year_level AS yearLevel, s.day, TIME_FORMAT(s.time_start, '%H:%i') AS timeStart,
-         TIME_FORMAT(s.time_end, '%H:%i') AS timeEnd, s.school_year AS schoolYear, s.semester,
-         p.status AS periodStatus, s.grades_submitted_at AS submittedAt,
-         s.submitted_by_admin_id AS submittedByAdminId, s.professor_id AS professorId,
-         CONCAT(pr.first_name, ' ', pr.last_name) AS professor,
-         (SELECT COUNT(*) FROM enrolled_course ec WHERE ec.section_id = s.section_id) AS students,
-         (SELECT COUNT(*) FROM enrolled_course ec WHERE ec.section_id = s.section_id AND ec.grade IS NOT NULL) AS graded
+  SELECT
+      s.section_id                             AS id
+    , s.section_no                             AS sectionNo
+    , s.course_code                            AS code
+    , c.course_title                           AS title
+    , c.units
+    , c.year_level                             AS yearLevel
+    , s.day
+    , TIME_FORMAT(s.time_start, '%H:%i')       AS timeStart
+    , TIME_FORMAT(s.time_end, '%H:%i')         AS timeEnd
+    , s.school_year                            AS schoolYear
+    , s.semester
+    , p.status                                 AS periodStatus
+    , s.grades_submitted_at                    AS submittedAt
+    , s.submitted_by_admin_id                  AS submittedByAdminId
+    , s.professor_id                           AS professorId
+    , CONCAT(pr.first_name, ' ', pr.last_name) AS professor
+    , (
+        SELECT COUNT(*)
+        FROM enrolled_course ec
+        WHERE ec.section_id = s.section_id
+      ) AS students
+    , (
+        SELECT COUNT(*)
+        FROM enrolled_course ec
+        JOIN enrollment e ON e.enrollment_id = ec.enrollment_id
+        WHERE ec.section_id = s.section_id
+          AND e.date_enrolled IS NOT NULL
+      ) AS enrolledStudents
+    , (
+        SELECT COUNT(*)
+        FROM enrolled_course ec
+        WHERE ec.section_id = s.section_id
+          AND ec.grade IS NOT NULL
+      ) AS graded
   FROM section s
   JOIN course c ON c.course_code = s.course_code
-  JOIN enrollment_period p ON p.school_year = s.school_year AND p.semester = s.semester
-  JOIN professor pr ON pr.professor_id = s.professor_id`;
+  JOIN enrollment_period p ON p.school_year = s.school_year
+    AND p.semester = s.semester
+  JOIN professor pr ON pr.professor_id = s.professor_id
+`;
 
 const withName = (s) => ({ ...s, name: `BSIT ${s.yearLevel}-${s.sectionNo}` }); // rule 14
 
@@ -41,11 +70,15 @@ export async function listSections({ professorId, schoolYear, semester } = {}) {
     where.push('s.school_year = ? AND s.semester = ?');
     params.push(schoolYear, Number(semester));
   }
-  const [rows] = await pool.query(
-    `${SECTION_SQL} ${where.length ? 'WHERE ' + where.join(' AND ') : ''}
-     ORDER BY s.school_year DESC, s.semester DESC, s.course_code, s.section_no`,
-    params,
-  );
+  const [rows] = await pool.query(`
+    ${SECTION_SQL}
+    ${where.length ? 'WHERE ' + where.join(' AND ') : ''}
+    ORDER BY
+        s.school_year DESC
+      , s.semester DESC
+      , s.course_code
+      , s.section_no
+  `, params);
   return rows.map(withName);
 }
 
@@ -54,21 +87,34 @@ export async function listSections({ professorId, schoolYear, semester } = {}) {
 export async function sectionRoster(sectionId, actor, db = pool, { lock = false } = {}) {
   // Lock only the section row (FOR UPDATE on the joined query would also lock
   // the course, period and professor rows).
-  if (lock) await db.query('SELECT section_id FROM section WHERE section_id = ? FOR UPDATE', [Number(sectionId)]);
-  const [[section]] = await db.query(`${SECTION_SQL} WHERE s.section_id = ?`, [Number(sectionId)]);
+  if (lock) await db.query(`
+    SELECT section_id
+    FROM section
+    WHERE section_id = ?
+    FOR UPDATE
+  `, [Number(sectionId)]);
+  const [[section]] = await db.query(`
+    ${SECTION_SQL}
+    WHERE s.section_id = ?
+  `, [Number(sectionId)]);
   if (!section || (actor.professorId && section.professorId !== actor.professorId)) {
     throw new AppError(404, 'Section not found.');
   }
-  const [students] = await db.query(
-    `SELECT st.student_no AS studentNo, st.last_name AS lastName, st.first_name AS firstName,
-            st.middle_name AS middleName, ec.grade
-     FROM enrolled_course ec
-     JOIN enrollment e ON e.enrollment_id = ec.enrollment_id
-     JOIN student st ON st.student_no = e.student_no
-     WHERE ec.section_id = ?
-     ORDER BY st.last_name, st.first_name`,
-    [section.id],
-  );
+  const [students] = await db.query(`
+    SELECT
+        st.student_no  AS studentNo
+      , st.last_name   AS lastName
+      , st.first_name  AS firstName
+      , st.middle_name AS middleName
+      , ec.grade
+    FROM enrolled_course ec
+    JOIN enrollment e ON e.enrollment_id = ec.enrollment_id
+    JOIN student st ON st.student_no = e.student_no
+    WHERE ec.section_id = ?
+    ORDER BY
+        st.last_name
+      , st.first_name
+  `, [section.id]);
   return { section: withName(section), students };
 }
 
@@ -100,11 +146,13 @@ export async function saveGrades(sectionId, grades, actor) {
       if (!enrolled.has(g.studentNo)) {
         throw new AppError(400, `Student ${g.studentNo} is not in this section.`);
       }
-      await conn.query(
-        `UPDATE enrolled_course ec JOIN enrollment e ON e.enrollment_id = ec.enrollment_id
-         SET ec.grade = ? WHERE ec.section_id = ? AND e.student_no = ?`,
-        [g.grade, section.id, g.studentNo],
-      );
+      await conn.query(`
+        UPDATE enrolled_course ec
+        JOIN enrollment e ON e.enrollment_id = ec.enrollment_id
+        SET ec.grade = ?
+        WHERE ec.section_id = ?
+          AND e.student_no = ?
+      `, [g.grade, section.id, g.studentNo]);
     }
     return { saved: grades.length };
   });
@@ -120,10 +168,13 @@ export function submitGrades(sectionId, actor) {
     if (missing) {
       throw new AppError(409, `${missing} student${missing > 1 ? 's' : ''} still ${missing > 1 ? 'have' : 'has'} no grade.`);
     }
-    await conn.query(
-      'UPDATE section SET grades_submitted_at = NOW(), submitted_by_admin_id = ? WHERE section_id = ?',
-      [actor.adminId ?? null, section.id],
-    );
+    await conn.query(`
+      UPDATE section
+      SET
+          grades_submitted_at   = NOW()
+        , submitted_by_admin_id = ?
+      WHERE section_id = ?
+    `, [actor.adminId ?? null, section.id]);
     const dropped = await dropOnLastAttempt(conn, section.code, students);
     return { submitted: true, dropped };
   });
@@ -134,19 +185,24 @@ export function submitGrades(sectionId, actor) {
 async function dropOnLastAttempt(conn, code, students) {
   const unpassed = students.filter((s) => ['failed', 'inc'].includes(gradeStatus(s.grade)));
   if (!unpassed.length) return [];
-  const [rows] = await conn.query(
-    `SELECT e.student_no AS studentNo, COUNT(*) AS attempts
-     FROM enrolled_course ec JOIN enrollment e ON e.enrollment_id = ec.enrollment_id
-     WHERE ec.course_code = ? AND e.student_no IN (?)
-     GROUP BY e.student_no`,
-    [code, unpassed.map((s) => s.studentNo)],
-  );
+  const [rows] = await conn.query(`
+    SELECT
+        e.student_no AS studentNo
+      , COUNT(*)     AS attempts
+    FROM enrolled_course ec
+    JOIN enrollment e ON e.enrollment_id = ec.enrollment_id
+    WHERE ec.course_code = ?
+      AND e.student_no IN (?)
+    GROUP BY e.student_no
+  `, [code, unpassed.map((s) => s.studentNo)]);
   const dropped = rows.filter((r) => r.attempts >= MAX_ATTEMPTS).map((r) => r.studentNo);
   if (dropped.length) {
-    await conn.query(
-      "UPDATE student SET status = 'DROPPED' WHERE student_no IN (?) AND status = 'ACTIVE'",
-      [dropped],
-    );
+    await conn.query(`
+      UPDATE student
+      SET status = 'DROPPED'
+      WHERE student_no IN (?)
+        AND status = 'ACTIVE'
+    `, [dropped]);
   }
   return dropped;
 }
@@ -164,28 +220,39 @@ export async function completeInc(sectionId, studentNo, grade, adminId) {
     const student = students.find((s) => s.studentNo === studentNo);
     if (!student) throw new AppError(404, 'Student not found in this section.');
     if (student.grade !== 'INC') throw new AppError(409, 'Only an INC grade can be completed.');
-    await conn.query(
-      `UPDATE enrolled_course ec JOIN enrollment e ON e.enrollment_id = ec.enrollment_id
-       SET ec.grade = ? WHERE ec.section_id = ? AND e.student_no = ?`,
-      [grade, section.id, studentNo],
-    );
+    await conn.query(`
+      UPDATE enrolled_course ec
+      JOIN enrollment e ON e.enrollment_id = ec.enrollment_id
+      SET ec.grade = ?
+      WHERE ec.section_id = ?
+        AND e.student_no = ?
+    `, [grade, section.id, studentNo]);
     return { completed: true };
   });
 }
 
 // Every INC still waiting to be completed.
 export async function listIncompletes() {
-  const [rows] = await pool.query(
-    `SELECT ec.section_id AS sectionId, s.course_code AS code, c.course_title AS title,
-            s.school_year AS schoolYear, s.semester, e.student_no AS studentNo,
-            CONCAT(st.last_name, ', ', st.first_name) AS student
-     FROM enrolled_course ec
-     JOIN enrollment e ON e.enrollment_id = ec.enrollment_id
-     JOIN student st ON st.student_no = e.student_no
-     JOIN section s ON s.section_id = ec.section_id
-     JOIN course c ON c.course_code = s.course_code
-     WHERE ec.grade = 'INC' AND s.grades_submitted_at IS NOT NULL
-     ORDER BY s.school_year, s.semester, st.last_name`,
-  );
+  const [rows] = await pool.query(`
+    SELECT
+        ec.section_id  AS sectionId
+      , s.course_code  AS code
+      , c.course_title AS title
+      , s.school_year  AS schoolYear
+      , s.semester
+      , e.student_no   AS studentNo
+      , CONCAT(st.last_name, ', ', st.first_name) AS student
+    FROM enrolled_course ec
+    JOIN enrollment e ON e.enrollment_id = ec.enrollment_id
+    JOIN student st ON st.student_no = e.student_no
+    JOIN section s ON s.section_id = ec.section_id
+    JOIN course c ON c.course_code = s.course_code
+    WHERE ec.grade = 'INC'
+      AND s.grades_submitted_at IS NOT NULL
+    ORDER BY
+        s.school_year
+      , s.semester
+      , st.last_name
+  `);
   return rows;
 }

@@ -39,6 +39,7 @@ router.get('/courses', wrap(async () => {
 // Periods
 router.get('/periods', wrap(() => admin.listPeriods()));
 router.post('/periods/next', wrap((req) => admin.openNextPeriod(req.body ?? {})));
+router.get('/periods/close-preview', wrap(() => admin.closePreview()));
 router.post('/periods/close', wrap(() => admin.closePeriod()));
 
 // Sections. GET defaults to the current (or latest) period.
@@ -78,6 +79,7 @@ router.post('/sections/:id/complete-inc', wrap(async (req) => {
 // Professors
 router.get('/students', wrap(() => admin.listStudents()));
 router.post('/students', wrap((req) => admin.createStudent(req.body ?? {})));
+router.post('/students/:no/reopen', wrap((req) => admin.reopenEnrollment(req.params.no)));
 router.get('/professors', wrap(() => admin.listProfessors()));
 router.post('/professors', wrap((req) => admin.createProfessor(req.body ?? {})));
 router.post('/professors/:id/activate', wrap((req) => admin.setProfessorActive(req.params.id, true)));

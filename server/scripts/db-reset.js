@@ -29,9 +29,9 @@ export async function resetDatabase(dbName = process.env.DB_NAME || 'info_enroll
       await conn.query(sql.replace(/\binfo_enroll\b/g, dbName));
     }
     await conn.query(`USE \`${dbName}\``);
-    await conn.query(
-      "SET SESSION sql_mode = 'STRICT_ALL_TABLES,NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'",
-    );
+    await conn.query(`
+      SET SESSION sql_mode = 'STRICT_ALL_TABLES,NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'
+    `);
     // Rule 22: refuse prerequisite data with a loop (the database only blocks
     // a subject requiring itself).
     const loops = await checkPrerequisiteLoops(conn);
@@ -47,15 +47,45 @@ export async function resetDatabase(dbName = process.env.DB_NAME || 'info_enroll
     }
     const [[counts]] = await conn.query(`
       SELECT
-        (SELECT COUNT(*) FROM course) AS courses,
-        (SELECT COUNT(*) FROM prerequisite WHERE requisite_type = 'PRE') AS pre,
-        (SELECT COUNT(*) FROM prerequisite WHERE requisite_type = 'CO') AS co,
-        (SELECT COUNT(*) FROM student) AS students,
-        (SELECT COUNT(*) FROM professor) AS professors,
-        (SELECT COUNT(*) FROM enrollment_period) AS periods,
-        (SELECT COUNT(*) FROM section) AS sections,
-        (SELECT COUNT(*) FROM enrollment) AS enrollments,
-        (SELECT COUNT(*) FROM enrolled_course) AS enrolled_courses`);
+          (
+            SELECT COUNT(*)
+            FROM course
+          ) AS courses
+        , (
+            SELECT COUNT(*)
+            FROM prerequisite
+            WHERE requisite_type = 'PRE'
+          ) AS pre
+        , (
+            SELECT COUNT(*)
+            FROM prerequisite
+            WHERE requisite_type = 'CO'
+          ) AS co
+        , (
+            SELECT COUNT(*)
+            FROM student
+          ) AS students
+        , (
+            SELECT COUNT(*)
+            FROM professor
+          ) AS professors
+        , (
+            SELECT COUNT(*)
+            FROM enrollment_period
+          ) AS periods
+        , (
+            SELECT COUNT(*)
+            FROM section
+          ) AS sections
+        , (
+            SELECT COUNT(*)
+            FROM enrollment
+          ) AS enrollments
+        , (
+            SELECT COUNT(*)
+            FROM enrolled_course
+          ) AS enrolled_courses
+    `);
     return counts;
   } finally {
     await conn.end();

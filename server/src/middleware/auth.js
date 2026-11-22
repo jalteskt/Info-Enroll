@@ -13,10 +13,11 @@ export function requireRole(...roles) {
       }
       // A professor deactivated mid-session loses access right away (rule 37).
       if (user.role === 'professor') {
-        const [[row]] = await pool.query(
-          'SELECT is_active FROM professor WHERE professor_id = ?',
-          [user.id],
-        );
+        const [[row]] = await pool.query(`
+          SELECT is_active
+          FROM professor
+          WHERE professor_id = ?
+        `, [user.id]);
         if (!row || !row.is_active) {
           req.session.destroy(() => {});
           throw new AppError(401, 'This account is no longer active.');

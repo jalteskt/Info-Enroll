@@ -91,16 +91,19 @@ The admin creates accounts on two pages:
 
 ## Trying a whole semester
 
-1. **Student** (e.g. `202500003`): add and remove subjects. Joaquin can retake
-   the CIST_102 lab; it is his 2nd and last attempt.
-2. **Admin:** *Overview → Close enrollment*. Empty enrollments and sections
-   with no students are removed.
+1. **Student** (e.g. `202500003`): enlist and remove subjects, then click
+   **Enroll** to make them final. Joaquin can retake the CIST_102 lab; it is
+   his 2nd and last attempt. The admin can reopen an enrollment from *Students*.
+2. **Admin:** *Overview → Close enrollment*. Students who did not click Enroll
+   lose their enlisted subjects, and sections with no students are removed.
 3. **Professor:** open *My classes*, encode grades, *Save draft*, review, and
    submit. Submitting locks the class record. A failed or INC last attempt
    drops the student.
 4. **Admin:** *Grades* lists every section still missing grades (the admin
    can encode and submit them) and every INC to complete.
 5. **Admin:** once every section is submitted, *Overview → Open next period*.
+   The new period starts with 2 sections of every subject that semester, with
+   days, times and professors assigned. The admin can change them.
 
 Run `npm run db:reset` to get the demo data back.
 
