@@ -41,7 +41,10 @@ app.use('/api/admin', adminRoutes);
 
 app.get('/api/health', async (req, res, next) => {
   try {
-    const [[row]] = await pool.query('SELECT COUNT(*) AS courses FROM course');
+    const [[row]] = await pool.query(`
+      SELECT COUNT(*) AS courses
+      FROM course
+    `);
     res.json({ ok: true, courses: row.courses });
   } catch (err) {
     next(err);

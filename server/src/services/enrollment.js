@@ -1,4 +1,5 @@
-// Student add / change-section / remove. Each call is one transaction, and
+// Student add / change-section / remove, and Enroll. Subjects stay enlisted
+// until the student clicks Enroll, which makes them final. Each call is one transaction, and
 // total_units is updated in that same transaction (rule 12).
 // Lec and lab are separate subjects (rule 27): each is added on its own.
 import { withTransaction } from '../db.js';
@@ -11,46 +12,78 @@ import { overlaps, describeTime } from './schedule.js';
 // Shared lock on the OPEN period: many students can add at once, but the
 // admin's close (which updates this row) waits until they finish (rule 7).
 async function lockOpenPeriod(conn) {
-  const [[period]] = await conn.query(
-    `SELECT school_year AS schoolYear, semester, status FROM enrollment_period
-     WHERE status = 'OPEN' LIMIT 1 LOCK IN SHARE MODE`,
-  );
+  const [[period]] = await conn.query(`
+    SELECT
+        school_year AS schoolYear
+      , semester
+      , status
+    FROM enrollment_period
+    WHERE status = 'OPEN'
+    LIMIT 1
+    LOCK IN SHARE MODE
+  `);
   if (!period) throw new AppError(409, 'Enrollment is closed.');
   return period;
 }
 
 async function lockEnrollment(conn, studentNo, period) {
-  const [[row]] = await conn.query(
-    `SELECT enrollment_id AS id, year_level AS yearLevel, total_units AS totalUnits
-     FROM enrollment WHERE student_no = ? AND school_year = ? AND semester = ?
-     FOR UPDATE`,
-    [studentNo, period.schoolYear, period.semester],
-  );
+  const [[row]] = await conn.query(`
+    SELECT
+        enrollment_id AS id
+      , year_level    AS yearLevel
+      , total_units   AS totalUnits
+      , date_enrolled AS dateEnrolled
+    FROM enrollment
+    WHERE student_no = ?
+      AND school_year = ?
+      AND semester = ?
+    FOR UPDATE
+  `, [studentNo, period.schoolYear, period.semester]);
   return row ?? null;
 }
 
 // Decision 2026-11-18: the enrollment row is created on the first add.
 // Rule 8: one per student per semester (unique key; a race just reuses it).
 async function getOrCreateEnrollment(conn, studentNo, period, yearLevel) {
-  await conn.query(
-    `INSERT INTO enrollment (year_level, date_enrolled, total_units, student_no, school_year, semester)
-     VALUES (?, CURDATE(), 0, ?, ?, ?)
-     ON DUPLICATE KEY UPDATE enrollment_id = enrollment_id`,
-    [yearLevel, studentNo, period.schoolYear, period.semester],
-  );
+  await conn.query(`
+    INSERT INTO enrollment (
+        year_level
+      , date_enrolled
+      , total_units
+      , student_no
+      , school_year
+      , semester
+    )
+    VALUES (
+        ?
+      , NULL
+      , 0
+      , ?
+      , ?
+      , ?
+    )
+    ON DUPLICATE KEY UPDATE enrollment_id = enrollment_id
+  `, [yearLevel, studentNo, period.schoolYear, period.semester]);
   return lockEnrollment(conn, studentNo, period);
 }
 
 async function enrolledRows(conn, enrollmentId) {
-  const [rows] = await conn.query(
-    `SELECT ec.course_code AS code, ec.section_id AS sectionId, s.section_no AS sectionNo,
-            s.day, s.time_start AS timeStart, s.time_end AS timeEnd
-     FROM enrolled_course ec JOIN section s ON s.section_id = ec.section_id
-     WHERE ec.enrollment_id = ?`,
-    [enrollmentId],
-  );
+  const [rows] = await conn.query(`
+    SELECT
+        ec.course_code AS code
+      , ec.section_id  AS sectionId
+      , s.section_no   AS sectionNo
+      , s.day
+      , s.time_start   AS timeStart
+      , s.time_end     AS timeEnd
+    FROM enrolled_course ec
+    JOIN section s ON s.section_id = ec.section_id
+    WHERE ec.enrollment_id = ?
+  `, [enrollmentId]);
   return rows;
 }
+
+const FINAL = 'You are already enrolled for this semester. Ask the registrar to reopen your enrollment.';
 
 const unitsOf = (codes, courses) => codes.reduce((n, c) => n + courses.get(c).units, 0);
 
@@ -77,17 +110,20 @@ export async function addSubject(studentNo, { code, sectionNo }) {
     const past = terms.filter(
       (t) => !(t.schoolYear === period.schoolYear && t.semester === period.semester),
     );
-    const standing = buildStanding(past, courses);
+    const standing = buildStanding(past, courses, period.schoolYear);
     // Rules 10, 40: share-locked so a drop at grade submission can't race this add.
-    const [[student]] = await conn.query(
-      'SELECT status FROM student WHERE student_no = ? LOCK IN SHARE MODE',
-      [studentNo],
-    );
+    const [[student]] = await conn.query(`
+      SELECT status
+      FROM student
+      WHERE student_no = ?
+      LOCK IN SHARE MODE
+    `, [studentNo]);
     if (!student) throw new AppError(404, 'Student not found.');
     const block = studentBlock({ period, standing, studentStatus: student.status }); // rules 5, 10, 40
     if (block) throw new AppError(409, block);
 
     const enrollment = await getOrCreateEnrollment(conn, studentNo, period, standing.yearLevel);
+    if (enrollment.dateEnrolled) throw new AppError(409, FINAL);
     const current = await enrolledRows(conn, enrollment.id);
     const enrolledCodes = new Set(current.map((r) => r.code));
 
@@ -120,10 +156,12 @@ export async function addSubject(studentNo, { code, sectionNo }) {
     // Rule 11: unit cap by year level and semester. NULL = no cap.
     // A change of section doesn't change the units.
     const newTotal = enrollment.totalUnits + (replacing ? 0 : course.units);
-    const [[limit]] = await conn.query(
-      'SELECT max_units AS maxUnits FROM unit_limit WHERE year_level = ? AND semester = ?',
-      [enrollment.yearLevel, period.semester],
-    );
+    const [[limit]] = await conn.query(`
+      SELECT max_units AS maxUnits
+      FROM unit_limit
+      WHERE year_level = ?
+        AND semester = ?
+    `, [enrollment.yearLevel, period.semester]);
     if (limit.maxUnits != null && newTotal > limit.maxUnits) {
       throw new AppError(
         409,
@@ -132,16 +170,34 @@ export async function addSubject(studentNo, { code, sectionNo }) {
     }
 
     if (replacing) {
-      await conn.query('DELETE FROM enrolled_course WHERE enrollment_id = ? AND course_code = ?', [
+      await conn.query(`
+        DELETE FROM enrolled_course
+        WHERE enrollment_id = ?
+          AND course_code = ?
+      `, [
         enrollment.id,
         code,
       ]);
     }
-    await conn.query(
-      'INSERT INTO enrolled_course (enrollment_id, section_id, grade, course_code) VALUES (?, ?, NULL, ?)',
-      [enrollment.id, section.id, code],
-    );
-    await conn.query('UPDATE enrollment SET total_units = ? WHERE enrollment_id = ?', [
+    await conn.query(`
+      INSERT INTO enrolled_course (
+          enrollment_id
+        , section_id
+        , grade
+        , course_code
+      )
+      VALUES (
+          ?
+        , ?
+        , NULL
+        , ?
+      )
+    `, [enrollment.id, section.id, code]);
+    await conn.query(`
+      UPDATE enrollment
+      SET total_units = ?
+      WHERE enrollment_id = ?
+    `, [
       newTotal,
       enrollment.id,
     ]);
@@ -159,20 +215,68 @@ export function removeSubject(studentNo, code) {
     if (!courses.has(code)) throw new AppError(404, 'Subject not found.');
 
     const enrollment = await lockEnrollment(conn, studentNo, period);
+    if (enrollment?.dateEnrolled) throw new AppError(409, FINAL);
     const current = enrollment ? await enrolledRows(conn, enrollment.id) : [];
     if (!current.some((r) => r.code === code)) throw new AppError(404, 'You are not enrolled in that subject.');
 
     const lab = labDroppedWith(code, courses);
     const removed = current.filter((r) => r.code === code || r.code === lab).map((r) => r.code);
-    await conn.query('DELETE FROM enrolled_course WHERE enrollment_id = ? AND course_code IN (?)', [
+    await conn.query(`
+      DELETE FROM enrolled_course
+      WHERE enrollment_id = ?
+        AND course_code IN (?)
+    `, [
       enrollment.id,
       removed,
     ]);
     const newTotal = enrollment.totalUnits - unitsOf(removed, courses);
-    await conn.query('UPDATE enrollment SET total_units = ? WHERE enrollment_id = ?', [
+    await conn.query(`
+      UPDATE enrollment
+      SET total_units = ?
+      WHERE enrollment_id = ?
+    `, [
       newTotal,
       enrollment.id,
     ]);
     return { removed, totalUnits: newTotal };
+  });
+}
+
+// The Enroll button: the student's enlisted subjects become final. Only the
+// admin can undo it (reopenEnrollment). Rule 11's minimum is checked here.
+export function confirmEnrollment(studentNo) {
+  return withTransaction(async (conn) => {
+    const period = await lockOpenPeriod(conn);
+    const [[student]] = await conn.query(`
+      SELECT status
+      FROM student
+      WHERE student_no = ?
+      LOCK IN SHARE MODE
+    `, [studentNo]);
+    if (!student) throw new AppError(404, 'Student not found.');
+    if (student.status === 'DROPPED') {
+      throw new AppError(409, 'You have been dropped from the program, so you can’t enroll.');
+    }
+    const enrollment = await lockEnrollment(conn, studentNo, period);
+    if (enrollment?.dateEnrolled) throw new AppError(409, 'You are already enrolled for this semester.');
+    const current = enrollment ? await enrolledRows(conn, enrollment.id) : [];
+    if (!current.length) throw new AppError(409, 'Add at least one subject before enrolling.');
+    const [[limit]] = await conn.query(`
+      SELECT min_units AS minUnits
+      FROM unit_limit
+      WHERE year_level = ?
+        AND semester = ?
+    `, [enrollment.yearLevel, period.semester]);
+    if (enrollment.totalUnits < limit.minUnits) {
+      throw new AppError(409, `You need at least ${limit.minUnits} units to enroll. You have ${enrollment.totalUnits}.`);
+    }
+    await conn.query(`
+      UPDATE enrollment
+      SET
+          date_enrolled = CURDATE()
+        , reopen_note   = NULL
+      WHERE enrollment_id = ?
+    `, [enrollment.id]);
+    return { subjects: current.length, totalUnits: enrollment.totalUnits };
   });
 }

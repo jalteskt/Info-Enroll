@@ -4,9 +4,11 @@
 // Timeline: 2022-2023 1st sem ... 2025-2026 2nd sem are CLOSED with all grades
 // submitted. 2026-2027 1st sem is OPEN (the current period).
 //
-// Every section in one period gets its own day/time slot, so no student or
-// professor can have a schedule conflict (rules 19, 36) anywhere in the seed.
+// In past periods every section has its own day/time slot. The current period
+// has the default 2 sections per subject, planned without professor conflicts
+// (rule 36), and its demo students stay in section 1, which never overlaps.
 import bcrypt from 'bcryptjs';
+import { DAYS, TIMES, planDefaultSections } from '../src/services/defaultSections.js';
 
 export const DEMO_PASSWORD = 'password123';
 
@@ -15,18 +17,6 @@ for (let y = 2022; y <= 2025; y++) {
   PAST_PERIODS.push([`${y}-${y + 1}`, 1], [`${y}-${y + 1}`, 2]);
 }
 const CURRENT_PERIOD = ['2026-2027', 1];
-
-const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const TIMES = [
-  ['07:00', '08:30'],
-  ['08:30', '10:00'],
-  ['10:00', '11:30'],
-  ['11:30', '13:00'],
-  ['13:00', '14:30'],
-  ['14:30', '16:00'],
-  ['16:00', '17:30'],
-  ['17:30', '19:00'],
-]; // 6 days x 8 times = 48 slots per period
 
 const PASSING = ['1.25', '1.50', '1.75', '2.00', '2.25', '2.50', '1.75', '2.00'];
 
@@ -120,26 +110,54 @@ const submittedAt = (sy, sem) =>
 export async function seedDemo(conn) {
   const hash = (pw) => bcrypt.hash(pw, 10);
 
-  const [courseRows] = await conn.query(
-    'SELECT course_code, units, year_level, semester FROM course ORDER BY course_code',
-  );
+  const [courseRows] = await conn.query(`
+    SELECT
+        course_code
+      , units
+      , year_level
+      , semester
+    FROM course
+    ORDER BY course_code
+  `);
   const courses = new Map(courseRows.map((c) => [c.course_code, c]));
   const curriculum = (year, sem) =>
     courseRows.filter((c) => c.year_level === year && c.semester === sem);
 
   // Admin and professors
-  const [adminResult] = await conn.query(
-    'INSERT INTO admin (username, password, last_name, first_name) VALUES (?, ?, ?, ?)',
-    [ADMIN.username, await hash(DEMO_PASSWORD), ADMIN.last, ADMIN.first],
-  );
+  const [adminResult] = await conn.query(`
+    INSERT INTO admin (
+        username
+      , password
+      , last_name
+      , first_name
+    )
+    VALUES (
+        ?
+      , ?
+      , ?
+      , ?
+    )
+  `, [ADMIN.username, await hash(DEMO_PASSWORD), ADMIN.last, ADMIN.first]);
   const adminId = adminResult.insertId;
 
   const profIds = {};
   for (const p of PROFESSORS) {
-    const [r] = await conn.query(
-      'INSERT INTO professor (username, password, last_name, first_name, is_active) VALUES (?, ?, ?, ?, ?)',
-      [p.username, await hash(DEMO_PASSWORD), p.last, p.first, p.active ? 1 : 0],
-    );
+    const [r] = await conn.query(`
+      INSERT INTO professor (
+          username
+        , password
+        , last_name
+        , first_name
+        , is_active
+      )
+      VALUES (
+          ?
+        , ?
+        , ?
+        , ?
+        , ?
+      )
+    `, [p.username, await hash(DEMO_PASSWORD), p.last, p.first, p.active ? 1 : 0]);
     profIds[p.username] = r.insertId;
   }
   const allProfs = PROFESSORS.map((p) => profIds[p.username]);
@@ -147,18 +165,40 @@ export async function seedDemo(conn) {
 
   // Students
   for (const s of STUDENTS) {
-    await conn.query(
-      'INSERT INTO student (student_no, last_name, first_name, middle_name, entrance_date, password) VALUES (?, ?, ?, ?, ?, ?)',
-      [s.no, s.last, s.first, s.middle, s.entrance, await hash(DEMO_PASSWORD)],
-    );
+    await conn.query(`
+      INSERT INTO student (
+          student_no
+        , last_name
+        , first_name
+        , middle_name
+        , entrance_date
+        , password
+      )
+      VALUES (
+          ?
+        , ?
+        , ?
+        , ?
+        , ?
+        , ?
+      )
+    `, [s.no, s.last, s.first, s.middle, s.entrance, await hash(DEMO_PASSWORD)]);
   }
 
   // Periods: insert OPEN first so sections can be created, close past ones at the end.
   for (const [sy, sem] of [...PAST_PERIODS, CURRENT_PERIOD]) {
-    await conn.query(
-      "INSERT INTO enrollment_period (school_year, semester, status) VALUES (?, ?, 'OPEN')",
-      [sy, sem],
-    );
+    await conn.query(`
+      INSERT INTO enrollment_period (
+          school_year
+        , semester
+        , status
+      )
+      VALUES (
+          ?
+        , ?
+        , 'OPEN'
+      )
+    `, [sy, sem]);
   }
 
   // One context per period: hands out unique slots and creates sections lazily.
@@ -185,11 +225,28 @@ export async function seedDemo(conn) {
       ctx.groupProf.set(groupKey, ctx.profs[(ctx.nextProf++ + sectionNo - 1) % ctx.profs.length]);
     }
     const prof = ctx.groupProf.get(groupKey);
-    const [r] = await conn.query(
-      `INSERT INTO section (section_no, day, time_start, time_end, course_code, school_year, semester, professor_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [sectionNo, day, start, end, code, ctx.sy, ctx.sem, prof],
-    );
+    const [r] = await conn.query(`
+      INSERT INTO section (
+          section_no
+        , day
+        , time_start
+        , time_end
+        , course_code
+        , school_year
+        , semester
+        , professor_id
+      )
+      VALUES (
+          ?
+        , ?
+        , ?
+        , ?
+        , ?
+        , ?
+        , ?
+        , ?
+      )
+    `, [sectionNo, day, start, end, code, ctx.sy, ctx.sem, prof]);
     const section = { id: r.insertId, code };
     ctx.sections.set(key, section);
     return section;
@@ -197,17 +254,40 @@ export async function seedDemo(conn) {
 
   async function enroll(studentNo, ctx, yearLevel, entries, graded) {
     const totalUnits = entries.reduce((n, e) => n + courses.get(e.code).units, 0);
-    const [r] = await conn.query(
-      `INSERT INTO enrollment (year_level, date_enrolled, total_units, student_no, school_year, semester)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [yearLevel, enrolledDate(ctx.sy, ctx.sem), totalUnits, studentNo, ctx.sy, ctx.sem],
-    );
+    const [r] = await conn.query(`
+      INSERT INTO enrollment (
+          year_level
+        , date_enrolled
+        , total_units
+        , student_no
+        , school_year
+        , semester
+      )
+      VALUES (
+          ?
+        , ?
+        , ?
+        , ?
+        , ?
+        , ?
+      )
+    `, [yearLevel, graded ? enrolledDate(ctx.sy, ctx.sem) : null, totalUnits, studentNo, ctx.sy, ctx.sem]); // current term: enlisted
     for (const e of entries) {
       const section = await sectionFor(ctx, e.code);
-      await conn.query(
-        'INSERT INTO enrolled_course (enrollment_id, section_id, grade, course_code) VALUES (?, ?, ?, ?)',
-        [r.insertId, section.id, graded ? e.grade : null, e.code],
-      );
+      await conn.query(`
+        INSERT INTO enrolled_course (
+            enrollment_id
+          , section_id
+          , grade
+          , course_code
+        )
+        VALUES (
+            ?
+          , ?
+          , ?
+          , ?
+        )
+      `, [r.insertId, section.id, graded ? e.grade : null, e.code]);
     }
   }
 
@@ -226,17 +306,45 @@ export async function seedDemo(conn) {
           grade: opts.grades?.[c.course_code] ?? PASSING[gradeCounter++ % PASSING.length],
         }))
         .concat(Object.entries(opts.add || {}).map(([code, grade]) => ({ code, grade })));
-      // year level = ceil((past non-empty enrollments + 1) / 2)   (rule 4)
+      // Histories have no gaps, so this equals earlier school years + 1 (rule 4).
       await enroll(s.no, periodCtx(sy, sem, allProfs), Math.ceil((i + 1) / 2), entries, true);
     }
   }
 
-  // Current OPEN period: one section of every 1st-sem course, plus a second
-  // section of each 1st-year 1st-sem course so students can choose.
+  // Current OPEN period: the same default sections as opening a period.
   const [csy, csem] = CURRENT_PERIOD;
   const current = periodCtx(csy, csem, activeProfs);
-  for (const c of courseRows.filter((c) => c.semester === csem)) await sectionFor(current, c.course_code, 1);
-  for (const c of curriculum(1, csem)) await sectionFor(current, c.course_code, 2);
+  const plan = planDefaultSections(
+    courseRows
+      .filter((c) => c.semester === csem)
+      .map((c) => ({ code: c.course_code, yearLevel: c.year_level })),
+    activeProfs,
+  );
+  for (const s of plan.sections) {
+    const [r] = await conn.query(`
+      INSERT INTO section (
+          section_no
+        , day
+        , time_start
+        , time_end
+        , course_code
+        , school_year
+        , semester
+        , professor_id
+      )
+      VALUES (
+          ?
+        , ?
+        , ?
+        , ?
+        , ?
+        , ?
+        , ?
+        , ?
+      )
+    `, [s.sectionNo, s.day, s.timeStart, s.timeEnd, s.code, csy, csem, s.professorId]);
+    current.sections.set(`${s.code}#${s.sectionNo}`, { id: r.insertId, code: s.code });
+  }
 
   for (const s of STUDENTS.filter((s) => s.current)) {
     const yearLevel = Math.ceil((s.history.length + 1) / 2);
@@ -246,35 +354,48 @@ export async function seedDemo(conn) {
   // Close past periods and mark their grades submitted (rule 31, 35).
   // One section is shown as submitted by the admin instead of its professor.
   for (const [sy, sem] of PAST_PERIODS) {
-    await conn.query(
-      'UPDATE section SET grades_submitted_at = ? WHERE school_year = ? AND semester = ?',
-      [submittedAt(sy, sem), sy, sem],
-    );
-    await conn.query(
-      "UPDATE enrollment_period SET status = 'CLOSED' WHERE school_year = ? AND semester = ?",
-      [sy, sem],
-    );
+    await conn.query(`
+      UPDATE section
+      SET grades_submitted_at = ?
+      WHERE school_year = ?
+        AND semester = ?
+    `, [submittedAt(sy, sem), sy, sem]);
+    await conn.query(`
+      UPDATE enrollment_period
+      SET status = 'CLOSED'
+      WHERE school_year = ?
+        AND semester = ?
+    `, [sy, sem]);
   }
-  await conn.query(
-    `UPDATE section SET submitted_by_admin_id = ?
-     WHERE course_code = 'PATHFIT2' AND school_year = '2025-2026' AND semester = 2`,
-    [adminId],
-  );
+  await conn.query(`
+    UPDATE section
+    SET submitted_by_admin_id = ?
+    WHERE course_code = 'PATHFIT2'
+      AND school_year = '2025-2026'
+      AND semester = 2
+  `, [adminId]);
 
   // Rule 40, as the system would have done at submission: a subject whose
   // last attempt (rule 23: 2 attempts) ended failed or INC drops the student.
-  await conn.query(
-    `UPDATE student SET status = 'DROPPED' WHERE student_no IN (
-       SELECT student_no FROM (
-         SELECT e.student_no, ec.course_code
-         FROM enrolled_course ec JOIN enrollment e ON e.enrollment_id = ec.enrollment_id
-         GROUP BY e.student_no, ec.course_code
-         HAVING COUNT(*) >= 2
-            AND SUBSTRING_INDEX(GROUP_CONCAT(CAST(ec.grade AS CHAR) ORDER BY e.school_year, e.semester), ',', -1)
-                NOT IN ('1.00','1.25','1.50','1.75','2.00','2.25','2.50','2.75','3.00')
-       ) last_attempts
-     )`,
-  );
+  await conn.query(`
+    UPDATE student
+    SET status = 'DROPPED'
+    WHERE student_no IN (
+      SELECT student_no
+      FROM (
+        SELECT
+            e.student_no
+          , ec.course_code
+        FROM enrolled_course ec
+        JOIN enrollment e ON e.enrollment_id = ec.enrollment_id
+        GROUP BY
+            e.student_no
+          , ec.course_code
+        HAVING COUNT(*) >= 2
+          AND SUBSTRING_INDEX(GROUP_CONCAT(CAST(ec.grade AS CHAR) ORDER BY e.school_year, e.semester), ',', -1) NOT IN ('1.00', '1.25', '1.50', '1.75', '2.00', '2.25', '2.50', '2.75', '3.00')
+      ) last_attempts
+    )
+  `);
 
   return { students: STUDENTS.length, professors: PROFESSORS.length, admins: 1 };
 }

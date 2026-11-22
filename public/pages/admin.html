@@ -323,6 +323,8 @@
             <th scope="col">Entrance date</th>
             <th scope="col">Year level</th>
             <th scope="col">Status</th>
+            <th scope="col">This term</th>
+            <th scope="col"><span class="sr-only">Actions</span></th>
           </tr>
         </thead>
         <tbody>{{rows}}</tbody>
@@ -338,6 +340,8 @@
     <td>{{entrance}}</td>
     <td>{{year}}</td>
     <td>{{status}}</td>
+    <td>{{termState}}</td>
+    <td>{{actions}}</td>
   </tr>
 </template>
 
@@ -402,7 +406,7 @@
         <span>Course</span>
         <select class="input" name="code" required>{{courses}}</select>
       </label>
-      <label class="admin-field">
+      <label class="admin-field admin-field-wide">
         <span>Section number</span>
         <input
           class="input"
@@ -413,24 +417,32 @@
           placeholder="Next free number"
         />
       </label>
-      <label class="admin-field">
-        <span>Professor (lecture and laboratory)</span>
-        <select class="input" name="professorId" required>
-          <option value="">Choose a professor</option>
-          {{professors}}
-        </select>
-      </label>
       <fieldset class="admin-fieldset">
         <legend>Lecture, or the whole subject if it has no lab</legend>
+        <label class="admin-field admin-field-wide">
+          <span>Lecture professor</span>
+          <select class="input" name="professorId" required>
+            <option value="">Choose a professor</option>
+            {{professors}}
+          </select>
+        </label>
         {{lecFields}}
       </fieldset>
       <fieldset class="admin-fieldset">
         <legend>Laboratory (used only for subjects with a lab)</legend>
+        <label class="admin-field admin-field-wide">
+          <span>Laboratory professor</span>
+          <select class="input" name="labProfessorId">
+            <option value="">Choose a professor</option>
+            {{labProfessors}}
+          </select>
+        </label>
         {{labFields}}
       </fieldset>
       <p class="muted admin-field-wide">
-        A subject with a lab gets both sections, with the same number and
-        professor. Their times must not overlap.
+        A subject with a lab gets both sections with the same number. The
+        lecture and laboratory can have different professors, and their
+        times must not overlap.
       </p>
       <p class="modal-error admin-field-wide" id="staff-form-error" role="alert"></p>
     </div>

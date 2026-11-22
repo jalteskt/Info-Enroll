@@ -17,10 +17,12 @@ export const pool = mysql.createPool({
 // see what the other transaction committed (e.g. the seat it just took).
 // The default REPEATABLE READ would keep reading an older snapshot.
 pool.on('connection', (conn) => {
-  conn.query(
-    "SET SESSION sql_mode = 'STRICT_ALL_TABLES,NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'",
-  );
-  conn.query('SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED');
+  conn.query(`
+    SET SESSION sql_mode = 'STRICT_ALL_TABLES,NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'
+  `);
+  conn.query(`
+    SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED
+  `);
 });
 
 // Runs fn(conn) inside one transaction. Commits if fn resolves, rolls back

@@ -182,10 +182,14 @@ INSERT INTO unit_limit (year_level, semester, min_units, max_units) VALUES
 -- total_units starts at 0 and is updated only by the system, in the
 -- same transaction as the ENROLLED_COURSE change.
 -- ------------------------------------------------------------
+-- date_enrolled: NULL = enlisted only; set when the student clicks Enroll.
+-- Enlisted rows are removed when the period closes.
+-- reopen_note: why an enrolled student was moved back to enlisted.
 CREATE TABLE enrollment (
     enrollment_id INT UNSIGNED      NOT NULL AUTO_INCREMENT
   , year_level    TINYINT UNSIGNED  NOT NULL
-  , date_enrolled DATE              NOT NULL
+  , date_enrolled DATE              NULL
+  , reopen_note   VARCHAR(255)      NULL
   , total_units   SMALLINT UNSIGNED NOT NULL DEFAULT 0
   , student_no    VARCHAR(20)       NOT NULL
   , school_year   VARCHAR(9)        NOT NULL

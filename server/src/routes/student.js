@@ -1,9 +1,9 @@
 import { Router } from 'express';
 import { requireRole } from '../middleware/auth.js';
 import { enrollmentView } from '../services/eligibility.js';
-import { addSubject, removeSubject } from '../services/enrollment.js';
+import { addSubject, removeSubject, confirmEnrollment } from '../services/enrollment.js';
 import { pool } from '../db.js';
-import { loadCourses, loadTerms, buildStanding, gradeStatus, loadStatus } from '../services/academic.js';
+import { loadCourses, currentPeriod, loadTerms, buildStanding, gradeStatus, loadStatus } from '../services/academic.js';
 
 const router = Router();
 router.use(requireRole('student'));
@@ -38,18 +38,39 @@ router.delete('/enrollment/subjects/:code', async (req, res, next) => {
   }
 });
 
+// The Enroll button: enlisted subjects become final.
+router.post('/enrollment/confirm', async (req, res, next) => {
+  try {
+    await confirmEnrollment(req.user.id);
+    res.json(await enrollmentView(req.user.id));
+  } catch (err) {
+    next(err);
+  }
+});
+
 // Past terms with grades, plus totals.
 router.get('/record', async (req, res, next) => {
   try {
-    const [courses, terms, [limits], [[student]]] = await Promise.all([
+    const [courses, period, terms, [limits], [[student]]] = await Promise.all([
       loadCourses(),
+      currentPeriod(),
       loadTerms(req.user.id),
-      pool.query('SELECT year_level AS yearLevel, semester, max_units AS maxUnits FROM unit_limit'),
-      pool.query('SELECT status FROM student WHERE student_no = ?', [req.user.id]),
+      pool.query(`
+        SELECT
+            year_level AS yearLevel
+          , semester
+          , max_units  AS maxUnits
+        FROM unit_limit
+      `),
+      pool.query(`
+        SELECT status
+        FROM student
+        WHERE student_no = ?
+      `, [req.user.id]),
     ]);
     const maxOf = (t) => limits.find((l) => l.yearLevel === t.yearLevel && l.semester === t.semester)?.maxUnits ?? null;
     const past = terms.filter((t) => t.status === 'CLOSED' && t.courses.length > 0);
-    const standing = buildStanding(past, courses);
+    const standing = buildStanding(past, courses, period?.schoolYear);
 
     // Weighted average of numeric final grades (INC and pending left out).
     const average = (rows) => {

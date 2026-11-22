@@ -40,6 +40,7 @@
       </div>
     </section>
   </section>
+  {{reopenNotice}}
   <div class="workspace">
     <section class="panel subject-catalog" aria-labelledby="subjects-title">
       <div class="panel-header">
@@ -85,8 +86,8 @@
       <div class="plan-tip">
         {{icon12}}
         <span>
-          Your plan stays editable while enrollment is open. Review your
-          schedule before the period closes.
+          Enlist your subjects, then click Enroll to make them final.
+          Subjects not enrolled when the period ends are removed.
         </span>
       </div>
     </aside>
@@ -139,7 +140,7 @@
     <div class="plan-actions">
       <button
         class="button button-primary"
-        data-action="save-plan"
+        data-action="enroll"
         {{content11}}
       >
         {{icon12}}{{content13}} {{content14}}
@@ -213,6 +214,41 @@
   <button class="{{content}}" data-tab="{{key}}" aria-pressed="{{content3}}">
     {{label}}
   </button>
+</template>
+
+<template id="enrollment-notice">
+  <div class="enrollment-notice" role="status">
+    {{icon}}
+    <span>
+      <strong>You’re back to enlisted.</strong> {{note}} Review your
+      subjects and click Enroll again before the period ends.
+    </span>
+  </div>
+</template>
+
+<template id="enroll-confirm">
+  <div class="modal-header">
+    <div>
+      <div class="eyebrow">{{term}}</div>
+      <h2 id="modal-title">Enroll in these subjects?</h2>
+    </div>
+    <button class="icon-button" data-action="close-modal" aria-label="Cancel">
+      {{icon}}
+    </button>
+  </div>
+  <div class="modal-body">
+    <p class="modal-description">
+      {{count}}, {{units}} units. This makes your enrollment final. You
+      can’t change it afterward unless the registrar reopens it.
+    </p>
+    <p class="modal-error" id="enroll-error" role="alert"></p>
+  </div>
+  <div class="modal-footer">
+    <button class="button" data-action="close-modal">Cancel</button>
+    <button class="button button-primary" data-action="enroll-confirm">
+      {{check}}Enroll
+    </button>
+  </div>
 </template>
 
 <template id="plan-panel-2">

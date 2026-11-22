@@ -35,13 +35,26 @@ async function rejects(promise, status, text) {
 before(freshDatabase);
 after(() => pool.end());
 
-const units = async (code) => (await q('SELECT units FROM course WHERE course_code = ?', [code]))[0].units;
+const units = async (code) => (await q(`
+  SELECT units
+  FROM course
+  WHERE course_code = ?
+`, [code]))[0].units;
 const totalOf = async (no) =>
-  (await q("SELECT total_units AS t FROM enrollment WHERE student_no = ? AND school_year = '2026-2027'", [no]))[0].t;
+  (await q(`
+    SELECT total_units AS t
+    FROM enrollment
+    WHERE student_no = ?
+      AND school_year = '2026-2027'
+  `, [no]))[0].t;
 
 test('CO rows match the lec/lab code pairs (rule 26)', async () => {
   assert.deepEqual(await checkCoRows(), []);
-  const [co] = await q("SELECT COUNT(*) AS n FROM prerequisite WHERE requisite_type = 'CO'");
+  const [co] = await q(`
+    SELECT COUNT(*) AS n
+    FROM prerequisite
+    WHERE requisite_type = 'CO'
+  `);
   assert.equal(co.n, 18);
 });
 
@@ -62,7 +75,12 @@ test('first add creates the enrollment; a lec is added on its own (rule 27)', as
   const r = await addSubject(ANDREA, { code: 'CIST_101', sectionNo: 1 });
   assert.equal(r.totalUnits, await units('CIST_101'));
   assert.deepEqual(await currentSubjects(ANDREA), { CIST_101: 1 });
-  const [e] = await q("SELECT year_level FROM enrollment WHERE student_no = ? AND school_year = '2026-2027'", [ANDREA]);
+  const [e] = await q(`
+    SELECT year_level
+    FROM enrollment
+    WHERE student_no = ?
+      AND school_year = '2026-2027'
+  `, [ANDREA]);
   assert.equal(e.year_level, 1);
 });
 
@@ -109,14 +127,40 @@ test('removing a lec removes its lab in the same enrollment too (rule 27)', asyn
 });
 
 test('a lec and its lab cannot overlap for the student (rules 19, 28)', async () => {
-  const lec = (await q('SELECT * FROM section WHERE section_id = ?', [await sectionId('CIST_101', 1)]))[0];
-  await q(
-    `INSERT INTO section (section_no, day, time_start, time_end, course_code, school_year, semester, professor_id)
-     SELECT 3, day, time_start, time_end, 'CIST_101.1', school_year, semester,
-            (SELECT professor_id FROM professor WHERE is_active = 1 AND professor_id <> ? LIMIT 1)
-     FROM section WHERE section_id = ?`,
-    [lec.professor_id, lec.section_id],
-  );
+  const lec = (await q(`
+    SELECT *
+    FROM section
+    WHERE section_id = ?
+  `, [await sectionId('CIST_101', 1)]))[0];
+  await q(`
+    INSERT INTO section (
+        section_no
+      , day
+      , time_start
+      , time_end
+      , course_code
+      , school_year
+      , semester
+      , professor_id
+    )
+    SELECT
+        3
+      , day
+      , time_start
+      , time_end
+      , 'CIST_101.1'
+      , school_year
+      , semester
+      , (
+          SELECT professor_id
+          FROM professor
+          WHERE is_active = 1
+            AND professor_id <> ?
+          LIMIT 1
+        )
+    FROM section
+    WHERE section_id = ?
+  `, [lec.professor_id, lec.section_id]);
   await addSubject(ANDREA, { code: 'CIST_101', sectionNo: 1 });
   await rejects(addSubject(ANDREA, { code: 'CIST_101.1', sectionNo: 3 }), 409, /conflicts with CIST_101 /);
   await removeSubject(ANDREA, 'CIST_101');
@@ -129,15 +173,41 @@ test('removing a subject you do not have is a 404', async () => {
 
 test('schedule conflict (rule 19)', async () => {
   // A second GEC_ETHC section at exactly the time of Andrea's GEC_ARTA section.
-  const arta = (await q('SELECT * FROM section WHERE section_id = ?', [await sectionId('GEC_ARTA', 1)]))[0];
-  await q(
-    `INSERT INTO section (section_no, day, time_start, time_end, course_code, school_year, semester, professor_id)
-     SELECT 2, day, time_start, time_end, 'GEC_ETHC', school_year, semester,
-            (SELECT professor_id FROM professor WHERE is_active = 1 AND professor_id <> ? LIMIT 1)
-     FROM section WHERE section_id = ?`,
-    [arta.professor_id, arta.section_id],
-  );
-  await rejects(addSubject(ANDREA, { code: 'GEC_ETHC', sectionNo: 2 }), 409, /conflicts with GEC_ARTA/);
+  const arta = (await q(`
+    SELECT *
+    FROM section
+    WHERE section_id = ?
+  `, [await sectionId('GEC_ARTA', 1)]))[0];
+  await q(`
+    INSERT INTO section (
+        section_no
+      , day
+      , time_start
+      , time_end
+      , course_code
+      , school_year
+      , semester
+      , professor_id
+    )
+    SELECT
+        3
+      , day
+      , time_start
+      , time_end
+      , 'GEC_ETHC'
+      , school_year
+      , semester
+      , (
+          SELECT professor_id
+          FROM professor
+          WHERE is_active = 1
+            AND professor_id <> ?
+          LIMIT 1
+        )
+    FROM section
+    WHERE section_id = ?
+  `, [arta.professor_id, arta.section_id]);
+  await rejects(addSubject(ANDREA, { code: 'GEC_ETHC', sectionNo: 3 }), 409, /conflicts with GEC_ARTA/);
   // Section 1 of the same subject has its own slot, so it works.
   await addSubject(ANDREA, { code: 'GEC_ETHC', sectionNo: 1 });
 });
@@ -208,7 +278,11 @@ test('two students racing for the last seat: exactly one gets it', async () => {
   ]);
   const ok = results.filter((r) => r.status === 'fulfilled').length;
   assert.equal(ok, 1, JSON.stringify(results.map((r) => r.reason?.message ?? 'ok')));
-  const [count] = await q('SELECT COUNT(*) AS n FROM enrolled_course WHERE section_id = ?', [await sectionId('GEC_WORL', 1)]);
+  const [count] = await q(`
+    SELECT COUNT(*) AS n
+    FROM enrolled_course
+    WHERE section_id = ?
+  `, [await sectionId('GEC_WORL', 1)]);
   assert.equal(count.n, 50);
 });
 
@@ -226,6 +300,36 @@ const standingOf = async (...terms) =>
     })),
     await loadCourses(pool),
   );
+
+test('year level adds one per school year with a finished term (rule 4)', async () => {
+  const courses = await loadCourses(pool);
+  const term = (schoolYear, semester, status = 'CLOSED', subjects = 1) => ({
+    enrollmentId: `${schoolYear}/${semester}`,
+    schoolYear,
+    semester,
+    status,
+    courses: Array.from({ length: subjects }, () => ({ code: 'GEC_ARTA', grade: '2.00', final: true })),
+  });
+  const level = (terms, schoolYear) => buildStanding(terms, courses, schoolYear).yearLevel;
+
+  // Only the 1st sem of the first year, then back the next school year.
+  const oneSem = [term('2025-2026', 1)];
+  assert.equal(level([], '2025-2026'), 1);
+  assert.equal(level(oneSem, '2026-2027'), 2);
+  const back = [...oneSem, term('2026-2027', 1)];
+  assert.equal(level(back, '2026-2027'), 2); // same level all school year
+  assert.equal(level(back, '2027-2028'), 3);
+
+  // Only the 2nd sem counts the same way.
+  assert.equal(level([term('2025-2026', 2)], '2026-2027'), 2);
+  // Both semesters are still one school year.
+  assert.equal(level([term('2025-2026', 1), term('2025-2026', 2)], '2026-2027'), 2);
+  // A fully skipped school year adds nothing.
+  assert.equal(level([term('2024-2025', 1), term('2024-2025', 2)], '2026-2027'), 2);
+  // Empty or unfinished terms add nothing.
+  assert.equal(level([term('2025-2026', 1, 'CLOSED', 0)], '2026-2027'), 1);
+  assert.equal(level([term('2025-2026', 1, 'OPEN')], '2026-2027'), 1);
+});
 
 test('an INC subject can be retaken (rules 23, 34)', async () => {
   const courses = await loadCourses(pool);
@@ -248,7 +352,12 @@ test('a dropped student cannot enroll, but can still view records (rules 10, 40)
   const view = await enrollmentView(PAOLO);
   assert.equal(view.canEnroll, false);
   assert.equal(view.student.status, 'DROPPED');
-  assert.equal((await q("SELECT COUNT(*) AS n FROM enrollment WHERE student_no = ? AND school_year = '2026-2027'", [PAOLO]))[0].n, 0);
+  assert.equal((await q(`
+    SELECT COUNT(*) AS n
+    FROM enrollment
+    WHERE student_no = ?
+      AND school_year = '2026-2027'
+  `, [PAOLO]))[0].n, 0);
 });
 
 test('load status is calculated and shown only (rule 39)', async () => {
@@ -260,7 +369,12 @@ test('load status is calculated and shown only (rule 39)', async () => {
 });
 
 test('no adds or removes once the period is closed (rule 7)', async () => {
-  await q("UPDATE enrollment_period SET status = 'CLOSED' WHERE school_year = '2026-2027' AND semester = 1");
+  await q(`
+    UPDATE enrollment_period
+    SET status = 'CLOSED'
+    WHERE school_year = '2026-2027'
+      AND semester = 1
+  `);
   await rejects(addSubject(AMARA, { code: 'GEC_HIST', sectionNo: 2 }), 409, /closed/);
   await rejects(removeSubject(AMARA, 'GEC_ETHC'), 409, /closed/);
 });

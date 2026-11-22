@@ -390,7 +390,9 @@ function adminOverview(icon) {
     campusPhoto: renderTemplate('campus-art'),
     statusClass: open ? 'badge-green' : 'badge-neutral',
     statusText: open ? 'Enrollment open' : 'Enrollment closed',
-    studentsEnrolled: open?.studentsEnrolled ?? '—',
+    studentsEnrolled: open
+      ? `${open.studentsEnrolled}${open.studentsEnlisted ? ` (${open.studentsEnlisted} enlisted)` : ''}`
+      : '—',
     sectionCount: open?.sections ?? '—',
     seatsLeft: open?.seatsAvailable ?? '—',
     gradesToFinish: waiting + o.incompletes,
@@ -401,11 +403,11 @@ function adminOverview(icon) {
         ? termName(latest)
         : 'No enrollment period yet',
     periodText: open
-      ? 'Students can add, remove and change subjects.'
+      ? 'Students can enlist subjects and click Enroll to make them final.'
       : 'Enrollment is closed. Professors can encode grades.',
     periodBadge: open ? badge('Enrollment open', 'green') : badge('Enrollment closed'),
     periodHint: open
-      ? 'Closing makes enrollment final. Empty enrollments and sections with no students are removed.'
+      ? 'Closing ends enlisting and enrolling. Students who did not click Enroll lose their subjects, and sections with no students are removed.'
       : o.canOpenNextPeriod
         ? 'Every section has submitted grades. You can open the next period.'
         : `${plural(waiting, 'section')} still need submitted grades before the next period can open. See Grades.`,
@@ -451,7 +453,7 @@ function adminSections(icon) {
   return renderTemplate('admin-sections', {
     title: period ? termName(period) : 'No sections',
     subtitle: isOpen
-      ? 'Sections can be added, deleted and reassigned while enrollment is open. A section’s lecture and laboratory share one professor.'
+      ? 'Sections can be added, deleted and reassigned while enrollment is open. A lecture and its laboratory can have different professors.'
       : 'This period is closed. Its sections are final.',
     terms: admin.periods
       .map((p) => option(termKey(p), termName(p), termKey(p) === admin.term))
@@ -564,10 +566,20 @@ function adminStudents(icon) {
               entrance: esc(s.entranceDate ?? '—'),
               year: `${ord(s.yearLevel)} year`,
               status: s.status === 'DROPPED' ? badge('Dropped', 'amber') : badge('Active', 'green'),
+              termState:
+                s.termState === 'ENROLLED'
+                  ? badge('Enrolled', 'green')
+                  : s.termState === 'ENLISTED'
+                    ? badge('Enlisted', 'amber')
+                    : badge('None'),
+              actions:
+                s.termState === 'ENROLLED'
+                  ? actionButton(`staff-student-reopen-${esc(s.studentNo)}`, 'Reopen')
+                  : '',
             }),
           )
           .join('')
-      : emptyRow(5, 'No students yet.'),
+      : emptyRow(7, 'No students yet.'),
   });
 }
 
@@ -592,6 +604,10 @@ function sectionForm(icon) {
       start: start,
       end: end,
     });
+  const professors = admin.professors
+    .filter((p) => p.active)
+    .map((p) => option(p.id, profName(p)))
+    .join('');
   return renderTemplate('admin-section-form', {
     icon: icon('x'),
     term: termName(period),
@@ -604,10 +620,8 @@ function sectionForm(icon) {
         ),
       )
       .join(''),
-    professors: admin.professors
-      .filter((p) => p.active)
-      .map((p) => option(p.id, profName(p)))
-      .join(''),
+    professors,
+    labProfessors: professors,
     lecFields: meeting('lec', 'Mon', '08:00', '09:30'),
     labFields: meeting('lab', 'Wed', '08:00', '09:30'),
   });
@@ -654,20 +668,25 @@ async function adminAction(action, value, icon) {
   let m;
   try {
     // ---- enrollment period
-    if (action === 'staff-period-close')
+    if (action === 'staff-period-close') {
+      const p = await api('/admin/periods/close-preview');
+      const warning = p.notEnrolled
+        ? ` ${plural(p.notEnrolled, 'student')} did not enroll${p.movedBack ? `, including ${p.movedBack} moved back to enlisted by a section deletion or reopen` : ''}. Their subjects will be removed.`
+        : ' Every student with subjects has enrolled.';
       return {
         modal: confirmDialog(icon, {
           eyebrow: termName(openPeriod()),
           title: 'Close enrollment?',
-          text: 'Enrollment becomes final: students can no longer add or remove subjects. Empty enrollments and sections with no students are deleted, and professors can start encoding grades.',
+          text: `Students can no longer enlist or enroll.${warning} Sections with no students are deleted, and professors can start encoding grades. This can’t be undone.`,
           action: 'staff-period-close-confirm',
           confirm: 'Close enrollment',
         }),
       };
+    }
     if (action === 'staff-period-close-confirm') {
       const r = await api('/admin/periods/close', { method: 'POST' });
       return done(
-        `Enrollment closed. Removed ${plural(r.emptySectionsDeleted, 'empty section')} and ${plural(r.emptyEnrollmentsDeleted, 'empty enrollment')}.`,
+        `Enrollment closed. Removed ${plural(r.notEnrolledRemoved, 'student')} who did not enroll and ${plural(r.emptySectionsDeleted, 'empty section')}.`,
       );
     }
     if (action === 'staff-period-next')
@@ -675,7 +694,7 @@ async function adminAction(action, value, icon) {
         modal: confirmDialog(icon, {
           eyebrow: 'Enrollment period',
           title: 'Open the next period?',
-          text: 'The next semester opens for enrollment right away. Add its sections from the Sections page.',
+          text: 'The next semester opens for enrollment right away, with 2 sections of every subject. You can change them on the Sections page.',
           action: 'staff-period-next-confirm',
           confirm: 'Open next period',
         }),
@@ -683,7 +702,9 @@ async function adminAction(action, value, icon) {
     if (action === 'staff-period-next-confirm') {
       const r = await api('/admin/periods/next', { method: 'POST', body: {} });
       admin.term = termKey(r);
-      return done(`${termName(r)} is now open for enrollment.`);
+      return done(
+        `${termName(r)} is now open with ${plural(r.sectionsCreated, 'section')}.${r.sectionsSkipped ? ` ${plural(r.sectionsSkipped, 'section')} could not be created because no professor was free.` : ''}`,
+      );
     }
 
     // ---- sections
@@ -704,7 +725,10 @@ async function adminAction(action, value, icon) {
         professorId: Number(v.professorId),
         lec: { day: v.lecDay, timeStart: v.lecStart, timeEnd: v.lecEnd },
         ...(course?.labCode
-          ? { lab: { day: v.labDay, timeStart: v.labStart, timeEnd: v.labEnd } }
+          ? {
+              labProfessorId: v.labProfessorId ? Number(v.labProfessorId) : null,
+              lab: { day: v.labDay, timeStart: v.labStart, timeEnd: v.labEnd },
+            }
           : {}),
         ...(v.sectionNo ? { sectionNo: Number(v.sectionNo) } : {}),
       };
@@ -719,7 +743,7 @@ async function adminAction(action, value, icon) {
         modal: confirmDialog(icon, {
           eyebrow: `${s.code} / ${s.name}`,
           title: 'Delete this section?',
-          text: `${plural(s.students, 'student')} will be unenrolled from it.${isLec ? ' They also lose its laboratory in this enrollment; the laboratory section itself stays.' : ''} This can’t be undone.`,
+          text: `${plural(s.students, 'student')} will lose this subject.${s.enrolledStudents ? ` ${plural(s.enrolledStudents, 'enrolled student')} will go back to enlisted and must click Enroll again.` : ''}${isLec ? ' They also lose its laboratory in this enrollment; the laboratory section itself stays.' : ''} This can’t be undone.`,
           action: `staff-section-delete-confirm-${s.id}`,
           confirm: 'Delete section',
         }),
@@ -728,7 +752,7 @@ async function adminAction(action, value, icon) {
     if ((m = /^staff-section-delete-confirm-(\d+)$/.exec(action))) {
       const r = await api(`/admin/sections/${m[1]}`, { method: 'DELETE' });
       return done(
-        `${r.deletedSection} section deleted. ${plural(r.studentsUnenrolled, 'student')} unenrolled${r.labsRemoved ? `; ${plural(r.labsRemoved, 'lab enrollment')} removed` : ''}.`,
+        `${r.deletedSection} section deleted. ${plural(r.studentsUnenrolled, 'student')} removed from it${r.labsRemoved ? `; ${plural(r.labsRemoved, 'lab enrollment')} removed` : ''}${r.studentsMovedBack ? `; ${r.studentsMovedBack} moved back to enlisted` : ''}.`,
       );
     }
     if (action === 'staff-reassign') {
@@ -776,6 +800,20 @@ async function adminAction(action, value, icon) {
       const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
       return { modal: renderTemplate('admin-student-form', { icon: icon('x'), today: today }) };
     }
+    if ((m = /^staff-student-reopen-confirm-(.+)$/.exec(action))) {
+      await api(`/admin/students/${encodeURIComponent(m[1])}/reopen`, { method: 'POST' });
+      return done(`Enrollment of ${m[1]} reopened. They must click Enroll again.`);
+    }
+    if ((m = /^staff-student-reopen-(.+)$/.exec(action)))
+      return {
+        modal: confirmDialog(icon, {
+          eyebrow: `Student ${m[1]}`,
+          title: 'Reopen this enrollment?',
+          text: 'The student goes back to enlisted and keeps their subjects and seats. They must click Enroll again before the period ends, or their subjects are removed.',
+          action: `staff-student-reopen-confirm-${m[1]}`,
+          confirm: 'Reopen enrollment',
+        }),
+      };
     if (action === 'staff-form-student') {
       const r = await api('/admin/students', { method: 'POST', body: formValues(value) });
       return done(`Student added. Their student number is ${r.studentNo}.`);

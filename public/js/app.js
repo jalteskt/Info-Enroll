@@ -64,6 +64,9 @@ const loadLabel = (total = totalUnits(), max = maxUnits()) =>
   max == null ? 'No cap' : total < max ? 'Underload' : 'Regular load';
 // Load status belongs to an enrollment; there is none until the first subject is added.
 const hasEnrollment = () => Boolean(term?.enrollment || state.plan.length);
+// Enlisted subjects become final when the student clicks Enroll.
+const isEnrolled = () => term?.enrollment?.status === 'ENROLLED';
+const periodIsOpen = () => state.open || (isEnrolled() && term?.period?.status === 'OPEN');
 const toHours = (t) => {
   const [h, m] = t.split(':').map(Number);
   return h + m / 60;
@@ -288,6 +291,13 @@ function enrollment() {
   const st = term.student;
   return renderTemplate('enrollment', {
     campusPhoto: campusArt(),
+    reopenNotice:
+      term.enrollment?.reopenNote && !isEnrolled()
+        ? renderTemplate('enrollment-notice', {
+            icon: icon('info'),
+            note: escapeHTML(term.enrollment.reopenNote),
+          })
+        : '',
     termLabel: escapeHTML(termText() || 'No enrollment period'),
     yearStanding: `${ord(term.yearLevel)} year${st.status === 'DROPPED' ? ' · Dropped' : ''}`,
     studentName: escapeHTML(
@@ -296,8 +306,8 @@ function enrollment() {
     studentNo: escapeHTML(st.studentNo),
     standing: `BS Information Technology · ${ord(term.yearLevel)} year${st.status === 'DROPPED' ? ' · Dropped' : ''}`,
     semester: term.period ? `${ord(term.period.semester)} semester` : 'No period',
-    content: state.open ? 'badge-green' : 'badge-neutral',
-    content2: state.open ? 'open' : 'closed',
+    content: periodIsOpen() ? 'badge-green' : 'badge-neutral',
+    content2: periodIsOpen() ? 'open' : 'closed',
     length: offers.length,
     icon: icon('search'),
     escapeHTML: escapeHTML(state.search),
@@ -448,25 +458,31 @@ function planPanel() {
           })
           .join('')
       : renderTemplate('plan-panel-7', { icon: icon('book') }),
-    content11: 'disabled',
-    icon12: icon(state.open ? 'check' : 'lock'),
-    content13: !state.open
-      ? 'Enrollment closed'
-      : state.plan.length
-        ? 'Enrollment saved'
-        : 'No subjects yet',
+    content11: state.open && state.plan.length ? '' : 'disabled',
+    icon12: icon(state.open || isEnrolled() ? 'check' : 'lock'),
+    content13: isEnrolled()
+      ? 'Enrolled'
+      : !state.open
+        ? 'Enrollment closed'
+        : state.plan.length
+          ? 'Enroll'
+          : 'No subjects yet',
     content14: '',
     icon15: icon('calendar'),
-    icon16: icon(state.open ? 'check' : 'lock'),
-    content17: !state.open
-      ? term?.blockReason ?? 'Your enrollment is read-only'
-      : 'Changes are saved as you make them',
+    icon16: icon(state.open || isEnrolled() ? 'check' : 'lock'),
+    content17: isEnrolled()
+      ? `Enrolled on ${term.enrollment.dateEnrolled}. Ask the registrar if you need changes.`
+      : !state.open
+        ? term?.blockReason ?? 'Your enrollment is read-only'
+        : state.plan.length
+          ? 'Enlisted, not yet enrolled. Click Enroll before the period ends, or these subjects are removed.'
+          : 'Changes are saved as you make them',
   });
 }
 function openSections(id) {
   const c = getCourse(id);
   if (!state.open)
-    return notify('Enrollment is closed. Your plan is read-only.', true);
+    return notify(term?.blockReason ?? 'Enrollment is closed. Your plan is read-only.', true);
   if (!c || c.locked || c.passed) return;
   const current = state.plan.find((p) => p.course === id);
   modal.innerHTML = renderTemplate('open-sections', {
@@ -615,8 +631,8 @@ function summary() {
   const st = term.student;
   return renderTemplate('summary', {
     icon: icon('book'),
-    content: state.open ? 'badge-amber' : 'badge-green',
-    content3: state.open ? 'Provisional plan' : 'Finalized plan',
+    content: isEnrolled() ? 'badge-green' : 'badge-amber',
+    content3: isEnrolled() ? 'Enrolled' : state.open ? 'Enlisted, not yet enrolled' : 'Not enrolled',
     studentName: escapeHTML(
       [st.firstName, st.middleName, st.lastName].filter(Boolean).join(' '),
     ),
@@ -648,9 +664,11 @@ function summary() {
     totalUnits: totalUnits(),
     loadStatus: hasEnrollment() ? loadLabel() : '—',
     icon7: icon('info'),
-    content8: state.open
-      ? 'This plan remains editable while enrollment is open. Save your changes before leaving the portal.'
-      : 'Enrollment is closed. This plan is now read-only.',
+    content8: isEnrolled()
+      ? 'Your enrollment is final.'
+      : state.open
+        ? 'These subjects are enlisted only. Click Enroll on the Enrollment page before the period ends, or they are removed.'
+        : 'Enrollment is closed.',
   });
 }
 let demoAccounts = null;
@@ -680,7 +698,7 @@ function mobilePlanBar() {
     totalUnits: totalUnits(),
     MAX_UNITS: maxUnits() == null ? '· no unit cap' : `/ ${maxUnits()} units`,
     length: state.plan.length,
-    content: state.open ? 'Enrollment open' : 'Read-only',
+    content: isEnrolled() ? 'Enrolled' : state.open ? 'Enlisted' : 'Read-only',
     icon: icon('arrow'),
   });
 }
@@ -778,6 +796,40 @@ async function signOut() {
   render();
   window.scrollTo(0, 0);
 }
+function openEnrollConfirm() {
+  if (!state.open || !state.plan.length) return;
+  const n = state.plan.length;
+  modal.innerHTML = renderTemplate('enroll-confirm', {
+    icon: icon('x'),
+    term: termText(),
+    count: `${n} subject${n === 1 ? '' : 's'}`,
+    units: totalUnits(),
+    check: icon('check'),
+  });
+  modal.showModal();
+}
+async function submitEnroll() {
+  if (busy) return;
+  busy = true;
+  const button = modal.querySelector('[data-action="enroll-confirm"]');
+  if (button) button.disabled = true;
+  try {
+    applyView(await api('/student/enrollment/confirm', { method: 'POST' }));
+    modal.close();
+    render();
+    notify('You are now enrolled. Your subjects are final.');
+  } catch (err) {
+    const box = modal.querySelector('#enroll-error');
+    if (box) box.textContent = err.message;
+    if (button) button.disabled = false;
+    try {
+      applyView(await api('/student/enrollment'));
+      render();
+    } catch {}
+  } finally {
+    busy = false;
+  }
+}
 function help() {
   modal.innerHTML = renderTemplate('help', {
     icon: icon('x'),
@@ -791,8 +843,8 @@ function help() {
         'Choose a schedule without overlaps. Lecture and laboratory are separate subjects and can be in different sections; take the lecture first (removing a lecture also removes its lab). Your unit limit depends on your year level.',
       ],
       [
-        '03 · Review',
-        'Every change is saved as you make it. Check your weekly schedule and printable summary; you can keep editing while enrollment remains open.',
+        '03 · Review and enroll',
+        'Every change is saved as you make it, but your subjects are only enlisted. Check your weekly schedule, then click Enroll to make them final. Subjects not enrolled when the period ends are removed.',
       ],
       [
         'Need an adviser?',
@@ -894,6 +946,8 @@ document.addEventListener('click', (e) => {
     state.tab = 'all';
     render();
   }
+  if (action === 'enroll') openEnrollConfirm();
+  if (action === 'enroll-confirm') submitEnroll();
   if (action === 'print') window.print();
   if (action === 'sign-out') signOut();
   if (action === 'show-password') {

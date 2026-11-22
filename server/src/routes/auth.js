@@ -15,16 +15,43 @@ const WRONG = 'Incorrect ID or password.';
 
 const LOOKUP = {
   student: {
-    sql: `SELECT student_no AS id, student_no AS login, password, first_name, last_name, 1 AS is_active
-          FROM student WHERE student_no = ?`,
+    sql: `
+      SELECT
+          student_no AS id
+        , student_no AS login
+        , password
+        , first_name
+        , last_name
+        , 1          AS is_active
+      FROM student
+      WHERE student_no = ?
+    `,
   },
   professor: {
-    sql: `SELECT professor_id AS id, username AS login, password, first_name, last_name, is_active
-          FROM professor WHERE username = ?`,
+    sql: `
+      SELECT
+          professor_id AS id
+        , username     AS login
+        , password
+        , first_name
+        , last_name
+        , is_active
+      FROM professor
+      WHERE username = ?
+    `,
   },
   admin: {
-    sql: `SELECT admin_id AS id, username AS login, password, first_name, last_name, 1 AS is_active
-          FROM admin WHERE username = ?`,
+    sql: `
+      SELECT
+          admin_id AS id
+        , username AS login
+        , password
+        , first_name
+        , last_name
+        , 1        AS is_active
+      FROM admin
+      WHERE username = ?
+    `,
   },
 };
 
