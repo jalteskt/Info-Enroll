@@ -1493,137 +1493,269 @@ dialog::backdrop {
 }
 
 .welcome-page {
-  min-height: 100vh;
+  min-height: 100svh;
   display: grid;
-  grid-template-columns: 0.9fr 1fr;
-  background: var(--background);
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr);
+  background: #f3f7f5;
 }
 .welcome-art {
-  background: var(--primary-dark);
-  color: var(--background);
-  padding: 50px 65px;
   position: relative;
+  isolation: isolate;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 24px;
+  padding: clamp(32px, 4.5vw, 72px);
+  background: var(--portal-teal);
+  color: #fff;
 }
-.welcome-art .brand {
+.welcome-art .welcome-brand {
   padding: 0;
-  color: var(--background);
+  gap: 13px;
 }
-.welcome-art .brand-name {
-  color: var(--background);
-}
-.welcome-art .brand-mark {
+.welcome-brand .brand-mark {
+  width: 42px;
+  height: 46px;
+  color: #ffda66;
   background: var(--on-brand-tint);
   border: 1px solid var(--on-brand-border);
 }
+.welcome-brand .brand-name {
+  color: #fff;
+  font-size: 1.125rem;
+}
+.welcome-brand .brand-label {
+  display: block;
+  color: #d8ebea;
+  font-size: .6875rem;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
 .welcome-copy {
-  margin: 0 0 auto;
-  padding: clamp(16px, 2vw, 28px);
-  background: var(--portal-teal);
-  position: relative;
-  z-index: 1;
+  align-self: center;
 }
 .welcome-copy .eyebrow {
-  color: var(--yellow);
+  color: #ffda66;
+  margin: 0 0 14px;
+  font-size: .75rem;
 }
 .welcome-copy h1 {
-  font: 400 65px/1.08 var(--serif);
-  margin: 20px 0;
-  letter-spacing: -1.5px;
+  max-width: 11ch;
+  margin: 0;
+  font: 400 clamp(2.5rem, 5.3vw, 4.875rem)/1.08 var(--serif);
+  letter-spacing: -.04em;
 }
-.welcome-copy h1 em {
-  color: var(--yellow);
-}
-.welcome-copy p {
-  max-width: 330px;
-  color: var(--background);
-  font-size: 15px;
-  line-height: 1.9;
-}
-
 .welcome-footer {
-  font-size: 12px;
-  color: var(--background);
-  letter-spacing: 0.5px;
-}
-.welcome-form {
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 45px;
+  gap: 10px;
+  margin: 0;
+  color: #e0f0ef;
+  font-size: .8125rem;
+}
+.welcome-footer::before {
+  content: "";
+  flex: 0 0 16px;
+  height: 2px;
+  background: #ffda66;
+}
+.welcome-art .campus-facade {
+  inset: 2% 0 14%;
+  mask-image: linear-gradient(180deg, transparent, #0004 18%, #000c 32%, #000 48% 79%, #0009 91%, transparent);
+}
+.welcome-art .campus-facade img {
+  object-position: center;
+}
+.welcome-art .campus-facade::after {
+  background:
+    linear-gradient(0deg, rgb(0 73 75 / 65%), transparent 27%),
+    linear-gradient(90deg, rgb(0 73 75 / 95%), rgb(0 73 75 / 83%) 29%, rgb(0 73 75 / 34%) 73%, rgb(0 73 75 / 20%));
+}
+.welcome-form {
+  display: grid;
+  place-items: center;
+  padding: clamp(24px, 4.3vw, 64px);
+  background: radial-gradient(ellipse at 90% 12%, #e6f1ed, transparent 64%);
 }
 .login-card {
-  width: 350px;
+  width: min(100%, 32rem);
+  padding: clamp(22px, 3.5vw, 46px);
+  background: #fff;
+  border: 1px solid #d6e5e0;
+  border-radius: 18px;
+  box-shadow: 0 18px 54px #00424313;
 }
 .login-card h2 {
-  font: 400 39px var(--serif);
-  letter-spacing: -1px;
-  margin: 8px 0;
+  margin: 0 0 24px;
+  color: var(--primary-dark);
+  font: 400 clamp(1.875rem, 3.2vw, 2.5rem)/1.2 var(--serif);
+  letter-spacing: -.035em;
 }
-.login-card > p {
-  font-size: 14px;
-  color: var(--text-muted);
-  line-height: 1.8;
+.login-role-label {
+  margin: 0 0 8px;
+  font-size: .8125rem;
+  font-weight: 600;
 }
 .login-roles {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 22px;
+}
+.login-role {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 5px;
+  min-height: 76px;
+  padding: 9px 4px;
+  border: 1px solid color-mix(in srgb, var(--primary) 23%, var(--surface));
+  border-radius: 9px;
   background: var(--surface);
-  border-radius: 7px;
-  padding: 4px;
-  margin: 26px 0 22px;
-  gap: 3px;
-}
-.login-roles button {
-  flex: 1;
-  background: none;
-  border: 0;
-  border-radius: 5px;
-  padding: 8px;
-  font-size: 13px;
-  color: var(--text-muted);
-}
-.login-roles button.active {
-  background: var(--background);
-  color: var(--primary);
-  box-shadow: 0 2px 5px var(--shadow-color);
+  color: var(--primary-dark);
+  font-size: .8125rem;
   font-weight: 600;
+  transition: background-color .16s, border-color .16s, color .16s;
+}
+.login-role:hover {
+  background: var(--teal-tint);
+  border-color: color-mix(in srgb, var(--primary) 55%, var(--surface));
+}
+.login-role[aria-pressed="true"] {
+  border-color: var(--portal-teal);
+  background: var(--portal-teal);
+  color: var(--background);
+}
+.login-role-icon {
+  display: grid;
+}
+.login-role-icon svg {
+  width: 23px;
+  height: 23px;
+}
+.login-role-check {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  display: none;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  background: var(--teal-tint);
+  color: var(--portal-teal);
+  border-radius: 50%;
+}
+.login-role[aria-pressed="true"] .login-role-check {
+  display: grid;
+}
+.login-role-check svg {
+  width: 11px;
+  height: 11px;
+  stroke-width: 3;
 }
 .login-label {
   display: block;
-  font-size: 13px;
+  margin: 16px 0 6px;
+  font-size: .8125rem;
   font-weight: 600;
-  margin: 17px 0 7px;
 }
 .login-input {
   display: block;
   width: 100%;
-  padding: 12px 13px;
-  border: 1px solid var(--text-muted);
-  border-radius: 6px;
-  background: var(--background);
-  font-size: 14px;
+  min-height: 46px;
+  padding: 10px 12px;
+  border: 1px solid #819f97;
+  border-radius: 7px;
+  background: #fff;
+  color: var(--text);
+  font-size: 16px;
 }
 .password-wrap {
   position: relative;
 }
 .password-wrap .login-input {
-  padding-right: 45px;
+  padding-right: 47px;
 }
 .password-wrap button {
   position: absolute;
-  right: 8px;
-  top: 7px;
+  top: 50%;
+  right: 5px;
+  transform: translateY(-50%);
 }
-.login-card .button-primary {
-  width: 100%;
-  margin-top: 24px;
+#login-error {
+  color: #a12533;
 }
+#login-error:empty {
+  margin: 0;
+}
+.login-card .button-primary,
 .login-card [data-demo-login] {
   width: 100%;
-  margin-top: 12px;
-  border: 1px solid var(--primary);
+  min-height: 44px;
+  font-size: .875rem;
+}
+.login-card .button-primary {
+  margin-top: 20px;
+}
+.login-card [data-demo-login] {
+  margin-top: 10px;
+  color: var(--primary);
+  border: 1px solid #c0d3cd;
+}
+.login-card [data-demo-login]:hover {
+  border-color: var(--primary);
+}
+@media (max-width: 700px) {
+  .welcome-page {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+  }
+  .welcome-art {
+    min-height: 232px;
+    grid-template-rows: auto 1fr;
+    gap: 18px;
+    padding: 22px clamp(20px, 6vw, 34px);
+  }
+  .welcome-brand .brand-mark {
+    width: 34px;
+    height: 38px;
+  }
+  .welcome-brand .brand-mark svg {
+    width: 21px;
+    height: 21px;
+  }
+  .welcome-brand .brand-name {
+    font-size: 1rem;
+  }
+  .welcome-copy .eyebrow {
+    margin-bottom: 8px;
+    font-size: .625rem;
+  }
+  .welcome-copy h1 {
+    max-width: none;
+    font-size: clamp(1.8rem, 6.5vw, 2.75rem);
+  }
+  .welcome-art .campus-facade {
+    inset: 0;
+  }
+  .welcome-art .campus-facade::after {
+    background: linear-gradient(90deg, rgb(0 73 75 / 94%), rgb(0 73 75 / 72%) 66%, rgb(0 73 75 / 30%));
+  }
+  .welcome-footer {
+    display: none;
+  }
+  .welcome-form {
+    place-items: start center;
+    padding: 16px 14px 24px;
+  }
+  .login-card h2 {
+    margin-bottom: 17px;
+  }
+  .login-role {
+    min-height: 62px;
+  }
 }
 
 @media (min-width: 1500px) {
@@ -1711,12 +1843,6 @@ dialog::backdrop {
     max-width: 105px;
   }
 
-  .welcome-copy h1 {
-    font-size: 54px;
-  }
-  .welcome-art {
-    padding: 40px;
-  }
 }
 @media (max-width: 950px) {
   .workspace {
@@ -1754,15 +1880,6 @@ dialog::backdrop {
     max-width: none;
   }
 
-  .welcome-page {
-    grid-template-columns: 0.9fr 1fr;
-  }
-  .welcome-art {
-    padding: 35px;
-  }
-  .welcome-copy h1 {
-    font-size: 46px;
-  }
 
 }
 @media (max-width: 700px) {
@@ -1986,59 +2103,6 @@ dialog::backdrop {
   .account-menu {
     right: 15px;
     top: 57px;
-  }
-  .welcome-page {
-    display: block;
-  }
-  .welcome-art {
-    padding: 25px 27px;
-    min-height: 285px;
-  }
-  .welcome-art .brand {
-    gap: 10px;
-  }
-  .welcome-art .brand-mark {
-    width: 30px;
-    height: 34px;
-  }
-  .welcome-art .brand-name {
-    font-size: 16px;
-  }
-
-  .welcome-copy {
-    margin: 0 0 10px;
-  }
-  .welcome-copy .eyebrow {
-    font-size: 10px;
-  }
-  .welcome-copy h1 {
-    font-size: 39px;
-    margin: 10px 0;
-  }
-  .welcome-copy p {
-    font-size: 12px;
-    max-width: 250px;
-    line-height: 1.7;
-  }
-  .welcome-footer {
-    display: none;
-  }
-
-  .welcome-form {
-    padding: 30px 27px;
-  }
-  .login-card {
-    width: 100%;
-    max-width: 380px;
-  }
-  .login-card h2 {
-    font-size: 31px;
-  }
-  .login-card > p {
-    font-size: 13px;
-  }
-  .login-roles {
-    margin: 19px 0;
   }
   .modal-header {
     padding: 21px;
@@ -2602,38 +2666,6 @@ dialog:has(.data-table) {
   .badge-green { background: #e3f4e9; color: #216542; }
 
   .badge-amber { background: #fff2cb; color: #745000; }
-  .welcome-page { background: var(--portal-teal); grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
-  .welcome-art {
-    isolation: isolate;
-    background: #fff;
-    color: var(--primary-dark);
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-  }
-  .welcome-art .welcome-copy {
-    margin: 0;
-    padding: clamp(28px, 4vw, 50px) clamp(24px, 4vw, 65px);
-    background: transparent;
-    text-shadow: none;
-  }
-  .welcome-art .welcome-copy .eyebrow { color: var(--primary); }
-  .welcome-art .welcome-footer {
-    color: var(--primary-dark);
-    text-shadow: none;
-    position: absolute;
-    bottom: 28px;
-    left: clamp(24px, 4vw, 65px);
-    right: 24px;
-    z-index: 1;
-  }
-  .welcome-art .brand-name {
-    font-size: clamp(.9375rem, 1.65vw, 1.25rem);
-  }
-  .welcome-copy h1 { max-width: 12ch; font-size: clamp(2rem, 5vw, 4rem); }
-  .login-card { width: min(100%, 480px); padding: clamp(22px, 4vw, 42px); background: #fff; border: 1px solid #dce7e7; border-radius: 16px; box-shadow: var(--shadow); }
-  .login-roles { background: #eef5f5; }
-  .login-input { min-height: 45px; }
 
   .enrollment-banner {
     background: var(--portal-teal);
@@ -2676,20 +2708,6 @@ dialog:has(.data-table) {
   .enrollment-heading .campus-facade img { object-position: 59% 37%; }
   .enrollment-heading .campus-facade::after {
     background: linear-gradient(90deg, #00494bbf, #00494b29 78%, #00494b20);
-  }
-  .welcome-art .campus-facade {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-  }
-  .welcome-art .campus-facade img {
-    position: absolute;
-    inset: 0;
-    object-position: 35% 45%;
-    filter: none;
-  }
-  .welcome-art .campus-facade::after {
-    content: none;
   }
   .enrollment-heading h1 {
     margin: 8px 0 15px;
@@ -2873,9 +2891,6 @@ dialog:has(.data-table) {
   .subject-catalog .course-type .course-code { font-size: .6875rem; }
   .course-table th, .course-table td { padding-inline: 8px; }
   .add-button { min-width: 0; padding-inline: 7px; font-size: .75rem; }
-  .welcome-art { min-height: 200px; }
-  .welcome-art .campus-facade img { object-position: 35% 34%; }
-  .login-card { padding: 20px; }
 }
 
 /* Keep controls readable on the white panel headers */

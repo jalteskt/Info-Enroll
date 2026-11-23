@@ -1,16 +1,27 @@
 <template id="login">
-  <main class="welcome-page">
-    <section class="welcome-art">
-      <div class="welcome-copy">
-        <div class="eyebrow">Pamantasan ng Lungsod ng Maynila</div>
-        <h1>Student enrollment system</h1>
+  <main class="welcome-page" id="main-content" tabindex="-1">
+    <section class="welcome-art" aria-labelledby="welcome-title">
+      <div class="brand welcome-brand">
+        <div class="brand-mark" aria-hidden="true">{{brandIcon}}</div>
+        <div>
+          <div class="brand-name">PLM</div>
+          <span class="brand-label">Enrollment portal</span>
+        </div>
       </div>
-      <div class="welcome-footer">Karunungan. Kaunlaran. Kadakilaan.</div>
+      <div class="welcome-copy">
+        <p class="eyebrow">Pamantasan ng Lungsod ng Maynila</p>
+        <h1 id="welcome-title">Student Enrollment</h1>
+      </div>
+      {{campusArt}}
+      <p class="welcome-footer">Karunungan. Kaunlaran. Kadakilaan.</p>
     </section>
-    <section class="welcome-form">
+    <section class="welcome-form" aria-labelledby="login-title">
       <div class="login-card">
-        <h2>Sign in</h2>
-        <div class="login-roles" aria-label="Account type">{{content}}</div>
+        <h2 id="login-title">Sign in</h2>
+        <p class="login-role-label" id="login-role-label">Account type</p>
+        <div class="login-roles" role="group" aria-labelledby="login-role-label">
+          {{content}}
+        </div>
         <form id="login-form">
           <label class="login-label" for="login-username">{{content4}}</label>
           <input
@@ -40,7 +51,7 @@
           </div>
           <p class="modal-error" id="login-error" role="alert"></p>
           <button class="button button-primary" type="submit">
-            Login
+            Sign in
           </button>
         </form>
         {{demoLogin}}
@@ -57,10 +68,13 @@
 
 <template id="login-2">
   <button
-    class="{{content}}"
+    class="login-role"
+    type="button"
     data-login-role="{{r}}"
     aria-pressed="{{content3}}"
   >
-    {{content4}}
+    <span class="login-role-icon" aria-hidden="true">{{roleIcon}}</span>
+    <span>{{content4}}</span>
+    <span class="login-role-check" aria-hidden="true">{{checkIcon}}</span>
   </button>
 </template>
