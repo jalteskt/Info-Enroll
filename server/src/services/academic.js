@@ -3,7 +3,7 @@ import { pool } from '../db.js';
 const PASSING = new Set(['1.00', '1.25', '1.50', '1.75', '2.00', '2.25', '2.50', '2.75', '3.00']);
 
 // Grades are compared as text, never as numbers: the column is an ENUM and
-// MariaDB would compare its position (1-18), not the grade.
+// MariaDB would compare its position (1-11), not the grade.
 export function gradeStatus(grade) {
   if (grade == null) return 'pending';
   if (grade === 'INC') return 'inc';

@@ -2,9 +2,10 @@ import { pool, withTransaction } from '../db.js';
 import { AppError } from '../errors.js';
 import { gradeStatus, MAX_ATTEMPTS } from './academic.js';
 
-// 1.00 to 5.00 in quarter steps, or INC.
+// 1.00 to 3.00 in quarter steps (passed), 5.00 (failed), or INC.
 export const VALID_GRADES = [
-  ...Array.from({ length: 17 }, (_, i) => (1 + i * 0.25).toFixed(2)),
+  ...Array.from({ length: 9 }, (_, i) => (1 + i * 0.25).toFixed(2)),
+  '5.00',
   'INC',
 ];
 const VALID = new Set(VALID_GRADES);
@@ -110,7 +111,7 @@ export async function saveGrades(sectionId, grades, actor) {
   for (const g of grades) {
     if (typeof g?.studentNo !== 'string') throw new AppError(400, 'Each grade needs a studentNo.');
     if (g.grade !== null && !VALID.has(g.grade)) {
-      throw new AppError(400, `"${g.grade}" is not a valid grade. Use 1.00 to 5.00 in steps of 0.25, or INC.`);
+      throw new AppError(400, `"${g.grade}" is not a valid grade. Use 1.00 to 3.00 in steps of 0.25, 5.00, or INC.`);
     }
   }
   return withTransaction(async (conn) => {
@@ -185,7 +186,7 @@ async function dropOnLastAttempt(conn, code, students) {
 // The admin completes an INC by replacing it with a grade.
 export async function completeInc(sectionId, studentNo, grade, adminId) {
   if (!VALID.has(grade) || grade === 'INC') {
-    throw new AppError(400, 'Replace the INC with a grade from 1.00 to 5.00.');
+    throw new AppError(400, 'Replace the INC with a grade from 1.00 to 3.00, or 5.00.');
   }
   return withTransaction(async (conn) => {
     const { section, students } = await sectionRoster(sectionId, { adminId }, conn, { lock: true });

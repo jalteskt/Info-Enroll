@@ -158,15 +158,13 @@ CREATE TABLE enrollment (
 ) ENGINE=InnoDB;
 
 -- enrolled_course: the subjects in an enrollment, one row per section,
--- with the grade (1.00 to 5.00 or INC; NULL = not yet encoded).
+-- with the grade (1.00 to 3.00 in quarter steps, 5.00, or INC; NULL = not yet encoded).
 CREATE TABLE enrolled_course (
     enrollment_id INT UNSIGNED NOT NULL
   , section_id    INT UNSIGNED NOT NULL
   , grade         ENUM('1.00','1.25','1.50','1.75',
                        '2.00','2.25','2.50','2.75',
-                       '3.00','3.25','3.50','3.75',
-                       '4.00','4.25','4.50','4.75',
-                       '5.00','INC') NULL
+                       '3.00','5.00','INC') NULL
   , course_code   VARCHAR(20)  NOT NULL
   , PRIMARY KEY (enrollment_id, section_id)
   , UNIQUE KEY uq_ec_enrollment_course (enrollment_id, course_code)
