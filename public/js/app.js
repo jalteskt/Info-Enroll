@@ -247,7 +247,7 @@ function topbar() {
   const name = `${user.firstName} ${user.lastName}`;
   const role = {
     student: `Student no. ${user.login}`,
-    professor: 'Faculty portal',
+    professor: 'Professor portal',
     admin: 'Administration',
   }[user.role];
   const labels = {
@@ -269,7 +269,7 @@ function topbar() {
       state.role === 'student'
         ? 'Student portal'
         : state.role === 'professor'
-          ? 'Faculty portal'
+          ? 'Professor portal'
           : 'Administration',
     icon5: icon('chevron-right'),
     content6: labels[state.view],
