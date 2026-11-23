@@ -1,13 +1,15 @@
 <template id="professor-view">
   <div class="stats-grid">{{stat}} {{stat2}} {{stat3}}</div>
-  <div class="panel-header">
-    <div class="section-label">YOUR TEACHING LOAD</div>
-    <label class="toolbar">
-      <span class="muted">Term</span>
-      <select class="input" id="staff-term" aria-label="Term">{{terms}}</select>
-    </label>
+  <div class="panel teaching-load-panel">
+    <div class="panel-header">
+      <div class="section-label">YOUR TEACHING LOAD</div>
+      <label class="toolbar">
+        <span class="muted">Term</span>
+        <select class="input" id="staff-term" aria-label="Term">{{terms}}</select>
+      </label>
+    </div>
+    <div class="stats-grid teaching-load-grid">{{content}}</div>
   </div>
-  <div class="stats-grid teaching-load-grid">{{content}}</div>
   <section class="panel">
     <div class="panel-header">
       <div>

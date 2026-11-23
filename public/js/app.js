@@ -250,7 +250,6 @@ function topbar() {
     professor: 'Faculty portal',
     admin: 'Administration',
   }[user.role];
-  const initials = (user.firstName[0] + user.lastName[0]).toUpperCase();
   const labels = {
     enrollment: 'Enrollment',
     schedule: 'My schedule',
@@ -275,7 +274,6 @@ function topbar() {
     icon5: icon('chevron-right'),
     content6: labels[state.view],
     menu: state.menu,
-    initials: initials,
     name: name,
     role: role,
     icon12: icon('chevron-down'),
