@@ -1,7 +1,3 @@
-// Student add / change-section / remove, and Enroll. Subjects stay enlisted
-// until the student clicks Enroll, which makes them final. Each call is one transaction, and
-// total_units is updated in that same transaction (rule 12).
-// Lec and lab are separate subjects (rule 27): each is added on its own.
 import { withTransaction } from '../db.js';
 import { AppError } from '../errors.js';
 import { loadCourses, loadTerms, buildStanding, ordinal } from './academic.js';
@@ -10,7 +6,7 @@ import { lockSection, labDroppedWith } from './pairing.js';
 import { overlaps, describeTime } from './schedule.js';
 
 // Shared lock on the OPEN period: many students can add at once, but the
-// admin's close (which updates this row) waits until they finish (rule 7).
+// admin's close (which updates this row) waits until they finish.
 async function lockOpenPeriod(conn) {
   const [[period]] = await conn.query(`
     SELECT
@@ -43,7 +39,7 @@ async function lockEnrollment(conn, studentNo, period) {
 }
 
 // Decision 2026-11-18: the enrollment row is created on the first add.
-// Rule 8: one per student per semester (unique key; a race just reuses it).
+// One per student per semester (unique key; a race just reuses it).
 async function getOrCreateEnrollment(conn, studentNo, period, yearLevel) {
   await conn.query(`
     INSERT INTO enrollment (
@@ -100,7 +96,7 @@ export async function addSubject(studentNo, { code, sectionNo }) {
     if (!course) throw new AppError(404, 'Subject not found.');
     const label = `${code} ${course.title}`;
 
-    // Rule 17: only subjects of this period's semester.
+    // Only subjects of this period's semester.
     if (course.semester !== period.semester) {
       throw new AppError(409, `${label} is offered only in the ${ordinal(course.semester)} semester.`);
     }
@@ -111,7 +107,7 @@ export async function addSubject(studentNo, { code, sectionNo }) {
       (t) => !(t.schoolYear === period.schoolYear && t.semester === period.semester),
     );
     const standing = buildStanding(past, courses, period.schoolYear);
-    // Rules 10, 40: share-locked so a drop at grade submission can't race this add.
+    // Share-locked so a drop at grade submission can't race this add.
     const [[student]] = await conn.query(`
       SELECT status
       FROM student
@@ -119,7 +115,7 @@ export async function addSubject(studentNo, { code, sectionNo }) {
       LOCK IN SHARE MODE
     `, [studentNo]);
     if (!student) throw new AppError(404, 'Student not found.');
-    const block = studentBlock({ period, standing, studentStatus: student.status }); // rules 5, 10, 40
+    const block = studentBlock({ period, standing, studentStatus: student.status });
     if (block) throw new AppError(409, block);
 
     const enrollment = await getOrCreateEnrollment(conn, studentNo, period, standing.yearLevel);
@@ -127,7 +123,6 @@ export async function addSubject(studentNo, { code, sectionNo }) {
     const current = await enrolledRows(conn, enrollment.id);
     const enrolledCodes = new Set(current.map((r) => r.code));
 
-    // Rules 6, 21, 23, 24, 26, 29, 34.
     const check = checkCourse(code, { courses, standing, enrolledCodes });
     if (check.status !== 'eligible') {
       throw new AppError(409, `You can't take ${label}: ${check.reasons.join('; ')}.`);
@@ -139,12 +134,12 @@ export async function addSubject(studentNo, { code, sectionNo }) {
     }
 
     const section = await lockSection(conn, { code, sectionNo, period });
-    const name = `BSIT ${course.yearLevel}-${sectionNo}`; // rule 14
+    const name = `BSIT ${course.yearLevel}-${sectionNo}`;
 
-    // Rule 16: 50 per section.
+    // 50 per section.
     if (section.enrolled >= section.maxStudents) throw new AppError(409, `${code} ${name} is full.`);
 
-    // Rule 19: no schedule conflicts (this includes the lec vs its lab).
+    // No schedule conflicts (this includes the lec vs its lab).
     const clash = current.find((o) => o.code !== code && overlaps(section, o));
     if (clash) {
       throw new AppError(
@@ -153,7 +148,7 @@ export async function addSubject(studentNo, { code, sectionNo }) {
       );
     }
 
-    // Rule 11: unit cap by year level and semester. NULL = no cap.
+    // Unit cap by year level and semester. NULL = no cap.
     // A change of section doesn't change the units.
     const newTotal = enrollment.totalUnits + (replacing ? 0 : course.units);
     const [[limit]] = await conn.query(`
@@ -206,8 +201,8 @@ export async function addSubject(studentNo, { code, sectionNo }) {
 }
 
 // Removes one course. Removing a lec also removes its lab from this
-// enrollment (rule 27). The enrollment row stays even if it becomes empty;
-// empty ones are deleted when the period closes (rule 9).
+// enrollment. The enrollment row stays even if it becomes empty;
+// empty ones are deleted when the period closes.
 export function removeSubject(studentNo, code) {
   return withTransaction(async (conn) => {
     const period = await lockOpenPeriod(conn);
@@ -242,8 +237,8 @@ export function removeSubject(studentNo, code) {
   });
 }
 
-// The Enroll button: the student's enlisted subjects become final. Only the
-// admin can undo it (reopenEnrollment). Rule 11's minimum is checked here.
+// The Enroll button: the student's enlisted subjects become final.
+// Only the admin can undo it (reopenEnrollment). The minimum units are checked here.
 export function confirmEnrollment(studentNo) {
   return withTransaction(async (conn) => {
     const period = await lockOpenPeriod(conn);

@@ -1,23 +1,12 @@
--- ============================================================
--- PLM BSIT Enrollment System for Irregular Students
--- MySQL / MariaDB (XAMPP) schema
---
--- Turn on strict mode in my.ini first (sql_mode must include
--- STRICT_TRANS_TABLES) or invalid ENUM values are silently blanked.
---
--- Lec/lab pairs are found by course code (lab = lec code + '.1'), so
--- course has no extra column for it.
--- ============================================================
-
+-- Start fresh: remove any old copy and create the database.
 DROP DATABASE IF EXISTS info_enroll;
 CREATE DATABASE info_enroll
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_unicode_ci;
 USE info_enroll;
 
--- ------------------------------------------------------------
--- 1. STUDENT
--- ------------------------------------------------------------
+-- student: one row per student. status becomes DROPPED after a
+-- second failed or incomplete attempt.
 CREATE TABLE student (
     student_no    VARCHAR(20)              NOT NULL
   , last_name     VARCHAR(50)              NOT NULL
@@ -31,10 +20,8 @@ CREATE TABLE student (
   , CONSTRAINT chk_student_status CHECK (status IN ('ACTIVE', 'DROPPED'))
 ) ENGINE=InnoDB;
 
--- ------------------------------------------------------------
--- 2. ADMIN
--- Referenced optionally by section.submitted_by_admin_id.
--- ------------------------------------------------------------
+-- admin: registrar accounts. Linked to a section only when an admin
+-- submits grades for a professor.
 CREATE TABLE admin (
     admin_id   INT UNSIGNED NOT NULL AUTO_INCREMENT
   , username   VARCHAR(50)  NOT NULL
@@ -45,13 +32,8 @@ CREATE TABLE admin (
   , UNIQUE KEY uq_admin_username (username)
 ) ENGINE=InnoDB;
 
--- ------------------------------------------------------------
--- 3. PROFESSOR
--- A professor who has ever had a section is deactivated
--- (is_active = 0), not deleted. The FK from section (RESTRICT)
--- blocks deletion. Inactive professors can't log in or get new
--- sections (checked in code).
--- ------------------------------------------------------------
+-- professor: teacher accounts. They are deactivated (is_active = 0),
+-- not deleted, once they have had a section.
 CREATE TABLE professor (
     professor_id INT UNSIGNED NOT NULL AUTO_INCREMENT
   , username     VARCHAR(50)  NOT NULL
@@ -64,10 +46,8 @@ CREATE TABLE professor (
   , CONSTRAINT chk_professor_active CHECK (is_active IN (0, 1))
 ) ENGINE=InnoDB;
 
--- ------------------------------------------------------------
--- 4. COURSE (the 67 curriculum subjects go here; NSTP excluded)
--- Curriculum is 4 years, 2 semesters. No summer term.
--- ------------------------------------------------------------
+-- course: the 67 BSIT subjects (4 years, 2 semesters). A lab's code is
+-- its lecture's code plus '.1'.
 CREATE TABLE course (
     course_code       VARCHAR(20)      NOT NULL
   , course_title      VARCHAR(150)     NOT NULL
@@ -82,9 +62,8 @@ CREATE TABLE course (
   , CONSTRAINT chk_course_standing CHECK (required_standing IS NULL OR required_standing BETWEEN 1 AND 4)
 ) ENGINE=InnoDB;
 
--- ------------------------------------------------------------
--- 8. ENROLLMENT_PERIOD (created before SECTION and ENROLLMENT)
--- ------------------------------------------------------------
+-- enrollment_period: a school year and semester, either OPEN or CLOSED.
+-- Created before section and enrollment because both point to it.
 CREATE TABLE enrollment_period (
     school_year VARCHAR(9)            NOT NULL COMMENT 'e.g. 2026-2027'
   , semester    TINYINT UNSIGNED      NOT NULL COMMENT '1 or 2 (no summer term)'
@@ -93,14 +72,9 @@ CREATE TABLE enrollment_period (
   , CONSTRAINT chk_period_semester CHECK (semester IN (1, 2))
 ) ENGINE=InnoDB;
 
--- ------------------------------------------------------------
--- 5. SECTION
--- Displayed as BSIT <course.year_level>-<section_no>, e.g. BSIT 1-2.
--- One section_no per course per semester (uq_section_offering).
--- grades_submitted_at: NULL until the grades are submitted and
--- locked. submitted_by_admin_id is filled only when an admin
--- submitted on the professor's behalf.
--- ------------------------------------------------------------
+-- section: a class of one course in one period, with its day, time,
+-- professor and 50-seat limit. grades_submitted_at is NULL until
+-- the grades are submitted and locked.
 CREATE TABLE section (
     section_id            INT UNSIGNED                              NOT NULL AUTO_INCREMENT
   , section_no            TINYINT UNSIGNED                          NOT NULL
@@ -127,19 +101,8 @@ CREATE TABLE section (
   , CONSTRAINT fk_section_admin     FOREIGN KEY (submitted_by_admin_id) REFERENCES admin (admin_id)
 ) ENGINE=InnoDB;
 
--- ------------------------------------------------------------
--- 6. PREREQUISITE
--- Both course_code and required_course_code reference COURSE.
--- PRE = must already be passed.
--- CO  = co-requisite, one row for every lec/lab pair (18 rows). It is
---       always lab -> lec: course_code is the lab, required_course_code
---       is its lec (course_code = required_course_code + '.1').
--- Lec/lab pairs are found by course code; every lab must have a CO row
--- that matches. A lab can be enrolled only if its lec is already passed
--- or is in the same enrollment.
--- Loops among PRE rows are checked in code (checkPrerequisiteLoops, run by
--- npm run db:reset); CO rows are left out.
--- ------------------------------------------------------------
+-- prerequisite: course requirements. PRE = must already be passed.
+-- CO = a lab that needs its lecture (lab -> lec).
 CREATE TABLE prerequisite (
     course_code          VARCHAR(20)      NOT NULL
   , required_course_code VARCHAR(20)      NOT NULL
@@ -152,11 +115,8 @@ CREATE TABLE prerequisite (
   , CONSTRAINT fk_prereq_required  FOREIGN KEY (required_course_code) REFERENCES course (course_code)
 ) ENGINE=InnoDB;
 
--- ------------------------------------------------------------
--- 7. UNIT_LIMIT
--- Year levels run 1-6 (students may stay up to 6th year).
--- NULL max_units = no cap (5th and 6th year).
--- ------------------------------------------------------------
+-- unit_limit: the minimum and maximum units a student may take per
+-- year level and semester. NULL max = no cap (5th and 6th year).
 CREATE TABLE unit_limit (
     year_level TINYINT UNSIGNED NOT NULL
   , semester   TINYINT UNSIGNED NOT NULL
@@ -168,6 +128,7 @@ CREATE TABLE unit_limit (
   , CONSTRAINT chk_limit_range    CHECK (max_units IS NULL OR min_units <= max_units)
 ) ENGINE=InnoDB;
 
+-- The unit limits for year levels 1 to 6.
 INSERT INTO unit_limit (year_level, semester, min_units, max_units) VALUES
     (1, 1, 0, 23),   (1, 2, 0, 23)
   , (2, 1, 0, 23),   (2, 2, 0, 23)
@@ -176,15 +137,9 @@ INSERT INTO unit_limit (year_level, semester, min_units, max_units) VALUES
   , (5, 1, 0, NULL), (5, 2, 0, NULL)
   , (6, 1, 0, NULL), (6, 2, 0, NULL);
 
--- ------------------------------------------------------------
--- 9. ENROLLMENT
--- year_level is computed by the system, never typed by the student.
--- total_units starts at 0 and is updated only by the system, in the
--- same transaction as the ENROLLED_COURSE change.
--- ------------------------------------------------------------
--- date_enrolled: NULL = enlisted only; set when the student clicks Enroll.
--- Enlisted rows are removed when the period closes.
--- reopen_note: why an enrolled student was moved back to enlisted.
+-- enrollment: one student's record for one term. date_enrolled is NULL
+-- while only enlisted and is set when the student clicks Enroll.
+-- reopen_note says why an admin moved the student back to enlisted.
 CREATE TABLE enrollment (
     enrollment_id INT UNSIGNED      NOT NULL AUTO_INCREMENT
   , year_level    TINYINT UNSIGNED  NOT NULL
@@ -202,17 +157,8 @@ CREATE TABLE enrollment (
   , CONSTRAINT fk_enrollment_unit_limit FOREIGN KEY (year_level, semester)  REFERENCES unit_limit (year_level, semester)
 ) ENGINE=InnoDB;
 
--- ------------------------------------------------------------
--- 10. ENROLLED_COURSE
--- course_code is copied from the section so that the database can
--- enforce one section per course per enrollment
--- (uq_ec_enrollment_course). The composite FK guarantees that
--- course_code always matches the section's own course.
---
--- grade: NULL = not yet encoded. Valid values are 1.00 to 5.00 in
--- quarter steps, or INC. 1.00-3.00 = passed, 3.25-5.00 = failed,
--- INC = incomplete (neither). Pass/fail is decided in the application.
--- ------------------------------------------------------------
+-- enrolled_course: the subjects in an enrollment, one row per section,
+-- with the grade (1.00 to 5.00 or INC; NULL = not yet encoded).
 CREATE TABLE enrolled_course (
     enrollment_id INT UNSIGNED NOT NULL
   , section_id    INT UNSIGNED NOT NULL

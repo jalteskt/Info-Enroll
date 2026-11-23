@@ -1,5 +1,3 @@
-// Test setup: point everything at a separate database so tests never touch
-// the dev data in info_enroll. Import this file first in every test file.
 process.env.DB_NAME = 'info_enroll_test';
 await import('dotenv/config'); // doesn't override DB_NAME set above
 
@@ -91,7 +89,7 @@ export async function fillSection(code, sectionNo, count) {
   }
 }
 
-// Every enrollment's total_units equals the units of its subjects (rule 12).
+// Every enrollment's total_units equals the units of its subjects.
 export async function totalUnitsMismatches() {
   const rows = await q(`
     SELECT e.enrollment_id

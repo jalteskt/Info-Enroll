@@ -1,5 +1,3 @@
-// Templates are trusted local application markup. No JavaScript is evaluated.
-// Dynamic/user values must be escaped by the caller (as in escapeHTML).
 const files = [
   'icons',
   'shared',

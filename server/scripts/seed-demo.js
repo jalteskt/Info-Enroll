@@ -1,12 +1,3 @@
-// Demo data for Info-Enroll (rule 3). Called by db-reset.js after the SQL
-// files have created the schema and loaded the 67 courses.
-//
-// Timeline: 2022-2023 1st sem ... 2025-2026 2nd sem are CLOSED with all grades
-// submitted. 2026-2027 1st sem is OPEN (the current period).
-//
-// In past periods every section has its own day/time slot. The current period
-// has the default 2 sections per subject, planned without professor conflicts
-// (rule 36), and its demo students stay in section 1, which never overlaps.
 import bcrypt from 'bcryptjs';
 import { DAYS, TIMES, planDefaultSections } from '../src/services/defaultSections.js';
 
@@ -28,7 +19,7 @@ const PROFESSORS = [
   { username: 'lgarcia', last: 'Garcia', first: 'Lourdes', active: true },
   { username: 'cramos', last: 'Ramos', first: 'Carlos', active: true },
   { username: 'evillanueva', last: 'Villanueva', first: 'Elena', active: true },
-  // Taught in past periods, now deactivated (rule 37).
+  // Taught in past periods, now deactivated.
   { username: 'jmendoza', last: 'Mendoza', first: 'Jose', active: false },
 ];
 
@@ -53,8 +44,8 @@ const STUDENTS = [
     current: ['GEC_ETHC', 'BSIT_201', 'BSIT_201.1'],
   },
   {
-    // Irregular: failed only the CIST_102 lab, so only the lab is retaken (rules 23, 24)
-    // and CIST_103 / CIST_104 were blocked in 2nd sem (rule 21).
+    // Irregular: failed only the CIST_102 lab, so only the lab is retaken
+    // and CIST_103 / CIST_104 were blocked in 2nd sem.
     no: '202500003', last: 'Santos', first: 'Joaquin Luis', middle: 'Cruz',
     entrance: '2025-08-01',
     history: [
@@ -63,7 +54,7 @@ const STUDENTS = [
     ],
   },
   {
-    // INC in PATHFIT2, which blocks PATHFIT3 this period (rule 34).
+    // INC in PATHFIT2, which blocks PATHFIT3 this period.
     no: '202500004', last: 'Garcia', first: 'Mateo Gabriel', middle: 'Diaz',
     entrance: '2025-08-01',
     history: [
@@ -83,7 +74,7 @@ const STUDENTS = [
     ),
   },
   {
-    // Dropped (rule 40): failed GEC_SELF, then failed its only retake (rule 23).
+    // Dropped: failed GEC_SELF, then failed its only retake.
     // Skipped GEC_RZAL that term to fit the retake in the 23-unit cap.
     no: '202400007', last: 'Villanueva', first: 'Paolo Miguel', middle: 'Aquino',
     entrance: '2024-08-01',
@@ -95,7 +86,7 @@ const STUDENTS = [
     ],
   },
   {
-    // Passed all 67 subjects: can't open a new enrollment (rule 10).
+    // Passed all 67 subjects: can't open a new enrollment.
     no: '202200006', last: 'Mendoza', first: 'Rafael Andres', middle: 'Bautista',
     entrance: '2022-08-01', history: regular(4),
   },
@@ -306,7 +297,7 @@ export async function seedDemo(conn) {
           grade: opts.grades?.[c.course_code] ?? PASSING[gradeCounter++ % PASSING.length],
         }))
         .concat(Object.entries(opts.add || {}).map(([code, grade]) => ({ code, grade })));
-      // Histories have no gaps, so this equals earlier school years + 1 (rule 4).
+      // Histories have no gaps, so this equals earlier school years + 1.
       await enroll(s.no, periodCtx(sy, sem, allProfs), Math.ceil((i + 1) / 2), entries, true);
     }
   }
@@ -351,7 +342,7 @@ export async function seedDemo(conn) {
     await enroll(s.no, current, yearLevel, s.current.map((code) => ({ code })), false);
   }
 
-  // Close past periods and mark their grades submitted (rule 31, 35).
+  // Close past periods and mark their grades submitted.
   // One section is shown as submitted by the admin instead of its professor.
   for (const [sy, sem] of PAST_PERIODS) {
     await conn.query(`
@@ -375,8 +366,8 @@ export async function seedDemo(conn) {
       AND semester = 2
   `, [adminId]);
 
-  // Rule 40, as the system would have done at submission: a subject whose
-  // last attempt (rule 23: 2 attempts) ended failed or INC drops the student.
+  // As the system does at submission: a subject whose last attempt
+  // (2 attempts) ended failed or INC drops the student.
   await conn.query(`
     UPDATE student
     SET status = 'DROPPED'

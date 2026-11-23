@@ -87,7 +87,7 @@ router.get('/record', async (req, res, next) => {
 
     const passedCodes = [...courses.keys()].filter((c) => standing.statusOf(c) === 'passed');
     res.json({
-      status: student.status, // rule 40
+      status: student.status, // ACTIVE or DROPPED
       yearLevel: standing.yearLevel,
       totalCourses: courses.size,
       coursesPassed: passedCodes.length,
@@ -99,7 +99,7 @@ router.get('/record', async (req, res, next) => {
           semester: t.semester,
           yearLevel: t.yearLevel,
           totalUnits: t.totalUnits,
-          loadStatus: loadStatus(t.totalUnits, maxOf(t)), // rule 39
+          loadStatus: loadStatus(t.totalUnits, maxOf(t)), // calculated load status
           average: average(t.courses),
           courses: t.courses.map((c) => ({
             code: c.code,

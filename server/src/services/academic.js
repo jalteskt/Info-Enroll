@@ -1,11 +1,9 @@
-// Shared academic logic: courses, lec/lab pairing, grade history, pass status,
-// year level. Everything else (eligibility, enrollment, grading) builds on this.
 import { pool } from '../db.js';
 
 const PASSING = new Set(['1.00', '1.25', '1.50', '1.75', '2.00', '2.25', '2.50', '2.75', '3.00']);
 
 // Grades are compared as text, never as numbers: the column is an ENUM and
-// MariaDB would compare its position (1-18), not the grade.   (rules 32, 33)
+// MariaDB would compare its position (1-18), not the grade.
 export function gradeStatus(grade) {
   if (grade == null) return 'pending';
   if (grade === 'INC') return 'inc';
@@ -15,7 +13,7 @@ export function gradeStatus(grade) {
 export const isLab = (code) => code.endsWith('.1');
 export const lecOf = (code) => (isLab(code) ? code.slice(0, -2) : code);
 
-// Rule 26: the partner is found by code (lab = lec code + ".1").
+// The partner is found by code (lab = lec code + ".1").
 // checkCoRows() below verifies the CO rows in PREREQUISITE agree.
 export function partnerOf(code, courses) {
   if (isLab(code)) return courses.has(lecOf(code)) ? lecOf(code) : null;
@@ -23,7 +21,7 @@ export function partnerOf(code, courses) {
 }
 export const labOf = (code, courses) => (isLab(code) ? null : partnerOf(code, courses));
 
-// Rule 26: every lab has exactly one CO row (lab -> its lec), and there are
+// Every lab has exactly one CO row (lab -> its lec), and there are
 // no other CO rows. Returns a list of problems (empty = all good).
 export async function checkCoRows(db = pool) {
   const courses = await loadCourses(db);
@@ -45,10 +43,8 @@ export async function checkCoRows(db = pool) {
   return problems;
 }
 
-// Rule 22: no prerequisite loops (A needs B, B needs A; or longer chains).
-// The database only blocks self-prerequisites, so longer loops are found here.
-// Takes [{ code, req }] PRE rows and returns each loop as a list of codes
-// that starts and ends with the same course (empty = no loops).
+// Finds prerequisite loops (A needs B, B needs A, or longer).
+// Takes [{ code, req }] PRE rows and returns each loop as a list of codes (empty = none).
 export function findPrerequisiteLoops(rows) {
   const needs = new Map();
   for (const { code, req } of rows) {
@@ -72,8 +68,8 @@ export function findPrerequisiteLoops(rows) {
   return loops;
 }
 
-// Rule 22 against the database. CO rows are left out: they only record the
-// lab -> lec pairing (rule 26), not an order in which subjects are passed.
+// Checks the database's PRE rows for loops. CO rows are skipped:
+// they only record the lab -> lec pairing.
 export async function checkPrerequisiteLoops(db = pool) {
   const [rows] = await db.query(`
     SELECT
@@ -193,11 +189,9 @@ export async function loadTerms(studentNo, db = pool) {
   return terms;
 }
 
-// Builds the student's standing from their terms.
-//   statusOf(code) -> 'passed' | 'failed' | 'inc' | 'none'
-// Rule 25: the latest submitted attempt counts.
-// Rule 24: each lec and each lab counts on its own grade.
-//   schoolYear: the school year the year level is for. Terms in it don't count.
+// Builds a student's standing from past terms. statusOf(code) returns
+// 'passed', 'failed', 'inc' or 'none'. The latest submitted attempt counts,
+// and each lec and lab counts on its own grade. Terms in schoolYear are ignored.
 export function buildStanding(terms, courses, schoolYear = null) {
   const latest = new Map();
   for (const term of terms) {
@@ -209,14 +203,14 @@ export function buildStanding(terms, courses, schoolYear = null) {
     const a = latest.get(code);
     return a ? gradeStatus(a.grade) : 'none';
   };
-  // Rule 23: attempts = the student's enrolled_course rows for the course.
+  // Attempts = the student's enrolled_course rows for the course.
   const attempts = new Map();
   for (const term of terms) {
     for (const c of term.courses) attempts.set(c.code, (attempts.get(c.code) ?? 0) + 1);
   }
   const attemptsOf = (code) => attempts.get(code) ?? 0;
 
-  // Rule 4: each earlier school year with a finalized, non-empty enrollment adds
+  // Each earlier school year with a finalized, non-empty enrollment adds
   // one year level. One semester is enough; a fully skipped year adds nothing.
   const finishedYears = new Set(
     terms
@@ -230,10 +224,10 @@ export function buildStanding(terms, courses, schoolYear = null) {
   return { statusOf, attemptsOf, latest, yearLevel, passedAll };
 }
 
-// Rule 23: a subject has at most 2 attempts (the original and 1 retake).
+// A subject has at most 2 attempts (the original and 1 retake).
 export const MAX_ATTEMPTS = 2;
 
-// Rule 39: calculated, never stored, display only.
+// Calculated, never stored, display only.
 export function loadStatus(totalUnits, maxUnits) {
   if (maxUnits == null) return 'No cap';
   return totalUnits < maxUnits ? 'Underload' : 'Regular load';

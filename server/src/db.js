@@ -11,11 +11,9 @@ export const pool = mysql.createPool({
   dateStrings: true,
 });
 
-// XAMPP's my.ini may disable strict mode, which makes MariaDB blank out bad
-// ENUM values instead of rejecting them. Force strict mode per connection.
-// READ COMMITTED: after a transaction waits for a row lock, its next reads
-// see what the other transaction committed (e.g. the seat it just took).
-// The default REPEATABLE READ would keep reading an older snapshot.
+// Force strict mode per connection: XAMPP's default may blank out bad ENUM values.
+// READ COMMITTED lets a transaction see rows another one just committed after a
+// lock wait (e.g. the seat it just took).
 pool.on('connection', (conn) => {
   conn.query(`
     SET SESSION sql_mode = 'STRICT_ALL_TABLES,NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'
@@ -25,10 +23,8 @@ pool.on('connection', (conn) => {
   `);
 });
 
-// Runs fn(conn) inside one transaction. Commits if fn resolves, rolls back
-// if it throws. Every write that touches more than one row goes through here.
-// If MariaDB picks this transaction as a deadlock victim (two students taking
-// the last seats at once), the whole function is retried a few times.
+// Runs fn(conn) in one transaction: commits if it resolves, rolls back if it
+// throws. If MariaDB picks it as a deadlock victim, it is retried a few times.
 export async function withTransaction(fn, attempts = 3) {
   for (let attempt = 1; ; attempt++) {
     const conn = await pool.getConnection();

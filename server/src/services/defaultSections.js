@@ -1,6 +1,3 @@
-// The default sections of a period: 2 sections of every subject of that
-// semester, each with a day, time and professor. No database access here, so
-// the demo seed can use it too.
 export const DEFAULT_SECTIONS = 2;
 
 export const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -19,12 +16,9 @@ const SLOTS = DAYS.length * TIMES.length;
 const lecCode = (code) => code.replace(/\.1$/, '');
 
 // courses: [{ code, yearLevel }] of one semester. professorIds: active professors.
-// Slots run in order through all of section 1, then all of section 2, wrapping
-// after 48. So sections with the same number never overlap each other, and a
-// shared slot always goes to two different professors (rule 36).
-// A lec and lab get the same professor when one is free for both; the admin
-// can change either afterward. Returns { sections, skipped }: skipped counts
-// the sections no free professor could take.
+// Slots run through all of section 1, then section 2, wrapping after 48, so
+// sections with the same number never overlap. A lec and lab share a professor
+// when one is free for both. Returns { sections, skipped }.
 export function planDefaultSections(courses, professorIds) {
   const ordered = [...courses].sort(
     (a, b) => a.yearLevel - b.yearLevel || (a.code < b.code ? -1 : a.code > b.code ? 1 : 0),

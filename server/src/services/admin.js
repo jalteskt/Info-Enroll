@@ -1,4 +1,3 @@
-// Admin work: enrollment periods, sections, professors.
 import bcrypt from 'bcryptjs';
 import { pool, withTransaction } from '../db.js';
 import { AppError } from '../errors.js';
@@ -7,10 +6,10 @@ import { sectionGroup, labDroppedWith } from './pairing.js';
 import { overlaps, describeTime } from './schedule.js';
 import { planDefaultSections } from './defaultSections.js';
 
-const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']; // rule 15
+const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const TIME = /^([01]\d|2[0-3]):[0-5]\d$/;
 
-// ---------------------------------------------------------------- periods
+// Periods
 
 export async function listPeriods() {
   const [rows] = await pool.query(`
@@ -30,15 +29,14 @@ export async function listPeriods() {
 }
 
 const nextAfter = ({ schoolYear, semester }) => {
-  if (semester === 1) return { schoolYear, semester: 2 }; // rule 2: no summer term
+  if (semester === 1) return { schoolYear, semester: 2 }; // No summer term
   const start = Number(schoolYear.slice(0, 4)) + 1;
   return { schoolYear: `${start}-${start + 1}`, semester: 1 };
 };
 
-// Opens the next period (decision 2026-11-18: a new period starts OPEN).
-// Rule 35: only when every section of every period has submitted grades.
-// The very first period needs { schoolYear, semester }; after that the next
-// one is worked out automatically. Opening creates its default sections.
+// Opens the next period (a new period starts OPEN). Only allowed when every
+// section has submitted grades. The first period needs { schoolYear, semester };
+// later ones are worked out. Also creates its default sections.
 export function openNextPeriod(body = {}) {
   return withTransaction(async (conn) => {
     const [periods] = await conn.query(`
@@ -143,9 +141,9 @@ export async function closePreview() {
   return { notEnrolled: Number(row.notEnrolled), movedBack: Number(row.movedBack) };
 }
 
-// Closes the OPEN period. The exclusive lock waits for any student add or
-// remove that is still running, then blocks new ones (rule 7). Students who
-// never clicked Enroll lose their enlisted subjects.
+// Closes the OPEN period. The exclusive lock waits for running student
+// adds/removes, then blocks new ones. Students who never clicked Enroll lose
+// their enlisted subjects.
 export function closePeriod() {
   return withTransaction(async (conn) => {
     const [[period]] = await conn.query(`
@@ -160,7 +158,7 @@ export function closePeriod() {
     if (!period) throw new AppError(409, 'There is no open enrollment period.');
     const key = [period.schoolYear, period.semester];
 
-    // Rule 11: at closing, total_units >= min_units (for enrolled students).
+    // At closing, total_units >= min_units (for enrolled students).
     const [under] = await conn.query(`
       SELECT
           e.student_no  AS studentNo
@@ -179,7 +177,7 @@ export function closePeriod() {
       throw new AppError(409, `${under.length} student(s) are below their minimum units: ${under.map((u) => u.studentNo).join(', ')}.`);
     }
 
-    // Rule 9: empty enrollments are deleted.
+    // Empty enrollments are deleted.
     const [emptyEnrollments] = await conn.query(
       `DELETE e FROM enrollment e
        WHERE e.school_year = ? AND e.semester = ?
@@ -193,7 +191,7 @@ export function closePeriod() {
         AND semester = ?
         AND date_enrolled IS NULL
     `, key);
-    // Rule 20: sections with no students are deleted.
+    // Sections with no students are deleted.
     const [emptySections] = await conn.query(
       `DELETE s FROM section s
        WHERE s.school_year = ? AND s.semester = ?
@@ -230,7 +228,7 @@ async function lockOpenPeriod(conn) {
   return period;
 }
 
-// ---------------------------------------------------------------- sections
+// Sections
 
 function parseMeeting(m, label) {
   if (!m || typeof m !== 'object') throw new AppError(400, `Give the ${label} day and time.`);
@@ -242,9 +240,9 @@ function parseMeeting(m, label) {
   return { day: m.day, timeStart: m.timeStart, timeEnd: m.timeEnd };
 }
 
-// The lec and lab of a section number each have their own professor, who
-// may be the same person.
-// Locks and returns the sections sharing that number: [lec, lab] or [course].
+// A section number has a lec and a lab, each with its own professor (may be
+// the same person). Locks and returns the sections sharing that number:
+// [lec, lab] or [course].
 async function lockSectionGroup(conn, { codes, sectionNo, period }) {
   const [rows] = await conn.query(`
     SELECT
@@ -266,7 +264,7 @@ async function lockSectionGroup(conn, { codes, sectionNo, period }) {
   return rows;
 }
 
-// Rules 13, 36, 37: the professor is active and free at that time.
+// The professor is active and free at that time.
 // `ignoreSectionIds` skips the sections being replaced (reassignment).
 async function checkProfessorFree(conn, period, meeting, ignoreSectionIds = []) {
   const [[prof]] = await conn.query(`
@@ -298,24 +296,20 @@ async function checkProfessorFree(conn, period, meeting, ignoreSectionIds = []) 
   }
 }
 
-// Creates sections for the OPEN period (rule 28): a course with a lab gets
-// its lec section and lab section together, with the same section_no.
-// If one of the two already exists with that number (the other was deleted,
-// rule 13), only the missing one is created. It takes the professor given
-// for it, or the existing section's professor if none is given.
-// body: { code, sectionNo?, professorId, labProfessorId?,
-//         lec: { day, timeStart, timeEnd }, lab?: { day, timeStart, timeEnd } }
-//   (for a course without a lab, its professor and meeting are the lec ones)
+// Creates sections for the OPEN period. A course with a lab gets its lec and
+// lab together with the same section_no; if one already exists, only the
+// missing one is created. body: { code, sectionNo?, professorId,
+// labProfessorId?, lec: { day, timeStart, timeEnd }, lab?: { ... } }
 export function createSection(body = {}) {
   return withTransaction(async (conn) => {
-    const period = await lockOpenPeriod(conn); // rule 13
+    const period = await lockOpenPeriod(conn);
     const courses = await loadCourses(conn);
     if (!courses.has(body.code)) throw new AppError(404, 'Course not found.');
     const codes = sectionGroup(body.code, courses);
     const main = courses.get(codes[0]);
     const paired = codes.length === 2;
 
-    // Rule 17: a section opens only in its course's semester.
+    // A section opens only in its course's semester.
     if (main.semester !== period.semester) {
       throw new AppError(409, `${main.code} is a ${ordinal(main.semester)}-semester course.`);
     }
@@ -342,7 +336,7 @@ export function createSection(body = {}) {
     if (!Number.isInteger(sectionNo) || sectionNo < 1 || sectionNo > 255) {
       throw new AppError(400, 'Section number must be 1 to 255.');
     }
-    const name = `BSIT ${main.yearLevel}-${sectionNo}`; // rule 14
+    const name = `BSIT ${main.yearLevel}-${sectionNo}`;
     const already = existing.filter((e) => e.sectionNo === sectionNo);
     const missing = codes.filter((c) => !already.some((e) => e.code === c));
     if (!missing.length) throw new AppError(409, `${name} of ${main.code} already exists.`);
@@ -361,8 +355,7 @@ export function createSection(body = {}) {
     };
     const meetings = missing.map(meetingFor);
 
-    // Rule 28: lec and lab times can't overlap (also rule 36 when the same
-    // professor teaches both). Compared with the existing half too.
+    // Lec and lab times can't overlap, including when the same professor teaches both.
     const all = [...meetings, ...already];
     if (all.length === 2 && overlaps(all[0], all[1])) {
       throw new AppError(409, 'The lecture and laboratory times overlap.');
@@ -406,11 +399,9 @@ const removedNote = (previous, codes) => {
   return note.length <= 255 ? note : 'Several of your sections were removed.';
 };
 
-// Deletes one section, while OPEN only (rule 13). Enrolled students in it go
-// back to enlisted, with a note, and must click Enroll again. Its students are
-// unenrolled from it. Deleting a lec section also removes those students'
-// lab in the same enrollment (rule 27: a lab can't stay without its lec).
-// The lab section itself is not deleted. total_units go down (rule 12).
+// Deletes one section, only while OPEN. Its enrolled students go back to
+// enlisted with a note and must click Enroll again. Deleting a lec section
+// also removes those students' lab from the same enrollment, and total_units go down.
 export function deleteSection(sectionId) {
   return withTransaction(async (conn) => {
     const period = await lockOpenPeriod(conn);
@@ -493,7 +484,7 @@ export function deleteSection(sectionId) {
   });
 }
 
-// Rule 37: only sections of the OPEN period can be reassigned. A lec and its
+// Only sections of the OPEN period can be reassigned. A lec and its
 // lab have their own professors, so only this section changes.
 export function reassignProfessor(sectionId, professorId) {
   return withTransaction(async (conn) => {
@@ -527,7 +518,7 @@ export function reassignProfessor(sectionId, professorId) {
   });
 }
 
-// ---------------------------------------------------------------- professors
+// Professors
 
 export async function listProfessors() {
   const [rows] = await pool.query(`
@@ -580,10 +571,10 @@ export async function createProfessor({ username, password, firstName, lastName 
   }
 }
 
-// ---- students
+// Students
 
-// Every student with status and year level. Year level follows rule 4:
-// earlier school years with a finalized (CLOSED), non-empty enrollment, plus 1.
+// Every student with status and year level (earlier closed, non-empty
+// school years, plus 1).
 export async function listStudents() {
   const [rows] = await pool.query(`
     SELECT
@@ -698,7 +689,7 @@ export async function createStudent({ firstName, middleName, lastName, entranceD
   throw new AppError(409, 'Could not assign a student number. Try again.');
 }
 
-// Rule 37: a professor with sections in the open period must be reassigned
+// A professor with sections in the open period must be reassigned
 // out of them before being deactivated.
 export function setProfessorActive(id, active) {
   return withTransaction(async (conn) => {
@@ -729,7 +720,7 @@ export function setProfessorActive(id, active) {
   });
 }
 
-// Rule 37: a professor who has ever had a section is deactivated, not deleted.
+// A professor who has ever had a section is deactivated, not deleted.
 export function deleteProfessor(id) {
   return withTransaction(async (conn) => {
     const [[prof]] = await conn.query(`
@@ -753,7 +744,7 @@ export function deleteProfessor(id) {
   });
 }
 
-// ---------------------------------------------------------------- overview
+// Overview
 
 export async function overview() {
   const [[open]] = await pool.query(`

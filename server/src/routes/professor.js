@@ -32,7 +32,7 @@ router.put('/sections/:id/grades', wrap(async (req) => {
 // Submit and lock.
 router.post('/sections/:id/submit', wrap(async (req) => {
   const { dropped } = await submitGrades(req.params.id, me(req));
-  return { ...(await sectionRoster(req.params.id, me(req))), dropped }; // rule 40
+  return { ...(await sectionRoster(req.params.id, me(req))), dropped }; // students dropped by this submit
 }));
 
 export default router;

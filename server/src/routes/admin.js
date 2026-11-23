@@ -27,7 +27,7 @@ const wrap = (fn) => async (req, res, next) => {
 router.get('/overview', wrap(() => admin.overview()));
 
 // Courses sections can be created for: lecs and courses without a lab
-// (a lec's lab section is created with it, rule 28).
+// (a lec's lab section is created with it).
 router.get('/courses', wrap(async () => {
   const courses = await loadCourses();
   return [...courses.values()]
@@ -58,7 +58,7 @@ router.delete('/sections/:id', wrap((req) => admin.deleteSection(req.params.id))
 router.patch('/sections/:id/professor', wrap((req) =>
   admin.reassignProfessor(req.params.id, req.body?.professorId)));
 
-// Grades (rule 35: admin can encode and submit missing grades)
+// Grades (the admin can encode and submit missing grades)
 router.get('/sections/:id', wrap((req) => sectionRoster(req.params.id, me(req))));
 router.put('/sections/:id/grades', wrap(async (req) => {
   await saveGrades(req.params.id, req.body?.grades, me(req));
@@ -66,10 +66,10 @@ router.put('/sections/:id/grades', wrap(async (req) => {
 }));
 router.post('/sections/:id/submit', wrap(async (req) => {
   const { dropped } = await submitGrades(req.params.id, me(req));
-  return { ...(await sectionRoster(req.params.id, me(req))), dropped }; // rule 40
+  return { ...(await sectionRoster(req.params.id, me(req))), dropped }; // students dropped by this submit
 }));
 
-// INC completion (rule 34)
+// INC completion
 router.get('/incompletes', wrap(() => listIncompletes()));
 router.post('/sections/:id/complete-inc', wrap(async (req) => {
   await completeInc(req.params.id, req.body?.studentNo, req.body?.grade, req.user.id);

@@ -1,12 +1,8 @@
-// Encoding and submitting grades. Used by professors (own sections only,
-// rule 30) and by the admin (any section, rule 35).
-//
-// `actor` is { professorId } or { adminId }.
 import { pool, withTransaction } from '../db.js';
 import { AppError } from '../errors.js';
 import { gradeStatus, MAX_ATTEMPTS } from './academic.js';
 
-// Rule 32: 1.00 to 5.00 in quarter steps, or INC.
+// 1.00 to 5.00 in quarter steps, or INC.
 export const VALID_GRADES = [
   ...Array.from({ length: 17 }, (_, i) => (1 + i * 0.25).toFixed(2)),
   'INC',
@@ -37,7 +33,7 @@ const SECTION_SQL = `
   FROM vwSectionDetails s
 `;
 
-const withName = (s) => ({ ...s, name: `BSIT ${s.yearLevel}-${s.sectionNo}` }); // rule 14
+const withName = (s) => ({ ...s, name: `BSIT ${s.yearLevel}-${s.sectionNo}` });
 
 // Sections for a professor (theirs) or for the admin (filter by period).
 export async function listSections({ professorId, schoolYear, semester } = {}) {
@@ -63,7 +59,7 @@ export async function listSections({ professorId, schoolYear, semester } = {}) {
   return rows.map(withName);
 }
 
-// One section with its class list. A professor only sees their own (rule 30);
+// One section with its class list. A professor only sees their own;
 // someone else's section looks the same as a missing one.
 export async function sectionRoster(sectionId, actor, db = pool, { lock = false } = {}) {
   // Lock only the section row (FOR UPDATE on the joined query would also lock
@@ -98,7 +94,7 @@ export async function sectionRoster(sectionId, actor, db = pool, { lock = false 
 }
 
 // Grades are encoded after enrollment closes (decision 2026-11-18) and are
-// locked once submitted (rule 31).
+// locked once submitted.
 function assertEditable(section) {
   if (section.periodStatus === 'OPEN') {
     throw new AppError(409, 'Grades can be encoded once the enrollment period is closed.');
@@ -137,7 +133,7 @@ export async function saveGrades(sectionId, grades, actor) {
   });
 }
 
-// Rule 31: only when every student has a grade. Fills grades_submitted_at,
+// Only when every student has a grade. Fills grades_submitted_at,
 // and submitted_by_admin_id when the admin submits.
 export function submitGrades(sectionId, actor) {
   return withTransaction(async (conn) => {
@@ -159,7 +155,7 @@ export function submitGrades(sectionId, actor) {
   });
 }
 
-// Rule 40: when the last attempt (rule 23) ends failed or INC, the student is
+// When the last attempt ends failed or INC, the student is
 // dropped once that grade is submitted. The grade itself is not changed.
 async function dropOnLastAttempt(conn, code, students) {
   const unpassed = students.filter((s) => ['failed', 'inc'].includes(gradeStatus(s.grade)));
@@ -186,7 +182,7 @@ async function dropOnLastAttempt(conn, code, students) {
   return dropped;
 }
 
-// Rule 34: the admin completes an INC by replacing it with a grade.
+// The admin completes an INC by replacing it with a grade.
 export async function completeInc(sectionId, studentNo, grade, adminId) {
   if (!VALID.has(grade) || grade === 'INC') {
     throw new AppError(400, 'Replace the INC with a grade from 1.00 to 5.00.');

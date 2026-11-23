@@ -1,6 +1,3 @@
-// Drops and rebuilds a database from the SQL files, then loads the demo data.
-//   npm run db:reset              -> rebuilds DB_NAME from .env (info_enroll)
-// The tests call resetDatabase('info_enroll_test') so they never touch dev data.
 import 'dotenv/config';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -32,7 +29,7 @@ export async function resetDatabase(dbName = process.env.DB_NAME || 'info_enroll
     await conn.query(`
       SET SESSION sql_mode = 'STRICT_ALL_TABLES,NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'
     `);
-    // Rule 22: refuse prerequisite data with a loop (the database only blocks
+    // Refuse prerequisite data with a loop (the database only blocks
     // a subject requiring itself).
     const loops = await checkPrerequisiteLoops(conn);
     if (loops.length) throw new Error(`Prerequisite data has loops, fix info-enroll_insert.sql:\n  ${loops.join('\n  ')}`);

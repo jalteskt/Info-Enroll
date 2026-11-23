@@ -1,5 +1,3 @@
-// The Enroll button: enlisted subjects become final, the admin can reopen,
-// and students who never enroll lose their subjects when the period closes.
 import { before, after, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { pool, q, freshDatabase, sectionId, currentSubjects } from './helpers.js';

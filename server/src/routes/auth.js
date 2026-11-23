@@ -1,5 +1,3 @@
-// Rule 38: students sign in with student_no, admins and professors with
-// username. All passwords are bcrypt hashes.
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import { DEMO_PASSWORD } from '../../scripts/seed-demo.js';

@@ -42,7 +42,7 @@ const escapeHTML = (s) =>
       ],
   );
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-// ---- Student data from the API (replaces the old sample data) ----
+// Student data from the API
 const COLORS = [
   ['#82465c', '#f6eaef'],
   ['#537e74', '#edf3ef'],
@@ -59,7 +59,7 @@ const periodText = (p) =>
   p ? `${ord(p.semester)} Semester, A.Y. ${p.schoolYear.replace('-', '–')}` : '';
 const termText = () => periodText(term?.period);
 const maxUnits = () => term?.unitLimit?.maxUnits ?? null; // null = no cap
-// Rule 39: shown only, never blocks. Same formula as the server's loadStatus().
+// Shown only, never blocks. Same formula as the server's loadStatus().
 const loadLabel = (total = totalUnits(), max = maxUnits()) =>
   max == null ? 'No cap' : total < max ? 'Underload' : 'Regular load';
 // Load status belongs to an enrollment; there is none until the first subject is added.
@@ -77,7 +77,7 @@ const toMeeting = (m, label) => ({
   end: toHours(m.timeEnd),
   ...(label ? { label } : {}),
 });
-// Lec and lab are separate subjects (rule 27): one offer per course.
+// Lec and lab are separate subjects: one offer per course.
 function toOffer(item, i) {
   const [color, bg] = COLORS[i % COLORS.length];
   return {
@@ -130,7 +130,7 @@ function applyView(view) {
   state.open = view.canEnroll;
   state.saved = true;
 }
-// Lec and lab are separate subjects (rules 26, 27).
+// Lec and lab are separate subjects.
 function pairNote(c) {
   const partner = c.partner && getCourse(c.partner);
   if (!partner) return '';

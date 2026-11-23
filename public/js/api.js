@@ -1,5 +1,3 @@
-// Small wrapper around fetch for the /api routes.
-// Throws an Error whose message is the server's error text, with .status set.
 export async function api(path, { method = 'GET', body } = {}) {
   const response = await fetch('/api' + path, {
     method,

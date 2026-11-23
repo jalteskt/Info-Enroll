@@ -11,7 +11,7 @@ export function requireRole(...roles) {
       if (!roles.includes(user.role)) {
         throw new AppError(403, 'You do not have access to this page.');
       }
-      // A professor deactivated mid-session loses access right away (rule 37).
+      // A professor deactivated mid-session loses access right away.
       if (user.role === 'professor') {
         const [[row]] = await pool.query(`
           SELECT is_active

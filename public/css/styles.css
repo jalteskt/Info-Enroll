@@ -42,7 +42,7 @@
 }
 
 :root {
-  /* PLM uniform palette: surfaces, brand, and restrained accents. */
+  /* Colour palette */
   --primary: #005f60;
   --primary-dark: #004243;
   --portal-teal: #00494b;
@@ -62,7 +62,7 @@
   --on-brand-tint: color-mix(in srgb, var(--background) 10%, transparent);
   --on-brand-border: color-mix(in srgb, var(--background) 25%, transparent);
   --shadow: 0 8px 30px var(--shadow-color);
-  /* Compatibility tokens for existing markup and inline styles. */
+  /* Older token names kept so existing markup still works */
   --wine: var(--primary);
   --wine-dark: var(--primary-dark);
   --wine-pale: var(--teal-tint);
@@ -1171,7 +1171,7 @@ dialog::backdrop {
 .modal-footer .button {
   font-size: 13px;
 }
-/* "Remove subject" sits on the left, apart from Cancel and the main action. */
+/* Remove subject: left side, apart from Cancel and the main action */
 .modal-footer .button-remove {
   margin-right: auto;
 }
@@ -2139,7 +2139,7 @@ dialog::backdrop {
   }
 }
 
-/* Small details carry the academic interface: readable data, quiet controls. */
+/* Small details: readable data, quiet controls */
 .nav-item {
   font-size: 15px;
 }
@@ -2419,7 +2419,7 @@ dialog::backdrop {
   }
 }
 
-/* Screen-only brand surfaces preserve the existing print presentation. */
+/* Screen-only brand surfaces; print layout unchanged */
 @media screen {
   .sidebar,
   .panel-header,
@@ -2468,7 +2468,7 @@ dialog::backdrop {
     background: var(--gold);
     border-color: var(--gold);
   }
-  /* A disabled button on a teal panel must not look clickable. */
+  /* A disabled button on a teal panel must not look clickable */
   .panel-header .button-primary:disabled,
   .schedule-toolbar .button-primary:disabled {
     background: transparent;
@@ -2493,7 +2493,7 @@ dialog::backdrop {
   }
 }
 
-/* ---- Admin forms and dialogs ---- */
+/* Admin forms and dialogs */
 .admin-form {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2543,9 +2543,7 @@ dialog:has(.data-table) {
   }
 }
 
-/* Readable text inside the teal panel headers and schedule toolbar.
-   They set white text that every child inherits, so children that kept their
-   own teal/grey colour, or a white box without a text colour, disappeared. */
+/* Readable text in teal panel headers and the schedule toolbar */
 @media screen {
   .panel-header .eyebrow,
   .panel-header .section-label,
@@ -2571,7 +2569,7 @@ dialog:has(.data-table) {
   }
 }
 
-/* Shared portal styling for screens. Printed enrollment records keep their layout. */
+/* Shared portal styling; printed enrollment records keep their layout */
 @media screen {
   body { background: #f3f7f7; }
   .shell { min-width: 0; }
@@ -2887,7 +2885,7 @@ dialog:has(.data-table) {
   .login-card { padding: 20px; }
 }
 
-/* Keep controls readable on the refreshed white panel headers. */
+/* Keep controls readable on the white panel headers */
 @media screen {
   .panel-header .section-label, .schedule-toolbar .eyebrow,
   .panel-header .muted, .panel-header .page-description,

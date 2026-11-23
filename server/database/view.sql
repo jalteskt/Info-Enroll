@@ -1,32 +1,8 @@
--- ============================================================
--- PLM BSIT Enrollment System - database views
--- MySQL / MariaDB (XAMPP)
--- Run AFTER info-enroll.sql and info-enroll_insert.sql
---
--- Views are read-only displays. Adds, edits, deletes, and locking
--- reads (FOR UPDATE, LOCK IN SHARE MODE) stay on the real tables.
---
--- grade is an ENUM, so it is compared as text, never as a number:
--- MariaDB would compare its position (1-18), not the grade.
--- ============================================================
-
 USE info_enroll;
 
--- ------------------------------------------------------------
--- 1. vwSectionDetails
--- One row per section, with its course, schedule, professor,
--- student counts, and slots left. Enlisted students hold a slot.
--- For display only: the add-subject seat check must still count
--- on the real tables while the section is locked.
---
--- Used in:
---   grades.js      listSections, sectionRoster (through SECTION_SQL)
---   eligibility.js enrollmentView (sections with seats left)
--- Shown on:
---   Professor: section list, grade sheet header
---   Admin:     Sections, Grades, grade sheet header
---   Student:   Enrollment page, Open Sections dialog
--- ------------------------------------------------------------
+-- Sections: each section with its course, schedule, professor, student
+-- count and seats left. Used by section lists, grade sheets and the
+-- Student enrollment page.
 CREATE OR REPLACE VIEW vwSectionDetails AS
 SELECT
     s.section_id
@@ -76,23 +52,9 @@ JOIN enrollment_period p ON p.school_year = s.school_year
   AND p.semester = s.semester
 JOIN professor pr ON pr.professor_id = s.professor_id;
 
--- ------------------------------------------------------------
--- 2. vwStudentSubjects
--- One row per student per subject per term.
--- grade:        the saved grade, including a professor's draft.
--- final_grade:  NULL until the section is submitted. Students
---               must only be shown this column.
--- grade_status: PENDING, PASSED, FAILED, or INC, from final_grade.
---
--- Enrolled subjects: WHERE date_enrolled IS NOT NULL
--- Passed subjects:   WHERE grade_status = 'PASSED'
---
--- Used in:
---   grades.js sectionRoster (class list of a section)
--- Shown on:
---   Professor: grade sheet
---   Admin:     grade sheet
--- ------------------------------------------------------------
+-- Student subjects: each subject a student took, per term, with the
+-- professor's saved grade, the final grade (only after submission)
+-- and a status: PENDING, PASSED, FAILED or INC. Used by the class list.
 CREATE OR REPLACE VIEW vwStudentSubjects AS
 SELECT
     e.enrollment_id
@@ -137,16 +99,8 @@ JOIN section s ON s.section_id = ec.section_id
 JOIN course c ON c.course_code = ec.course_code
 JOIN professor pr ON pr.professor_id = s.professor_id;
 
--- ------------------------------------------------------------
--- 3. vwEnrolledList
--- One row per enrolled student per term. Students who only
--- enlisted (date_enrolled is NULL) are left out.
---
--- Used in:
---   admin.js overview (the studentsEnrolled count)
--- Shown on:
---   Admin: Overview, "Students enrolled"
--- ------------------------------------------------------------
+-- Enrolled list: students who clicked Enroll in a term (enlisted-only
+-- students are left out). Used by the Overview enrolled count.
 CREATE OR REPLACE VIEW vwEnrolledList AS
 SELECT
     e.enrollment_id
@@ -170,20 +124,9 @@ JOIN enrollment_period p ON p.school_year = e.school_year
   AND p.semester = e.semester
 WHERE e.date_enrolled IS NOT NULL;
 
--- ------------------------------------------------------------
--- 4. vwReviewQueue
--- One row per item that needs staff action:
--- MISSING_GRADES: a section in a closed period with no submitted grades.
--- INC:            an incomplete grade waiting to be completed.
--- REOPENED:       a student in the open period who was moved back
---                 to enlisted and must click Enroll again.
---
--- Used in:
---   grades.js listIncompletes (INC rows only)
--- Shown on:
---   Admin: Grades, incomplete grades list
--- MISSING_GRADES and REOPENED rows are not shown on a page yet.
--- ------------------------------------------------------------
+-- Review queue: items that need staff action: sections with missing
+-- grades, incomplete (INC) grades, and reopened enrollments.
+-- The INC rows feed the Admin incomplete grades list.
 CREATE OR REPLACE VIEW vwReviewQueue AS
 SELECT
     'MISSING_GRADES'                         AS item_type
@@ -250,16 +193,8 @@ WHERE p.status = 'OPEN'
   AND e.date_enrolled IS NULL
   AND e.reopen_note IS NOT NULL;
 
--- ------------------------------------------------------------
--- 5. vwPeriodSummary
--- One row per enrollment period, with its section, missing-grade,
--- and enrollment counts.
---
--- Used in:
---   admin.js listPeriods
--- Shown on:
---   Admin: Overview, periods table
--- ------------------------------------------------------------
+-- Period summary: each period with its section, missing-grade and
+-- enrollment counts. Used by the Admin Overview periods table.
 CREATE OR REPLACE VIEW vwPeriodSummary AS
 SELECT
     p.school_year
@@ -286,16 +221,9 @@ SELECT
     ) AS enrollments
 FROM enrollment_period p;
 
--- ------------------------------------------------------------
--- 6. vwProfessorLoad
--- One row per professor, with all-time and open-period section
--- counts. The password column is left out.
---
--- Used in:
---   admin.js listProfessors
--- Shown on:
---   Admin: Professors table, professor dropdowns
--- ------------------------------------------------------------
+-- Professor load: each professor with how many sections they have had
+-- and have now. The password is left out. Used by the Admin
+-- Professors page.
 CREATE OR REPLACE VIEW vwProfessorLoad AS
 SELECT
     p.professor_id
@@ -319,17 +247,8 @@ SELECT
     ) AS sections_open
 FROM professor p;
 
--- ------------------------------------------------------------
--- 7. vwPrerequisiteList
--- One row per course and requirement. PRE = must already be
--- passed. CO = lab -> lec pair. Courses with no requirement
--- do not appear.
---
--- Used in:
---   academic.js loadCourses (PRE rows only)
--- Shown on:
---   Student: Enrollment page, eligibility and blocked reasons
--- ------------------------------------------------------------
+-- Prerequisite list: each requirement with both course titles.
+-- Used to decide which subjects a student may enroll in.
 CREATE OR REPLACE VIEW vwPrerequisiteList AS
 SELECT
     pr.course_code
@@ -341,19 +260,9 @@ FROM prerequisite pr
 JOIN course c ON c.course_code = pr.course_code
 JOIN course rc ON rc.course_code = pr.required_course_code;
 
--- ------------------------------------------------------------
--- 8. vwStudentList
--- One row per student, with the password left out.
--- term_state: ENROLLED or ENLISTED in the open period, else NULL.
--- year_level: earlier school years with a closed, non-empty
--- enrollment, plus 1. "Earlier" is before the open period, or
--- before the latest period when none is open.
---
--- Used in:
---   admin.js listStudents
--- Shown on:
---   Admin: Students table
--- ------------------------------------------------------------
+-- Student list: every student with their state this term (ENROLLED,
+-- ENLISTED or none) and year level. The password is left out.
+-- Used by the Admin Students page.
 CREATE OR REPLACE VIEW vwStudentList AS
 SELECT
     s.student_no
@@ -398,10 +307,3 @@ LEFT JOIN enrollment_period op ON op.status = 'OPEN'
 LEFT JOIN enrollment cur ON cur.student_no = s.student_no
   AND cur.school_year = op.school_year
   AND cur.semester = op.semester;
-
--- ------------------------------------------------------------
--- Quick checks
--- ------------------------------------------------------------
--- SHOW FULL TABLES WHERE Table_type = 'VIEW';                    -- 8 views
--- SELECT COUNT(*) FROM vwPrerequisiteList WHERE requisite_type = 'CO';  -- 18
--- SELECT item_type, COUNT(*) FROM vwReviewQueue GROUP BY item_type;

@@ -19,14 +19,14 @@ const clock = (hhmm) => {
 };
 const when = (s) => `${s.day} · ${clock(s.timeStart)}–${clock(s.timeEnd)}`;
 const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
-// Rule 40: submitting a failed or INC last attempt drops the student.
+// Submitting a failed or INC last attempt drops the student.
 const droppedNote = (dropped = []) =>
   dropped.length
     ? ` ${plural(dropped.length, 'student')} reached the attempt limit and ${dropped.length === 1 ? 'was' : 'were'} dropped: ${dropped.join(', ')}.`
     : '';
 const termKey = (s) => `${s.schoolYear}/${s.semester}`;
 const termName = (s) => `${ord(s.semester)} semester · AY ${s.schoolYear.replace('-', '–')}`;
-// Grades are text ("1.75", "INC"); 3.00 and better passes (rule 33).
+// Grades are text ("1.75", "INC"); 3.00 and better passes.
 const standing = (grade) =>
   !grade
     ? badge('Awaiting grade')
@@ -53,7 +53,7 @@ export function handleStaffAction(action, role, value, icon) {
     : adminAction(action, value, icon);
 }
 
-// ------------------------------------------------------------ professor
+// Professor
 
 const prof = {
   gradeOptions: [],
@@ -92,7 +92,7 @@ async function loadRoster() {
     : null;
 }
 
-// Grades can be encoded only after enrollment closes, until submitted (rule 31).
+// Grades can be encoded only after enrollment closes, until submitted.
 const editable = () =>
   prof.roster &&
   prof.roster.section.periodStatus === 'CLOSED' &&
@@ -302,7 +302,7 @@ async function professorAction(action, value) {
   return {};
 }
 
-// ------------------------------------------------------------ admin
+// Admin
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const admin = {
@@ -583,7 +583,7 @@ function adminStudents(icon) {
   });
 }
 
-// ---- admin dialogs
+// Admin dialogs
 
 const confirmDialog = (icon, { eyebrow, title, text, action, confirm }) =>
   renderTemplate('admin-confirm', {
@@ -667,7 +667,7 @@ async function adminAction(action, value, icon) {
   };
   let m;
   try {
-    // ---- enrollment period
+    // Enrollment period
     if (action === 'staff-period-close') {
       const p = await api('/admin/periods/close-preview');
       const warning = p.notEnrolled
@@ -707,7 +707,7 @@ async function adminAction(action, value, icon) {
       );
     }
 
-    // ---- sections
+    // Sections
     if (action === 'staff-term') {
       admin.term = value;
       await loadAdminSections();
@@ -764,7 +764,7 @@ async function adminAction(action, value, icon) {
       return done(`Professor reassigned for ${r.reassigned.join(' and ')}.`);
     }
 
-    // ---- grades
+    // Grades
     if ((m = /^staff-grade-open-(\d+)$/.exec(action))) {
       admin.grading = { roster: await api(`/admin/sections/${m[1]}`), draft: new Map() };
       return { modal: gradeSheet(icon) };
@@ -794,7 +794,7 @@ async function adminAction(action, value, icon) {
       return done(`INC of ${m[2]} replaced with ${grade}.`);
     }
 
-    // ---- students
+    // Students
     if (action === 'staff-student-new') {
       const d = new Date();
       const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -819,7 +819,7 @@ async function adminAction(action, value, icon) {
       return done(`Student added. Their student number is ${r.studentNo}.`);
     }
 
-    // ---- professors
+    // Professors
     if (action === 'staff-prof-new')
       return { modal: renderTemplate('admin-prof-form', { icon: icon('x') }) };
     if (action === 'staff-form-professor') {

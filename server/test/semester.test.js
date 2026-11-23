@@ -1,5 +1,3 @@
-// A full semester: admin sets up sections, students enroll, the period closes,
-// professors grade, the admin finishes grading and opens the next period.
 import { before, after, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { pool, q, freshDatabase, sectionId, totalUnitsMismatches, currentSubjects } from './helpers.js';
@@ -53,7 +51,7 @@ const clashes = async (schoolYear, semester) =>
 before(freshDatabase);
 after(() => pool.end());
 
-// ------------------------------------------------------------ admin, OPEN period
+// Admin, OPEN period
 
 test('the demo period has 2 sections of every subject, with no clashes', async () => {
   const [row] = await q(`
@@ -253,7 +251,7 @@ test('the admin adds students; the number is generated from the entrance year', 
   `, [a.studentNo]);
   assert.deepEqual([row.first_name, row.middle_name, row.status], ['Lea', null, 'ACTIVE']);
   const bcrypt = (await import('bcryptjs')).default;
-  assert.ok(await bcrypt.compare('longenough', row.password)); // hashed (rule 38), and the login password works
+  assert.ok(await bcrypt.compare('longenough', row.password)); // hashed, and the login password works
 
   const listed = (await admin.listStudents()).find((s) => s.studentNo === a.studentNo);
   assert.deepEqual([listed.yearLevel, listed.entranceDate, listed.status], [1, '2026-08-10', 'ACTIVE']);
@@ -272,7 +270,7 @@ test('grades cannot be encoded while enrollment is open', async () => {
   await rejects(grades.saveGrades(id, [{ studentNo: AMARA, grade: '1.00' }], { adminId: ADMIN_ID }), 409, /closed/);
 });
 
-// ------------------------------------------------------------ closing
+// Closing
 
 let closeResult;
 test('closing deletes empty enrollments and empty sections (rules 9, 20)', async () => {
@@ -308,7 +306,7 @@ test('after closing: no student changes, no section changes (rules 7, 13)', asyn
   await rejects(admin.deleteSection(await sectionId('GEC_ETHC', 1)), 409, /open/);
 });
 
-// ------------------------------------------------------------ grading
+// Grading
 
 test('a professor only sees their own sections (rule 30)', async () => {
   const id = await sectionId('GEC_ETHC', 1);
@@ -358,7 +356,7 @@ test('admin encodes and submits the rest; INC on the last attempt drops, on the 
   assert.deepEqual(dropped, [ELIANA]); // Amara's INC is her 1st attempt
   assert.equal(await statusOf(ELIANA), 'DROPPED');
   assert.equal(await statusOf(AMARA), 'ACTIVE');
-  // The grade itself is not changed (rule 40).
+  // The grade itself is not changed.
   const [ec] = await q(`
     SELECT CAST(grade AS CHAR) AS g
     FROM enrolled_course
@@ -379,12 +377,12 @@ test('the admin completes an INC by replacing it with a grade (rule 34)', async 
   await rejects(grades.completeInc(id, AMARA, 'INC', ADMIN_ID), 400);
   await grades.completeInc(id, AMARA, '1.75', ADMIN_ID);
   await rejects(grades.completeInc(id, AMARA, '2.00', ADMIN_ID), 409, /Only an INC/);
-  // Completing a dropped student's INC does not undo the drop (rule 40 only sets DROPPED).
+  // Completing a dropped student's INC does not undo the drop.
   await grades.completeInc(await sectionId('BSIT_403', 1), ELIANA, '2.00', ADMIN_ID);
   assert.equal(await statusOf(ELIANA), 'DROPPED');
 });
 
-// ------------------------------------------------------------ next period
+// Next period
 
 test('next period opens as the 2nd semester with 2 sections of every subject', async () => {
   const r = await admin.openNextPeriod();
