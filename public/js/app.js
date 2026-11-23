@@ -627,9 +627,12 @@ function academicRecord() {
 }
 function summary() {
   const st = term.student;
+  const enrolled = isEnrolled();
+  const enlisted = !enrolled && state.plan.length > 0;
   return renderTemplate('summary', {
-    content: isEnrolled() ? 'badge-green' : 'badge-amber',
-    content3: isEnrolled() ? 'Enrolled' : state.open ? 'Enlisted, not yet enrolled' : 'Not enrolled',
+    printIcon: icon('print'),
+    content: enrolled ? 'badge-green' : enlisted ? 'badge-amber' : 'badge-neutral',
+    content3: enrolled ? 'Enrolled' : enlisted ? 'Enlisted, not yet enrolled' : 'Not enrolled',
     studentName: escapeHTML(
       [st.firstName, st.middleName, st.lastName].filter(Boolean).join(' '),
     ),
@@ -658,14 +661,17 @@ function summary() {
           })
           .join('')
       : renderTemplate('summary-4'),
+    unitTotalLabel: enrolled ? 'Total enrolled units' : enlisted ? 'Total enlisted units' : 'Total selected units',
     totalUnits: totalUnits(),
     loadStatus: hasEnrollment() ? loadLabel() : '—',
     icon7: icon('info'),
-    content8: isEnrolled()
+    content8: enrolled
       ? 'Your enrollment is final.'
-      : state.open
+      : enlisted && state.open
         ? 'These subjects are enlisted only. Click Enroll on the Enrollment page before the period ends, or they are removed.'
-        : 'Enrollment is closed.',
+        : state.open
+          ? 'Choose subjects on the Enrollment page to start your plan.'
+          : 'Your enrollment plan is read-only.',
   });
 }
 let demoAccounts = null;

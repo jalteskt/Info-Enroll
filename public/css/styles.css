@@ -1371,6 +1371,12 @@ dialog::backdrop {
   border-bottom: 1px solid var(--line);
   font-weight: 600;
 }
+.summary-actions {
+  display: flex;
+  justify-content: flex-end;
+  max-width: 1010px;
+  margin: 0 auto 14px;
+}
 .summary-sheet {
   padding: 35px 40px;
 }
@@ -1399,6 +1405,8 @@ dialog::backdrop {
 }
 .summary-heading {
   display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
   justify-content: space-between;
   align-items: center;
   padding: 27px 0 20px;
@@ -2153,6 +2161,7 @@ dialog::backdrop {
   .sidebar,
   .topbar,
   .page-heading,
+  .summary-actions,
   .toast,
   dialog,
   .skip-link {
@@ -2170,13 +2179,131 @@ dialog::backdrop {
     box-shadow: none;
   }
   .summary-sheet {
+    --print-rule: #c9dedb;
     padding: 0;
+    max-width: none;
+    overflow: visible;
+    background: var(--background);
+    color: var(--primary-dark);
+    print-color-adjust: exact;
+  }
+  .summary-letterhead,
+  .summary-heading,
+  .summary-meta,
+  .summary-totals,
+  .summary-footnote,
+  .summary-sheet tr {
+    break-inside: avoid;
+  }
+  .summary-letterhead {
+    gap: 12pt;
+    padding-bottom: 13pt;
+    border-bottom: 2pt solid var(--portal-teal);
+  }
+  .summary-seal {
+    width: 38pt;
+    height: 38pt;
+  }
+  .summary-letterhead h2 {
+    font: 700 13pt/1.3 var(--serif);
+  }
+  .summary-letterhead p {
+    font-size: 9pt;
+  }
+  .summary-heading {
+    padding: 17pt 0 11pt;
+  }
+  .summary-heading h3 {
+    font-size: 21pt;
+  }
+  .summary-heading .badge {
+    padding: 3pt 7pt;
+    border: .75pt solid var(--print-rule);
+    background: var(--teal-tint);
+    color: var(--primary-dark);
+    font-size: 9pt;
+  }
+  .summary-meta {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9pt 14pt;
+    margin: 0 0 13pt;
+    padding: 10pt 12pt;
+    border: .75pt solid var(--print-rule);
+    border-radius: 5pt;
+    background: var(--surface);
+  }
+  .summary-meta small {
+    margin-bottom: 2pt;
+    font-size: 9pt;
+  }
+  .summary-meta strong {
+    font-size: 10pt;
+    font-weight: 600;
   }
   .summary-sheet .data-table {
     min-width: 0;
+    table-layout: fixed;
+  }
+  .summary-sheet .table-wrap,
+  .summary-sheet tbody tr:last-child,
+  .summary-totals {
+    break-after: avoid;
+  }
+  .summary-sheet .data-table thead {
+    display: table-header-group;
+  }
+  .summary-sheet .data-table th,
+  .summary-sheet .data-table td {
+    padding: 5pt 6pt;
+    border-bottom: .75pt solid var(--print-rule);
+    font-size: 10pt;
+    line-height: 1.35;
+    vertical-align: top;
+    overflow-wrap: anywhere;
+  }
+  .summary-sheet .data-table th {
+    background: var(--teal-tint);
+    color: var(--primary-dark);
+    font-size: 8.5pt;
+    letter-spacing: .06em;
+  }
+  .summary-sheet .data-table th:nth-child(1) { width: 44%; }
+  .summary-sheet .data-table th:nth-child(2) { width: 15%; }
+  .summary-sheet .data-table th:nth-child(3) { width: 29%; }
+  .summary-sheet .data-table th:nth-child(4) { width: 12%; }
+  .summary-sheet .data-table th:last-child,
+  .summary-sheet .data-table td:last-child {
+    text-align: right;
+  }
+  .summary-sheet .course-code {
+    margin-bottom: 2pt;
+    font-size: 8.5pt;
+  }
+  .summary-totals {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10pt;
+    margin-top: 13pt;
+  }
+  .summary-total {
+    display: block;
+    padding: 8pt 12pt;
+    border: .75pt solid var(--print-rule);
+    border-radius: 5pt;
+    background: var(--teal-tint);
+    font-size: 9pt;
+  }
+  .summary-total span {
+    display: block;
+  }
+  .summary-total strong {
+    color: var(--portal-teal);
+    font-size: 15pt;
+    font-weight: 600;
   }
   .summary-footnote {
-    font-size: 9px;
+    padding-top: 11pt;
+    font-size: 9pt;
   }
   .badge {
     border: 1px solid var(--line);

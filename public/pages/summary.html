@@ -1,5 +1,10 @@
 <template id="summary">
-  <section class="panel summary-sheet">
+  <div class="summary-actions">
+    <button class="button button-primary" type="button" data-action="print">
+      {{printIcon}} Print / Save PDF
+    </button>
+  </div>
+  <section class="panel summary-sheet" aria-labelledby="enrollment-summary-title">
     <div class="summary-letterhead">
       <img class="summary-seal" src="/assets/plm-seal.png" alt="PLM seal" width="56" height="56" />
       <div>
@@ -8,7 +13,7 @@
       </div>
     </div>
     <div class="summary-heading">
-      <h3>Enrollment summary</h3>
+      <h3 id="enrollment-summary-title">Enrollment summary</h3>
       <span class="badge {{content}}">{{content3}}</span>
     </div>
     <div class="summary-meta">
@@ -42,13 +47,15 @@
         <tbody>{{content5}}</tbody>
       </table>
     </div>
-    <div class="summary-total">
-      <span>Total enrolled units</span>
-      <strong>{{totalUnits}}</strong>
-    </div>
-    <div class="summary-total">
-      <span>Load status</span>
-      <strong>{{loadStatus}}</strong>
+    <div class="summary-totals">
+      <div class="summary-total">
+        <span>{{unitTotalLabel}}</span>
+        <strong>{{totalUnits}}</strong>
+      </div>
+      <div class="summary-total">
+        <span>Load status</span>
+        <strong>{{loadStatus}}</strong>
+      </div>
     </div>
     <div class="summary-footnote">
       {{icon7}}
