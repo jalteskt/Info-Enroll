@@ -670,23 +670,32 @@ function summary() {
 }
 let demoAccounts = null;
 function login() {
+  const roles = [
+    ['student', 'Student', 'graduation'],
+    ['professor', 'Professor', 'book'],
+    ['admin', 'Admin', 'shield'],
+  ];
   return renderTemplate('login', {
     demoLogin: demoAccounts ? renderTemplate('demo-login', { role: state.loginRole }) : '',
-    brand: brand(),
+    brandIcon: icon('book'),
     campusArt: campusArt(),
-    content: ['student', 'professor', 'admin']
-      .map((r) =>
+    content: roles
+      .map(([role, label, symbol]) =>
         renderTemplate('login-2', {
-          content: state.loginRole === r ? 'active' : '',
-          r: r,
-          content3: state.loginRole === r,
-          content4: r[0].toUpperCase() + r.slice(1),
+          r: role,
+          content3: state.loginRole === role,
+          content4: label,
+          roleIcon: icon(symbol),
+          checkIcon: icon('check'),
         }),
       )
       .join(''),
     content4: state.loginRole === 'student' ? 'Student number' : 'Username',
-    content5:
-      state.loginRole === 'student' ? 'e.g. 202500002' : 'e.g. mreyes',
+    content5: {
+      student: 'e.g. 202500002',
+      professor: 'e.g. mreyes',
+      admin: 'e.g. registrar',
+    }[state.loginRole],
     icon: icon('eye'),
   });
 }
@@ -864,8 +873,10 @@ document.addEventListener('click', (e) => {
   }
   const loginRole = e.target.closest('[data-login-role]');
   if (loginRole) {
+    if (state.loginRole === loginRole.dataset.loginRole) return;
     state.loginRole = loginRole.dataset.loginRole;
     render();
+    app.querySelector('[data-login-role][aria-pressed="true"]')?.focus({ preventScroll: true });
     return;
   }
   const nav = e.target.closest('[data-view]');
