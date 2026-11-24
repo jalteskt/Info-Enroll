@@ -1,163 +1,280 @@
-# Info-Enroll
+# PLM BSIT Student Enrollment System
 
-Enrollment system for the PLM BS Information Technology program. Students
-enroll in subjects, professors encode grades, and the registrar (admin) runs
-the enrollment periods, sections and professors.
+**Section:** BSIT 2-4
 
-- **Back end:** Node.js (Express) in `server/`
-- **Database:** MariaDB / MySQL from XAMPP
-- **Front end:** plain HTML, CSS and JavaScript in `public/`, served by the
-  same server. There is no build step.
+## Members
 
-## Requirements
+- Abuien, Daeniel S.
+- Gorres, John Sven
+- Jamisola, Yohann Drake B.
+- Lapaz, Prince Heaven P.
+- Morden, Allesar Leomar C.
+- Ong, Mark Angelo M.
+- Reapor, Vincent T.
 
-- [Node.js](https://nodejs.org/) 20 or newer
+---
+
+## Overview
+
+The PLM BSIT Student Enrollment System is a web application for the
+Pamantasan ng Lungsod ng Maynila BS Information Technology program. It
+replaces manual enrollment with one system where students choose their
+subjects, professors encode grades, and the registrar manages the school
+term.
+
+The system has **three roles**:
+
+| Role | What they do |
+|---|---|
+| **Student** | Enlists subjects and sections, enrolls, views the schedule and academic record, and prints the enrollment summary. |
+| **Professor** | Encodes grades for their own classes, saves drafts, and submits the class record. |
+| **Admin (Registrar)** | Opens and closes enrollment periods, manages sections, completes INC grades, and manages student and professor accounts. |
+
+The system enforces the enrollment rules for the student: unit limits per
+year level and semester, prerequisites, a lab needing its lecture, section
+seat limits, schedule conflicts, and a maximum of two attempts per subject.
+Grades are 1.00 to 3.00 in steps of 0.25 (passed), 5.00 (failed), or INC
+(incomplete).
+
+**Built with:** Node.js and Express (back end), MariaDB/MySQL from XAMPP
+(database), and plain HTML, CSS and JavaScript (front end).
+
+## Required software
+
+- [Node.js](https://nodejs.org/) version 20 or newer
 - [XAMPP](https://www.apachefriends.org/) with MySQL (MariaDB) running.
   Tested on MariaDB 10.4.
+- A web browser such as Chrome, Edge or Firefox
 
-## Setup
+## How to install
 
-1. Start **MySQL** in the XAMPP Control Panel.
-2. Install the server packages:
+1. Open the **XAMPP Control Panel** and start **MySQL**.
+2. Open a terminal in the project's `server` folder and install the packages:
 
    ```sh
    cd server
    npm install
    ```
 
-3. Create your settings file by copying `server/.env.example` to
-   `server/.env`. The defaults match a fresh XAMPP install (user `root`, no
-   password). Set `SESSION_SECRET` to any long random string.
-
+3. Copy `server/.env.example` to `server/.env`. The defaults match a fresh
+   XAMPP install (user `root`, empty password). Change `SESSION_SECRET` to
+   any long random text.
 4. Build the database and load the demo data:
 
    ```sh
    npm run db:reset
    ```
 
-   This **drops and recreates** the `info_enroll` database from
-   `server/database/`, then loads the demo students, professors and terms.
-   Run it again any time you want to start over.
-
+   This drops and recreates the `info_enroll` database, so run it again any
+   time you want to start over with fresh demo data.
 5. Start the server:
 
    ```sh
-   npm start        # or: npm run dev   (restarts when a file changes)
+   npm start
    ```
 
-6. Open <http://localhost:3000>.
+   (`npm run dev` does the same but restarts when a file changes.)
+6. Open **http://localhost:3000** in your browser.
 
-> **Strict mode.** The app turns on MariaDB strict mode for its own
-> connections, so it works with XAMPP's default settings. If you import the
-> SQL files by hand (for example in phpMyAdmin), first add
-> `STRICT_TRANS_TABLES` to `sql_mode` in XAMPP's `my.ini`. Otherwise MariaDB
-> silently blanks invalid values instead of rejecting them.
+If the page loads but sign-in fails, MySQL is not running. Start it in XAMPP
+and try again.
 
-## Demo accounts
+## Demo accounts and password
 
-Every account's password is **`password123`**.
+On the sign-in page, choose your role (**Student**, **Professor** or
+**Admin**), then type the username and password.
 
-The demo has four finished school years (2022–2023 to 2025–2026). The
-**1st semester of 2026–2027** is open for enrollment.
+**The password for every demo account is `password123`.**
+
+### Admin
+
+| Username | Name |
+|---|---|
+| `registrar` | Registrar Office |
+
+### Professors
+
+| Username | Name |
+|---|---|
+| `mreyes` | Maria Reyes |
+| `asantos` | Antonio Santos |
+| `lgarcia` | Lourdes Garcia |
+| `cramos` | Carlos Ramos |
+| `evillanueva` | Elena Villanueva |
+
+`jmendoza` (Jose Mendoza) is a deactivated professor and cannot sign in.
 
 ### Students (sign in with the student number)
 
 | Student no. | Name | What it shows |
 |---|---|---|
-| `202600001` | Andrea Dela Cruz | Freshman, no history yet (1st year, 23-unit cap) |
-| `202500002` | Amara Sofia Reyes | Regular 2nd year, already enrolled in a few subjects this term |
-| `202500003` | Joaquin Luis Santos | Irregular: failed only the CIST_102 lab, so only the lab is retaken |
-| `202500004` | Mateo Gabriel Garcia | INC in PATHFIT2, which blocks PATHFIT3 |
-| `202200005` | Eliana Mae Ramos | 5th year (no unit cap), failed BSIT_403 once |
-| `202400007` | Paolo Miguel Villanueva | **Dropped**: failed GEC_SELF twice. Can sign in and view records, can't enroll |
-| `202200006` | Rafael Andres Mendoza | Passed all 67 subjects, so can't enroll again |
+| `202600001` | Andrea Dela Cruz | Freshman with no history. Best for a clean enrollment. |
+| `202500002` | Amara Sofia Reyes | Regular 2nd year, already enrolled in a few subjects. |
+| `202500003` | Joaquin Luis Santos | Irregular. Failed only the CIST_102 lab, so only the lab is retaken. |
+| `202500004` | Mateo Gabriel Garcia | Has an INC in PATHFIT2, which blocks PATHFIT3. |
+| `202200005` | Eliana Mae Ramos | 5th year, no unit cap. Failed BSIT_403 once. |
+| `202400007` | Paolo Miguel Villanueva | Dropped after failing a subject twice. Can view records but cannot enroll. |
+| `202200006` | Rafael Andres Mendoza | Passed all 67 subjects, so cannot enroll again. |
 
-### Professors (sign in with the username)
+The demo has four finished school years (2022-2023 to 2025-2026). The
+**1st semester of 2026-2027** is open for enrollment.
 
-`mreyes`, `asantos`, `lgarcia`, `cramos`, `evillanueva` are active.
-`jmendoza` is inactive (has taught before, so he is deactivated, not deleted).
+---
 
-### Admin
+## Database design (ERD)
 
-`registrar`
+The database `info_enroll` has 10 tables. The entity relationship diagram
+is stored in the project folder at `docs/ERD.png`.
 
-The admin creates accounts on two pages:
+![Entity relationship diagram of the PLM BSIT Student Enrollment System](docs/ERD.png)
 
-- **Students → Add student:** first, middle (optional) and last name, entrance
-  date and a temporary password. The student number is generated: entrance
-  year + a 5-digit running number (e.g. `202600002`). New students start
-  ACTIVE, in 1st year, with no records.
-- **Professors → Add professor:** name, username and a temporary password.
+| Table | Purpose |
+|---|---|
+| `student` | Student accounts: number, name, entrance date, password and status (active or dropped). |
+| `professor` | Professor accounts, with an active flag. |
+| `admin` | Registrar accounts. |
+| `course` | The 67 BSIT subjects: code, title, units, year level, semester and required standing. |
+| `prerequisite` | Course requirements. PRE means it must be passed first. CO links a lab to its lecture. |
+| `unit_limit` | The minimum and maximum units for each year level and semester. |
+| `enrollment_period` | One row per school year and semester, either OPEN or CLOSED. |
+| `section` | A class of one course in one period: section number, day, time, professor and the 50-seat limit. |
+| `enrollment` | A student's enrollment for one period, with their year level and total units. |
+| `enrolled_course` | The subjects inside an enrollment, one row per section, with the grade. |
+
+**How the tables connect**
+- A `student` has many `enrollment` rows, one for each period.
+- An `enrollment` belongs to one `enrollment_period` and one `unit_limit`.
+- An `enrollment` has many `enrolled_course` rows, and each points to one
+  `section`.
+- A `section` belongs to one `course`, one `enrollment_period` and one
+  `professor`, and records the admin who submitted the grades.
+- `prerequisite` links a `course` to the courses it requires.
+
+Passed or failed, the weighted average, the year level and the seats left
+are calculated from these tables, not stored. The database also has 8 SQL
+views that the system reads for its lists.
+
+---
+
+## How to use every feature, per role
+
+After signing in, the sidebar on the left shows the pages for your role.
+Use **Sign out** at the bottom of the sidebar to leave.
+
+### 1. Student
+
+Sidebar pages: **Enrollment**, **My schedule**, **Academic record**,
+**Enrollment summary**.
+
+**Enrollment**
+1. Open **Enrollment**. The list shows the subjects of the open semester.
+   Use the tabs **All subjects**, **Eligible for you** and **Selected** to
+   filter it.
+2. Each subject shows its status. A blocked subject lists the reasons, for
+   example a prerequisite not yet passed, a missing year standing, or no
+   section offered this term.
+3. Click the add button on an eligible subject, then click **Choose
+   section**. The dialog lists the sections with their day, time and seats
+   left. Full sections and sections that clash with your other subjects
+   cannot be picked.
+4. A subject with a lab needs its lecture. The lab can be in a different
+   section from the lecture.
+5. To change a section, click **Change section** on the subject. To drop a
+   subject, click **Remove subject**.
+6. The **Your enrollment plan** panel shows your selected subjects, total
+   units and your unit limit. The system stops you if you go over the limit.
+7. When your plan is ready, click **Enroll**, then confirm **Enroll in
+   these subjects?**. The subjects become final. Only the admin can reopen
+   an enrollment.
+8. Subjects you enlisted but did not enroll are removed when the admin closes
+   the period.
+
+**My schedule**
+- Shows your weekly timetable for the subjects you picked. Use **Edit my
+  plan** to go back to Enrollment.
+
+**Academic record**
+- Shows every subject you have taken, term by term, with your grades and your
+  weighted average. Grades appear only after the professor submits the class.
+
+**Enrollment summary**
+- Shows your printable enrollment record. Click **Print / Save PDF** to print
+  it or save it as a PDF.
+
+A dropped student or a student who has passed every subject can sign in and
+view records but cannot open a new enrollment.
+
+### 2. Professor
+
+Sidebar page: **My classes**.
+
+1. Open **My classes**. Each card is one of your sections, with its subject
+   code, name, schedule and student count.
+2. Click a section to open its class list.
+3. Choose a grade for each student: 1.00 to 3.00 in steps of 0.25, 5.00, or
+   INC.
+4. Click **Save draft** to keep your grades without publishing them.
+   Students cannot see draft grades.
+5. Click **Review** to check the grades, then **Back to editing** to change
+   them or **Submit & lock grades** to finish.
+6. Submitting locks the class record. Later corrections go through the
+   admin. A student whose last attempt at a subject is failed or INC, on
+   their second attempt, is dropped when you submit.
+
+### 3. Admin (Registrar)
+
+Sidebar pages: **Overview**, **Sections**, **Grades**, **Students**,
+**Professors**.
+
+**Overview**
+- Shows the current enrollment period and a history of every term.
+- Click **Close enrollment** to end the open period. Students who did not
+  click Enroll lose their enlisted subjects, and sections with no students
+  are removed.
+- Click **Open next period** to start the next semester. It is allowed only
+  when every section has submitted its grades. The new period is created
+  with default sections, days, times and professors, which you can change.
+
+**Sections**
+- Lists every section of the open period with its professor, schedule,
+  seats and grading progress.
+- Click **New section** to add one. Choose the course, section number,
+  professor, day and time. A subject with a lab gets its lecture and lab
+  together.
+- Click **Delete** on a section to remove it while the period is open. Its
+  students go back to enlisted and must enroll again.
+
+**Grades**
+- **Sections waiting for submission** lists classes whose professor has not
+  submitted. Click **Encode grades** to enter and submit the grades for the
+  professor, using **Save draft** and **Submit & lock grades**.
+- **INC waiting to be completed** lists incomplete grades. Click
+  **Complete** and replace the INC with a grade from 1.00 to 3.00, or 5.00.
+
+**Students**
+- Lists every student account with status and year level.
+- Click **Add student** and enter the first, middle (optional) and last name,
+  the entrance date and a temporary password. The student number is
+  generated automatically.
+- Click **Reopen** on a student to let them change an enrollment they already
+  confirmed. They must click Enroll again.
+
+**Professors**
+- Lists professor accounts with their teaching load.
+- Click **Add professor** and enter the name, username and a temporary
+  password.
+- Use **Deactivate** or **Activate** to turn an account off or on. A
+  professor with no past sections can be deleted.
 
 ## Trying a whole semester
 
-1. **Student** (e.g. `202500003`): enlist and remove subjects, then click
-   **Enroll** to make them final. Joaquin can retake the CIST_102 lab; it is
-   his 2nd and last attempt. The admin can reopen an enrollment from *Students*.
-2. **Admin:** *Overview → Close enrollment*. Students who did not click Enroll
-   lose their enlisted subjects, and sections with no students are removed.
-3. **Professor:** open *My classes*, encode grades, *Save draft*, review, and
-   submit. Submitting locks the class record. A failed or INC last attempt
-   drops the student.
-4. **Admin:** *Grades* lists every section still missing grades (the admin
-   can encode and submit them) and every INC to complete.
-5. **Admin:** once every section is submitted, *Overview → Open next period*.
-   The new period starts with 2 sections of every subject that semester, with
-   days, times and professors assigned. The admin can change them.
+1. **Student** (for example `202500003`): add subjects, choose sections, and
+   click **Enroll**.
+2. **Admin:** **Overview**, then **Close enrollment**.
+3. **Professor:** **My classes**, encode the grades, **Save draft**, review,
+   and **Submit & lock grades**.
+4. **Admin:** **Grades**, to encode any missing sections and complete any
+   INC.
+5. **Admin:** **Overview**, then **Open next period**.
 
-Run `npm run db:reset` to get the demo data back.
-
-## Tests
-
-```sh
-cd server
-npm test
-```
-
-The tests use a separate database, `info_enroll_test`, which they rebuild on
-each run, so your demo data is never touched. MySQL must be running.
-
-## Project layout
-
-```
-public/                  front end (served at http://localhost:3000)
-  index.html
-  css/styles.css
-  js/app.js              sign-in, student pages, page shell
-  js/staff.js            professor and admin workspaces
-  js/api.js              calls to the server API
-  pages/*.html           page markup as <template>s (see pages/README.md)
-server/
-  database/
-    info-enroll.sql         tables, keys, checks, unit limits
-    info-enroll_insert.sql  67 courses and their prerequisites
-  scripts/
-    db-reset.js          rebuilds the database (npm run db:reset)
-    seed-demo.js         demo students, professors, terms and grades
-  src/
-    index.js             starts the server
-    db.js                connection pool and transactions
-    routes/              API endpoints: auth, student, professor, admin
-    services/            the enrollment rules (see below)
-  test/                  automated tests (npm test)
-```
-
-## Where the rules live
-
-The numbered rules are written as comments next to the code that enforces
-them, e.g. `// rule 23`. The main places:
-
-| Area | Rules | File |
-|---|---|---|
-| Grades, pass/fail, year level, attempts, load status | 4, 23–25, 33, 39 | `server/src/services/academic.js` |
-| Who can take what, and why not | 5, 6, 10, 21, 23, 26, 29, 34, 40 | `server/src/services/eligibility.js` |
-| Adding and removing subjects, unit cap, conflicts, seats | 7, 8, 11, 12, 16, 17, 19, 27 | `server/src/services/enrollment.js` |
-| Lec/lab links | 27, 28 | `server/src/services/pairing.js` |
-| Periods, sections, professors | 2, 9, 13–15, 17, 20, 28, 35–37 | `server/src/services/admin.js` |
-| Encoding, submitting and completing grades, dropping students | 30–32, 34, 40 | `server/src/services/grades.js` |
-| Tables, keys and checks (e.g. one enrollment per term, one section number per course) | 8, 16, 18, 22 (no self-prerequisite), 32 | `server/database/info-enroll.sql` |
-| No prerequisite loops; `npm run db:reset` refuses data with one | 22 | `server/src/services/academic.js` (`checkPrerequisiteLoops`), `server/scripts/db-reset.js` |
-
-Rules the database itself guarantees (keys, unique constraints, checks) are in
-the SQL files; everything else is checked in the services above, inside a
-database transaction.
+Run `npm run db:reset` to restore the demo data at any time.
