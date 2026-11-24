@@ -7,8 +7,7 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "node --watch src/index.js --local-demo-login",
-    "test": "node --test --test-concurrency=1 \"test/*.test.js\"",
+    "dev": "node --watch src/index.js",
     "db:reset": "node scripts/db-reset.js"
   },
   "engines": {

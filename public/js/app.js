@@ -674,7 +674,6 @@ function summary() {
           : 'Your enrollment plan is read-only.',
   });
 }
-let demoAccounts = null;
 function login() {
   const roles = [
     ['student', 'Student', 'graduation'],
@@ -682,7 +681,6 @@ function login() {
     ['admin', 'Admin', 'shield'],
   ];
   return renderTemplate('login', {
-    demoLogin: demoAccounts ? renderTemplate('demo-login', { role: state.loginRole }) : '',
     brandIcon: icon('book'),
     campusArt: campusArt(),
     content: roles
@@ -870,13 +868,6 @@ function help() {
   modal.showModal();
 }
 document.addEventListener('click', (e) => {
-  if (demoAccounts && e.target.closest('[data-demo-login]')) {
-    const form = document.querySelector('#login-form');
-    form.querySelector('#login-username').value = demoAccounts.logins[state.loginRole];
-    form.querySelector('#login-password').value = demoAccounts.password;
-    form.requestSubmit();
-    return;
-  }
   const loginRole = e.target.closest('[data-login-role]');
   if (loginRole) {
     if (state.loginRole === loginRole.dataset.loginRole) return;
@@ -1115,8 +1106,7 @@ modal.addEventListener('click', (e) => {
 
 // Restore an existing session on page load; otherwise show the sign-in page.
 try {
-  const { user, demoLogin } = await api('/auth/me');
-  demoAccounts = demoLogin;
+  const { user } = await api('/auth/me');
   if (user) await applyUser(user);
   else render();
 } catch {

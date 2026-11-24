@@ -1698,22 +1698,13 @@ dialog::backdrop {
 #login-error:empty {
   margin: 0;
 }
-.login-card .button-primary,
-.login-card [data-demo-login] {
+.login-card .button-primary {
   width: 100%;
   min-height: 44px;
   font-size: .875rem;
 }
 .login-card .button-primary {
   margin-top: 20px;
-}
-.login-card [data-demo-login] {
-  margin-top: 10px;
-  color: var(--primary);
-  border: 1px solid #c0d3cd;
-}
-.login-card [data-demo-login]:hover {
-  border-color: var(--primary);
 }
 @media (max-width: 700px) {
   .welcome-page {
